@@ -2447,18 +2447,35 @@
     haptic(15);
   };
 
+  function dismissBlockers() {
+    [els.callsignOv, els.ftue, els.helpOv, els.accessOv, els.pauseOv].forEach(function (el) {
+      if (el) el.classList.remove("show");
+    });
+  }
+
+  var _showMenu = showMenu;
   var _startGame0 = startGame;
   startGame = function () {
-    ensureCallsign(function () { _startGame0(); });
+    ensureCallsign(function () {
+      _startGame0();
+      if (!records.ftueDone) runInteractiveTutorial(false);
+    });
   };
 
   showMenu = function () {
+    dismissBlockers();
     arcadeMode = false;
     _showMenu();
     updateCallsignDisplay();
     updateStreakDisplay();
     maybeRootAccessTeaser();
     notifyResize();
+  };
+
+  var _restartSame = restartSame;
+  restartSame = function () {
+    dismissBlockers();
+    _restartSame();
   };
 
   var _updateHUD = updateHUD;

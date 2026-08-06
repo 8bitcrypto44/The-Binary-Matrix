@@ -6,7 +6,7 @@ import re
 
 root = Path(__file__).resolve().parent
 
-ASSET_VER = "9"
+ASSET_VER = "10"
 PAGES_URL = "https://8bitcrypto44.github.io/The-Binary-Matrix/"
 _brand_logo = root / "assets" / "brand" / "8bitcrypto44_logo.png"
 BRAND_LOGO_URI = (
@@ -32,7 +32,7 @@ def merge_js():
     src = js_path.read_text(encoding="utf-8")
     s4 = root.joinpath("bm_sprint4.js").read_text(encoding="utf-8").strip() + "\n"
     wire = "  // --- Wire UI ---"
-    start_mark = "  // === SPRINT 4+ FEATURE PACK ==="
+    start_mark = "// === SPRINT 4+ FEATURE PACK ==="
     if start_mark in src and wire in src:
         pre = src.split(start_mark)[0]
         post = wire + src.split(wire, 1)[1]
