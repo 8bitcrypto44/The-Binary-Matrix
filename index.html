@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="description" content="The Binary Matrix — jack in, crack NexCorp grids and CPU gates.">
 <title>The Binary Matrix by 8bitcrypto_44</title>
-<link rel="stylesheet" href="binary_matrix.css?v=13">
+<link rel="stylesheet" href="binary_matrix.css?v=14">
 <style>html,body{margin:0;min-height:100%;background:#020603;}html.bm-embed,html.bm-embed body{padding:0;background:#020603;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;}</style>
 </head>
 <body>
@@ -52,6 +52,9 @@
         <div class="bm-ghost-mark" id="bm-ghost-mark" title="Your PB finish line"></div>
       </div>
     </div>
+    <div class="bm-extract-bar" id="bm-extract-bar" hidden>
+      <div class="bm-extract-label" id="bm-extract-label">EXTRACTION · 0 / 3</div>
+    </div>
     <div class="bm-cmap" id="bm-cmap" aria-label="Campaign node map"></div>
     <p class="bm-mult" id="bm-mult"></p>
 
@@ -62,6 +65,7 @@
         <p class="bm-callsign" id="bm-callsign-label">OPERATOR · —</p>
         <p class="bm-bulletin" id="bm-bulletin"></p>
         <p class="bm-bounty" id="bm-bounty-board"></p>
+        <div class="bm-relay-board" id="bm-relay-board" aria-label="Squad relay leaderboard"></div>
         <p class="bm-streak" id="bm-streak"></p>
         <div class="bm-loadout" id="bm-loadout" aria-label="Operator loadout">
           <div class="bm-loadout-label">LOADOUT · pick one perk</div>
@@ -89,6 +93,7 @@
           <button type="button" id="bm-daily" class="bm-warn">DAILY NODE</button>
           <button type="button" id="bm-arcade" class="bm-ghost">ARCADE ∞</button>
           <button type="button" id="bm-bonus-node" class="bm-danger bm-hidden">BONUS NODE · 2×</button>
+          <button type="button" id="bm-extract" class="bm-warn bm-hidden">EXTRACT · 3 NODES</button>
           <button type="button" id="bm-relay-in" class="bm-ghost bm-hidden">JOIN RELAY</button>
           <button type="button" id="bm-root-access" class="bm-danger bm-hidden">ROOT ACCESS</button>
           <button type="button" id="bm-tutorial" class="bm-ghost">TUTORIAL</button>
@@ -275,6 +280,21 @@
         </div>
       </div>
 
+      <div id="bm-hunter-line" class="bm-overlay bm-hunter-line" role="dialog" aria-label="NexCorp hunter">
+        <div class="bm-hunter-inner">
+          <div class="bm-hunter-kicker">◈ INTERCEPT ◈</div>
+          <div class="bm-hunter-text" id="bm-hunter-text">Trace locked.</div>
+        </div>
+      </div>
+
+      <div id="bm-extract-ov" class="bm-overlay bm-extract-ov" role="dialog" aria-label="Extraction complete">
+        <div class="bm-extract-ov-inner">
+          <div class="bm-extract-kicker">EXFIL CONFIRMED</div>
+          <div class="bm-extract-loot" id="bm-extract-loot">+3500 LOOT</div>
+          <div class="bm-extract-sub">NexCorp hunters lost your signal</div>
+        </div>
+      </div>
+
       <div id="bm-callsign-ov" class="bm-overlay bm-callsign-ov" role="dialog" aria-label="Operator callsign">
         <div class="bm-modal" style="text-align:center">
           <h2>OPERATOR CALLSIGN</h2>
@@ -329,6 +349,6 @@
     </div>
   </div>
 </div>
-<script src="binary_matrix.js?v=13"></script>
+<script src="binary_matrix.js?v=14"></script>
 </body>
 </html>

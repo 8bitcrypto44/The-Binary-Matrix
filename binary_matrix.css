@@ -358,6 +358,27 @@ html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
 }
 #binmat-root .bm-bounty{font-size:10px;letter-spacing:.5px;color:#64748b;margin:0 0 6px;text-align:center;min-height:1.2em}
 #binmat-root.bm-heat-high .bm-bounty{color:#86efac}
+#binmat-root .bm-relay-board{
+  margin:0 0 8px;padding:6px 8px;border:1px solid #14532d;border-radius:6px;background:rgba(0,0,0,.35);
+  font-size:10px;line-height:1.45;color:#64748b;text-align:left;max-height:88px;overflow-y:auto
+}
+#binmat-root .bm-relay-row{padding:2px 0;border-bottom:1px solid rgba(20,83,45,.35)}
+#binmat-root .bm-relay-row:last-child{border-bottom:0}
+#binmat-root .bm-relay-row b{color:#86efac}
+#binmat-root .bm-relay-row.bm-relay-top b{color:#fde68a}
+#binmat-root .bm-relay-empty{display:block;text-align:center;color:#64748b}
+#binmat-root .bm-extract-bar{margin:0 0 6px;padding:4px 8px;text-align:center;border:1px solid rgba(251,191,36,.35);border-radius:6px;background:rgba(20,10,0,.35)}
+#binmat-root .bm-extract-label{font-size:10px;font-weight:700;letter-spacing:.8px;color:#fde68a;text-shadow:0 0 8px rgba(253,224,71,.35)}
+#binmat-root.bm-extract-active{border-color:#fde68a!important;box-shadow:0 0 32px rgba(253,224,71,.28),inset 0 0 40px rgba(0,0,0,.45)}
+#binmat-root .bm-hunter-line{z-index:28;background:rgba(12,0,2,.92)}
+#binmat-root .bm-hunter-inner{text-align:center;padding:20px 16px}
+#binmat-root .bm-hunter-kicker{font-size:11px;letter-spacing:3px;color:#ff3355;margin-bottom:10px;animation:bmBossKicker 1s ease infinite}
+#binmat-root .bm-hunter-text{font-size:clamp(14px,3.5vw,18px);color:#fda4af;line-height:1.45;max-width:24em;margin:0 auto}
+#binmat-root .bm-extract-ov{z-index:29;background:rgba(0,10,2,.94);cursor:pointer}
+#binmat-root .bm-extract-ov-inner{text-align:center;padding:24px 16px}
+#binmat-root .bm-extract-kicker{font-size:11px;letter-spacing:2px;color:#86efac;margin-bottom:8px}
+#binmat-root .bm-extract-loot{font-size:clamp(28px,6vw,42px);font-weight:700;color:#fde68a;text-shadow:0 0 20px rgba(253,224,71,.55);margin-bottom:8px}
+#binmat-root .bm-extract-sub{font-size:12px;color:#86efac}
 @media (max-width:700px){
   #binmat-root .bm-shell{padding:10px;min-height:0}
   #binmat-root .bm-stage{min-height:360px;padding:10px 6px}
