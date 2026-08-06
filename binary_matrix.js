@@ -5918,20 +5918,17 @@
       const r = el.getBoundingClientRect();
       if (r.bottom > maxBottom) maxBottom = r.bottom;
     });
-    const bboxH = Math.ceil(Math.max(0, maxBottom - rootTop)) + 24;
-    let h = Math.ceil(Math.max(
+    const bboxH = Math.ceil(Math.max(0, maxBottom - rootTop)) + 8;
+    const tight = ROOT.classList.contains("bm-ui-play") || ROOT.classList.contains("bm-ui-genius");
+    if (tight) {
+      return Math.ceil(Math.max(EMBED_MIN_H, bboxH));
+    }
+    return Math.ceil(Math.max(
       EMBED_MIN_H,
       bboxH,
-      ROOT.getBoundingClientRect().height || 0,
       ROOT.scrollHeight || 0,
-      ROOT.offsetHeight || 0,
-      doc.scrollHeight || 0,
-      bod.scrollHeight || 0
+      doc.scrollHeight || 0
     ));
-    if (isMobileEmbed() && (ROOT.classList.contains("bm-ui-play") || ROOT.classList.contains("bm-ui-genius"))) {
-      h = Math.max(h, EMBED_MIN_H + 120);
-    }
-    return h;
   }
 
   function applyEmbedFrameHeight(h) {
@@ -5994,17 +5991,10 @@
   let embedBurstGen = 0;
   let embedMutObs = null;
 
-  let embedMobileReportH = 0;
-
   function flushEmbedResize() {
     if (!EMBED || !window.parent) return;
     try {
-      let h = applyEmbedFrameHeight(measureEmbedHeight());
-      if (isMobileEmbed()) {
-        const frameH = window.frameElement ? window.frameElement.clientHeight : 0;
-        h = Math.max(h, frameH, embedMobileReportH, EMBED_MIN_H);
-        embedMobileReportH = h;
-      }
+      const h = applyEmbedFrameHeight(measureEmbedHeight());
       window.parent.postMessage({
         type: "bm-resize",
         height: h,
