@@ -5859,7 +5859,7 @@
 
   loadStoryBeats();
 
-// === VIEWPORT SPRINT — dynamic embed height, no scroll except tutorials ===
+// === VIEWPORT SPRINT — dynamic embed height; scroll on mobile only ===
   const EMBED_MIN_H = 680;
   let embedFsActive = false;
 
@@ -5867,12 +5867,38 @@
     fsBtn: ROOT.querySelector("#bm-fullscreen")
   });
 
+  function isMobileDevice() {
+    try {
+      if (window.matchMedia("(pointer: fine)").matches && !window.matchMedia("(pointer: coarse)").matches) {
+        return false;
+      }
+    } catch (e) {}
+    var touch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0;
+    var narrow = false;
+    try {
+      narrow = window.matchMedia("(max-width: 700px)").matches;
+    } catch (e2) {}
+    var coarse = false;
+    try {
+      coarse = window.matchMedia("(pointer: coarse)").matches;
+    } catch (e3) {}
+    return (touch && coarse) || narrow;
+  }
+
+  function isMobileEmbed() {
+    return EMBED && isMobileDevice();
+  }
+
+  function syncMobileClass() {
+    document.documentElement.classList.toggle("bm-mobile", isMobileDevice());
+  }
+
   function isTutScrollTarget(node) {
     return node && node.closest && node.closest(".bm-tut-scroll");
   }
 
   function blockEmbedScroll(e) {
-    if (!EMBED) return;
+    if (!EMBED || isMobileEmbed()) return;
     if (isTutScrollTarget(e.target)) return;
     e.preventDefault();
   }
@@ -5898,19 +5924,33 @@
   }
 
   function applyEmbedFrameHeight(h) {
-    if (!EMBED) return;
+    if (!EMBED) return h;
     h = Math.max(EMBED_MIN_H, Math.round(h || measureEmbedHeight()));
+    const mobile = isMobileEmbed();
     [document.documentElement, document.body, ROOT].forEach(function (el) {
-      el.style.height = h + "px";
-      el.style.minHeight = h + "px";
-      el.style.maxHeight = h + "px";
-      el.style.overflow = "hidden";
+      if (mobile) {
+        el.style.height = "auto";
+        el.style.minHeight = h + "px";
+        el.style.maxHeight = "none";
+        el.style.overflowX = "hidden";
+        el.style.overflowY = "auto";
+        el.style.webkitOverflowScrolling = "touch";
+        el.style.overscrollBehaviorY = "contain";
+      } else {
+        el.style.height = h + "px";
+        el.style.minHeight = h + "px";
+        el.style.maxHeight = h + "px";
+        el.style.overflow = "hidden";
+        el.style.overflowY = "";
+        el.style.webkitOverflowScrolling = "";
+      }
     });
     return h;
   }
 
   function syncEmbedUiMode() {
     if (!EMBED) return;
+    syncMobileClass();
     const menuOpen = els.menu && !els.menu.classList.contains("bm-hidden");
     const playOpen = els.play && !els.play.classList.contains("bm-hidden");
     const geniusOpen = els.genius && !els.genius.classList.contains("bm-hidden");
@@ -5968,16 +6008,34 @@
     requestAnimationFrame(function () {
       try {
         const h = applyEmbedFrameHeight(measureEmbedHeight());
-        window.parent.postMessage({ type: "bm-resize", height: h }, "*");
+        window.parent.postMessage({
+          type: "bm-resize",
+          height: h,
+          mobile: isMobileEmbed()
+        }, "*");
+        window.parent.postMessage({
+          type: "bm-mobile",
+          active: isMobileEmbed()
+        }, "*");
       } catch (e) {}
     });
   };
 
   if (EMBED) {
+    syncMobileClass();
     applyEmbedFrameHeight(measureEmbedHeight());
     document.addEventListener("wheel", blockEmbedScroll, { passive: false });
     document.addEventListener("touchmove", blockEmbedScroll, { passive: false });
     window.addEventListener("resize", syncEmbedUiMode);
+    window.addEventListener("orientationchange", function () {
+      setTimeout(syncEmbedUiMode, 160);
+    });
+  } else {
+    syncMobileClass();
+    window.addEventListener("resize", syncMobileClass);
+    window.addEventListener("orientationchange", function () {
+      setTimeout(syncMobileClass, 160);
+    });
   }
 
   var _runBootVp = runBoot;

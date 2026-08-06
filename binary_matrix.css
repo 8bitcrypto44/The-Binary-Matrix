@@ -56,6 +56,49 @@ html.bm-embed #binmat-root .bm-overlay.bm-tut-scroll.show{
   overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain
 }
 html.bm-embed #binmat-root .bm-tut-scroll .bm-modal{max-height:88%;overflow-y:auto}
+/* Mobile — scroll inside embed + touch-friendly controls */
+html.bm-embed.bm-mobile,html.bm-embed.bm-mobile body{
+  overflow-x:hidden!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;height:auto!important;max-height:none!important;touch-action:pan-y
+}
+html.bm-embed.bm-mobile #binmat-root{
+  overflow:visible!important;height:auto!important;max-height:none!important;min-height:100%;touch-action:pan-y
+}
+html.bm-mobile:not(.bm-embed),html.bm-mobile:not(.bm-embed) body{
+  overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;height:auto;max-height:none
+}
+html.bm-mobile:not(.bm-embed) #binmat-root{overflow:visible;height:auto;max-height:none}
+html.bm-mobile #binmat-root .bm-shell{touch-action:pan-y}
+html.bm-mobile #binmat-root button{
+  min-height:44px;padding:12px 14px;font-size:13px;touch-action:manipulation
+}
+html.bm-mobile #binmat-root .bm-bar{
+  position:sticky;bottom:0;z-index:6;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  padding:10px 6px 12px;margin:8px -4px 0;background:rgba(2,6,3,.94);
+  border-top:1px solid #14532d;box-shadow:0 -8px 24px rgba(0,0,0,.45)
+}
+html.bm-mobile #binmat-root .bm-bar button{
+  flex:1 1 calc(33% - 8px);min-width:88px;max-width:140px;padding:12px 8px;font-size:12px
+}
+html.bm-mobile #binmat-root .bm-actions button{min-width:96px}
+html.bm-mobile #binmat-root .bm-diffs button{min-width:72px;min-height:44px}
+html.bm-mobile #binmat-root .bm-loadout-btn,
+html.bm-mobile #binmat-root .bm-crew-btn{min-height:44px;padding:10px 12px;font-size:12px}
+html.bm-mobile #binmat-root table.bm-grid td{touch-action:manipulation;-webkit-tap-highlight-color:rgba(57,255,20,.15)}
+html.bm-mobile #binmat-root .bm-top{flex-direction:column;align-items:stretch;gap:8px}
+html.bm-mobile #binmat-root .bm-hud{justify-content:center;font-size:13px}
+html.bm-mobile #binmat-root .bm-audio{flex-wrap:wrap;justify-content:center;gap:6px 10px}
+html.bm-mobile #binmat-root .bm-audio input[type=range]{width:88px;min-height:32px}
+html.bm-mobile #binmat-root .bm-grid-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+html.bm-mobile #binmat-root table.bm-grid.sz4 td{width:60px;height:60px;font-size:1.45rem}
+html.bm-mobile #binmat-root table.bm-grid.sz6 td{width:50px;height:50px;font-size:1.3rem}
+html.bm-mobile #binmat-root table.bm-grid.sz8 td{width:42px;height:42px;font-size:1.1rem}
+html.bm-mobile #binmat-root .bm-vm-row input,
+html.bm-mobile #binmat-root #bm-answer,
+html.bm-mobile #binmat-root #bm-probe,
+html.bm-mobile #binmat-root #bm-callsign-input{
+  min-height:44px;font-size:16px;padding:10px 12px;touch-action:manipulation
+}
 html.bm-embed #binmat-root .bm-top{gap:6px;flex-shrink:0}
 html.bm-embed #binmat-root .bm-brand span{font-size:12px;color:#bbf7d0}
 html.bm-embed #binmat-root .bm-site-brand-mini{display:none}

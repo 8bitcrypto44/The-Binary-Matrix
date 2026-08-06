@@ -6,7 +6,7 @@ import re
 
 root = Path(__file__).resolve().parent
 
-ASSET_VER = "27"
+ASSET_VER = "28"
 PAGES_URL = "https://8bitcrypto44.github.io/The-Binary-Matrix/"
 _brand_logo = root / "assets" / "brand" / "8bitcrypto44_logo.png"
 BRAND_LOGO_URI = (
@@ -207,6 +207,13 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
 .bm-gd.is-open.is-land .bm-gd-play iframe,.bm-gd.is-fs-mode .bm-gd-play iframe{{
   position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;border:0!important
 }}
+.bm-gd.is-mobile.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-stage{{
+  min-height:100dvh!important;height:100dvh!important;max-height:100dvh!important
+}}
+.bm-gd.is-mobile.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-play,
+.bm-gd.is-mobile.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-play iframe{{
+  min-height:100dvh!important;height:100dvh!important;max-height:100dvh!important
+}}
 @media (max-width:700px){{
   .bm-gd-card{{padding:4px;border-width:2px}}
   .bm-gd-enter{{padding:14px 22px;min-height:48px;width:min(100%,280px)}}
@@ -269,15 +276,24 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
   function land(){{return window.matchMedia&&window.matchMedia("(orientation: landscape)").matches||window.innerWidth>window.innerHeight;}}
   function isFs(){{return root.classList.contains("is-fs-mode")||!!(document.fullscreenElement||document.webkitFullscreenElement);}}
   function syncLand(){{root.classList.toggle("is-land",root.classList.contains("is-open")&&phone()&&land());}}
+  function mobileMode(){{return root.classList.contains("is-mobile")||phone();}}
   function embedDefaultH(){{return 920;}}
   function setFrameHeight(h){{
     if(isFs()||root.classList.contains("is-land"))return;
     h=Math.max(680,Math.round(Number(h)||920));
+    if(mobileMode()&&!root.classList.contains("is-land")){{
+      var vh=Math.max(320,Math.round(window.innerHeight||document.documentElement.clientHeight||680));
+      h=vh;
+      frame.setAttribute("scrolling","auto");
+      root.classList.add("is-mobile");
+    }}else if(!phone()){{
+      frame.setAttribute("scrolling","no");
+    }}
     frame.style.height=h+"px";
     var st=root.querySelector(".bm-gd-stage");
     var pl=document.getElementById("bm-gd-play");
-    if(st){{st.style.minHeight=h+"px";st.style.height=h+"px";st.style.maxHeight="none";st.style.aspectRatio="auto";}}
-    if(pl){{pl.style.minHeight=h+"px";pl.style.height=h+"px";pl.style.maxHeight="none";}}
+    if(st){{st.style.minHeight=h+"px";st.style.height=h+"px";st.style.maxHeight=mobileMode()&&!root.classList.contains("is-land")?"100dvh":"none";st.style.aspectRatio="auto";}}
+    if(pl){{pl.style.minHeight=h+"px";pl.style.height=h+"px";pl.style.maxHeight=mobileMode()&&!root.classList.contains("is-land")?"100dvh":"none";}}
   }}
   function postFsState(active){{try{{if(frame.contentWindow)frame.contentWindow.postMessage({{type:"bm-fs-state",active:!!active}},"*");}}catch(e){{}}}}
   function mountFs(){{if(root.dataset.bmMounted==="1")return;var slot=document.createElement("div");slot.setAttribute("data-bm-slot","1");slot.style.cssText="display:block;width:100%;max-width:920px;margin:0 auto;height:"+Math.max(1,Math.round(root.getBoundingClientRect().height))+"px";if(root.parentNode)root.parentNode.insertBefore(slot,root);document.body.appendChild(root);root.dataset.bmMounted="1";}}
@@ -287,7 +303,10 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
   function exitFs(){{root.classList.remove("is-fs-mode");var ex=document.exitFullscreen||document.webkitExitFullscreen;if(ex&&document.fullscreenElement){{try{{var p=ex.call(document);if(p&&p.then)p.then(finishExit).catch(finishExit);else finishExit();}}catch(e){{finishExit();}}}}else finishExit();}}
   btn.addEventListener("click",function(){{
     frame.setAttribute("src",baseSrc);root.classList.add("is-open","is-loading","is-fading");btn.setAttribute("aria-expanded","true");
-    setFrameHeight(embedDefaultH());try{{document.documentElement.style.overflow="hidden";document.body.style.overflow="hidden";}}catch(e){{}}if(phone())enterFs();syncLand();setTimeout(function(){{root.classList.remove("is-fading");}},600);
+    if(phone()){{root.classList.add("is-mobile");frame.setAttribute("scrolling","auto");if(land())enterFs();}}else{{
+      try{{document.documentElement.style.overflow="hidden";document.body.style.overflow="hidden";}}catch(e){{}}
+    }}
+    setFrameHeight(embedDefaultH());syncLand();setTimeout(function(){{root.classList.remove("is-fading");}},600);
   }});
   frame.addEventListener("load",function(){{root.classList.remove("is-loading");setFrameHeight(embedDefaultH());}});
   setTimeout(function(){{root.classList.remove("is-loading");}},8000);
@@ -295,12 +314,13 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
     if(!e.data||typeof e.data!=="object")return;
     if(e.data.type==="bm-fs")enterFs();
     if(e.data.type==="bm-fs-exit")exitFs();
+    if(e.data.type==="bm-mobile")root.classList.toggle("is-mobile",!!e.data.active);
     if(e.data.type==="bm-resize"&&e.data.height&&!isFs()&&!root.classList.contains("is-land"))setFrameHeight(e.data.height);
   }});
   document.addEventListener("fullscreenchange",function(){{if(!document.fullscreenElement&&!document.webkitFullscreenElement&&root.classList.contains("is-fs-mode"))finishExit();}});
   document.addEventListener("webkitfullscreenchange",function(){{if(!document.fullscreenElement&&!document.webkitFullscreenElement&&root.classList.contains("is-fs-mode"))finishExit();}});
-  window.addEventListener("resize",syncLand);
-  window.addEventListener("orientationchange",function(){{setTimeout(syncLand,120);}});
+  window.addEventListener("resize",function(){{syncLand();if(root.classList.contains("is-open")&&!isFs())setFrameHeight(embedDefaultH());}});
+  window.addEventListener("orientationchange",function(){{setTimeout(function(){{syncLand();if(root.classList.contains("is-open")&&!isFs())setFrameHeight(embedDefaultH());}},120);}});
 }})();
 </script>
 """
