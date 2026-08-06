@@ -250,13 +250,30 @@
   if (!REDUCED_MOTION) setInterval(drawRain, 50);
   window.addEventListener("resize", sizeRain);
   if (window.ResizeObserver) {
-    new ResizeObserver(function () { sizeRain(); }).observe(ROOT);
+    new ResizeObserver(function () { sizeRain(); if (EMBED) notifyResize(); }).observe(ROOT);
+  } else if (EMBED) {
+    window.addEventListener("resize", notifyResize);
   }
 
   // --- Embed + persistence ---
   function notifyParent(inGame) {
     if (!EMBED || !window.parent) return;
     try { window.parent.postMessage({ type: "bm-chrome", inGame: !!inGame }, "*"); } catch (e) {}
+    notifyResize();
+  }
+
+  function notifyResize() {
+    if (!EMBED || !window.parent) return;
+    requestAnimationFrame(function () {
+      try {
+        var h = Math.max(
+          ROOT.offsetHeight || 0,
+          ROOT.scrollHeight || 0,
+          document.documentElement.scrollHeight || 0
+        );
+        window.parent.postMessage({ type: "bm-resize", height: h }, "*");
+      } catch (e) {}
+    });
   }
 
   function loadRecords() {

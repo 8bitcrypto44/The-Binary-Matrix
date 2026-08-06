@@ -19,7 +19,14 @@
 #binmat-root table.bm-grid.sz8 td{width:52px;height:52px;font-size:1.3rem}
 #binmat-root.bm-glitch{animation:bmGlitch .35s steps(2) 1}
 @keyframes bmGlitch{0%,100%{filter:none;transform:none}25%{filter:hue-rotate(90deg) contrast(1.2);transform:translateX(-2px)}75%{filter:hue-rotate(-40deg);transform:translateX(2px)}}
-html.bm-embed #binmat-root{max-width:none;border-radius:0;border-left:0;border-right:0;margin:0}
+html.bm-embed #binmat-root{max-width:none;width:100%;min-height:100%;margin:0;border:0;border-radius:0;box-shadow:none;background:#020603}
+html.bm-embed #binmat-root .bm-shell{min-height:0;padding:8px 10px 12px;gap:8px}
+html.bm-embed #binmat-root .bm-stage{min-height:320px;padding:10px 8px;border:0;border-radius:0;background:rgba(0,0,0,.35)}
+html.bm-embed #binmat-root .bm-top{gap:6px}
+html.bm-embed #binmat-root .bm-brand{font-size:clamp(14px,2.8vw,20px)}
+html.bm-embed #binmat-root .bm-hud{font-size:11px;gap:6px 10px}
+html.bm-embed #binmat-root .bm-audio{font-size:10px;flex-wrap:wrap}
+html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
 #binmat-root *{box-sizing:border-box}
 #binmat-root .bm-rain{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
 #binmat-root .bm-rain-back{z-index:0;opacity:.45}

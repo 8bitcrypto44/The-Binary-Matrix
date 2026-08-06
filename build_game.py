@@ -6,7 +6,7 @@ import re
 
 root = Path(__file__).resolve().parent
 
-ASSET_VER = "5"
+ASSET_VER = "6"
 PAGES_URL = "https://8bitcrypto44.github.io/The-Binary-Matrix/"
 _brand_logo = root / "assets" / "brand" / "8bitcrypto44_logo.png"
 BRAND_LOGO_URI = (
@@ -38,7 +38,7 @@ pages = (
     "<title>The Binary Matrix by 8bitcrypto_44</title>\n"
     f"<link rel=\"stylesheet\" href=\"binary_matrix.css?v={v}\">\n"
     "<style>html,body{margin:0;min-height:100%;background:#020603;}"
-    "html.bm-embed,html.bm-embed body{padding:0;background:#020603;}</style>\n"
+    "html.bm-embed,html.bm-embed body{padding:0;background:#020603;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;}</style>\n"
     "</head>\n<body>\n"
     + body.strip()
     + "\n"
@@ -104,6 +104,17 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
 .bm-gd.is-fading .bm-gd-cover{{opacity:0}}
 .bm-gd.is-open .bm-gd-cover{{display:none}}
 .bm-gd.is-open .bm-gd-play{{display:block}}
+.bm-gd.is-open .bm-gd-top{{display:none!important}}
+.bm-gd.is-open .bm-gd-card{{padding:0;display:flex;flex-direction:column}}
+.bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-stage{{
+  aspect-ratio:auto!important;min-height:680px;height:auto!important;border:0!important;border-radius:0!important;overflow:visible
+}}
+.bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-play{{
+  position:relative;inset:auto;min-height:680px
+}}
+.bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-play iframe{{
+  position:relative;inset:auto;min-height:680px;height:680px
+}}
 .bm-gd.is-open.is-land,.bm-gd.is-fs-mode{{
   position:fixed!important;inset:0!important;width:100vw!important;width:100dvw!important;height:100vh!important;height:100dvh!important;
   max-width:none!important;margin:0!important;padding:0!important;z-index:2147483646!important;background:#020603!important
@@ -163,8 +174,8 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
       </div>
       <div class="bm-gd-play" id="bm-gd-play">
         <div class="bm-gd-load" id="bm-gd-load">Establishing NexCorp link…</div>
-        <iframe id="bm-gd-frame" title="The Binary Matrix" width="100%" height="520"
-          data-src="{iframe_src_attr}" allow="autoplay; fullscreen" allowfullscreen scrolling="no"></iframe>
+        <iframe id="bm-gd-frame" title="The Binary Matrix" width="100%" height="680"
+          data-src="{iframe_src_attr}" allow="autoplay; fullscreen" allowfullscreen scrolling="auto"></iframe>
       </div>
     </div>
   </div>
@@ -178,6 +189,14 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
   function land(){{return window.matchMedia&&window.matchMedia("(orientation: landscape)").matches||window.innerWidth>window.innerHeight;}}
   function isFs(){{return root.classList.contains("is-fs-mode")||!!(document.fullscreenElement||document.webkitFullscreenElement);}}
   function syncLand(){{root.classList.toggle("is-land",root.classList.contains("is-open")&&phone()&&land());}}
+  function setFrameHeight(h){{
+    h=Math.max(560,Math.min(Number(h)||680,960));
+    frame.style.height=h+"px";
+    var st=root.querySelector(".bm-gd-stage");
+    var pl=document.getElementById("bm-gd-play");
+    if(st){{st.style.minHeight=h+"px";st.style.aspectRatio="auto";}}
+    if(pl)pl.style.minHeight=h+"px";
+  }}
   function mountFs(){{if(root.dataset.bmMounted==="1")return;var slot=document.createElement("div");slot.setAttribute("data-bm-slot","1");slot.style.cssText="display:block;width:100%;max-width:920px;margin:0 auto;height:"+Math.max(1,Math.round(root.getBoundingClientRect().height))+"px";if(root.parentNode)root.parentNode.insertBefore(slot,root);document.body.appendChild(root);root.dataset.bmMounted="1";}}
   function unmountFs(){{if(root.dataset.bmMounted!=="1")return;var slot=document.querySelector("[data-bm-slot]");if(slot&&slot.parentNode){{slot.parentNode.insertBefore(root,slot);slot.parentNode.removeChild(slot);}}delete root.dataset.bmMounted;}}
   function finishExit(){{unmountFs();root.classList.remove("is-fs-mode");try{{document.documentElement.style.overflow="";document.body.style.overflow="";}}catch(e){{}}syncLand();}}
@@ -193,6 +212,7 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
     if(!e.data||typeof e.data!=="object")return;
     if(e.data.type==="bm-fs")enterFs();
     if(e.data.type==="bm-fs-exit")exitFs();
+    if(e.data.type==="bm-resize"&&e.data.height&&!isFs()&&!root.classList.contains("is-land"))setFrameHeight(e.data.height);
   }});
   document.addEventListener("fullscreenchange",function(){{if(!document.fullscreenElement&&!document.webkitFullscreenElement&&root.classList.contains("is-fs-mode"))finishExit();}});
   document.addEventListener("webkitfullscreenchange",function(){{if(!document.fullscreenElement&&!document.webkitFullscreenElement&&root.classList.contains("is-fs-mode"))finishExit();}});
