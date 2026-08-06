@@ -11,6 +11,7 @@
         <div>STRIKES <b id="bm-mistakes">0/5</b></div>
         <div><b id="bm-diff-label">MEDIUM</b></div>
         <div class="bm-best" id="bm-best">BEST —</div>
+        <div class="bm-credits-hud" id="bm-credits-hud">◈ 0 CR</div>
       </div>
       <div class="bm-audio">
         <label for="bm-vol">MUSIC</label>
@@ -65,6 +66,15 @@
             <button type="button" class="bm-loadout-btn" data-loadout="heat">HEAT +35%</button>
           </div>
         </div>
+        <div class="bm-blackmarket" id="bm-blackmarket" aria-label="Black market">
+          <div class="bm-bm-head">◈ BLACK MARKET ◈ · <span id="bm-credits-menu">0 CR</span></div>
+          <p class="bm-bm-flavor" id="bm-contract-flavor"></p>
+          <div class="bm-bm-btns">
+            <button type="button" id="bm-buy-intel" class="bm-ghost">INTEL CACHE · 300 CR</button>
+            <button type="button" id="bm-heat-intel" class="bm-ghost">HEAT→INTEL · −25% HEAT</button>
+            <button type="button" id="bm-contract" class="bm-warn">WEEKLY CONTRACT</button>
+          </div>
+        </div>
         <p class="bm-rules">
           Fill each matrix with 0s and 1s — campaigns mix <b>4×4</b> and <b>6×6</b> NexCorp nodes.<br>
           Equal bits per row/col · no three identical in a line · unique rows &amp; columns.<br>
@@ -104,6 +114,7 @@
         <div class="bm-bar">
           <button type="button" id="bm-pause-btn" class="bm-ghost">PAUSE</button>
           <button type="button" id="bm-ping" class="bm-ghost">PING</button>
+          <button type="button" id="bm-market" class="bm-ghost">MARKET</button>
           <button type="button" id="bm-relay-out" class="bm-ghost">RELAY</button>
           <button type="button" id="bm-check" class="bm-warn">CHECK</button>
           <button type="button" id="bm-restart">RESTART</button>
@@ -281,6 +292,35 @@
           <div class="bm-extract-kicker">EXFIL CONFIRMED</div>
           <div class="bm-extract-loot" id="bm-extract-loot">+3500 LOOT</div>
           <div class="bm-extract-sub">NexCorp hunters lost your signal</div>
+        </div>
+      </div>
+
+      <div id="bm-contract-intro" class="bm-overlay bm-contract-intro" role="dialog" aria-label="Weekly contract">
+        <div class="bm-contract-inner">
+          <div class="bm-contract-art" id="bm-contract-art" aria-hidden="true"></div>
+          <div class="bm-contract-kicker">◈ WEEKLY CONTRACT ◈</div>
+          <div class="bm-contract-title" id="bm-contract-title">PHANTOM LEDGER</div>
+          <div class="bm-contract-lore" id="bm-contract-lore"></div>
+        </div>
+      </div>
+
+      <div id="bm-market-ov" class="bm-overlay bm-market-ov" role="dialog" aria-label="Black market">
+        <div class="bm-modal">
+          <button type="button" id="bm-market-close" class="bm-close bm-ghost">CLOSE</button>
+          <h2>◈ BLACK MARKET ◈</h2>
+          <p>Spend credits mid-run · <span id="bm-credits-market">0 CR</span></p>
+          <div class="bm-bm-swap">
+            <div class="bm-bm-swap-label">SWAP LOADOUT · 400 CR</div>
+            <div class="bm-loadout-btns">
+              <button type="button" class="bm-ghost" data-bm-swap="chain">CHAIN</button>
+              <button type="button" class="bm-ghost" data-bm-swap="ping">PING</button>
+              <button type="button" class="bm-ghost" data-bm-swap="strike">STRIKE</button>
+              <button type="button" class="bm-ghost" data-bm-swap="heat">HEAT</button>
+            </div>
+          </div>
+          <div class="bm-actions">
+            <button type="button" id="bm-market-intel" class="bm-warn">INTEL CACHE · 300 CR</button>
+          </div>
         </div>
       </div>
 

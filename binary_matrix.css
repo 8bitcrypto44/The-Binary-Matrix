@@ -379,6 +379,32 @@ html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
 #binmat-root .bm-extract-kicker{font-size:11px;letter-spacing:2px;color:#86efac;margin-bottom:8px}
 #binmat-root .bm-extract-loot{font-size:clamp(28px,6vw,42px);font-weight:700;color:#fde68a;text-shadow:0 0 20px rgba(253,224,71,.55);margin-bottom:8px}
 #binmat-root .bm-extract-sub{font-size:12px;color:#86efac}
+#binmat-root .bm-credits-hud{font-size:10px;color:#a78bfa;letter-spacing:.5px}
+#binmat-root .bm-blackmarket{
+  margin:8px 0 10px;padding:8px 10px;border:1px solid #4c1d95;border-radius:8px;
+  background:linear-gradient(180deg,rgba(20,0,40,.45),rgba(0,0,0,.4))
+}
+#binmat-root .bm-bm-head{font-size:11px;font-weight:700;letter-spacing:1px;color:#c4b5fd;text-align:center;margin-bottom:6px}
+#binmat-root .bm-bm-flavor{font-size:10px;color:#64748b;line-height:1.4;margin:0 0 8px;text-align:center;min-height:2.4em}
+#binmat-root .bm-bm-btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+#binmat-root .bm-bm-btns button{font-size:10px;padding:6px 8px}
+#binmat-root.bm-mood-contract{--rain:#a78bfa;--lime:#c4b5fd;border-color:#7c3aed;box-shadow:0 0 36px rgba(124,58,237,.35),inset 0 0 40px rgba(0,0,0,.5)}
+#binmat-root.bm-mood-contract .bm-grid-wrap{
+  border:2px solid rgba(167,139,250,.45);border-radius:8px;
+  box-shadow:0 0 24px rgba(124,58,237,.25),inset 0 0 30px rgba(76,29,149,.15)
+}
+#binmat-root .bm-contract-intro{z-index:28;background:rgba(10,0,20,.94)}
+#binmat-root .bm-contract-inner{text-align:center;padding:20px 16px}
+#binmat-root .bm-contract-art{
+  font-size:10px;line-height:1.2;color:rgba(167,139,250,.35);word-break:break-all;margin-bottom:12px;
+  letter-spacing:2px;text-shadow:0 0 8px rgba(167,139,250,.25)
+}
+#binmat-root .bm-contract-kicker{font-size:10px;letter-spacing:3px;color:#a78bfa;margin-bottom:8px}
+#binmat-root .bm-contract-title{font-size:clamp(22px,5vw,36px);font-weight:700;color:#c4b5fd;text-shadow:0 0 20px rgba(167,139,250,.55);margin-bottom:8px}
+#binmat-root .bm-contract-lore{font-size:12px;color:#94a3b8;max-width:28em;margin:0 auto;line-height:1.45}
+#binmat-root .bm-market-ov .bm-bm-swap{margin:12px 0;padding:8px;border:1px solid #4c1d95;border-radius:6px}
+#binmat-root .bm-market-ov .bm-bm-swap-label{font-size:10px;color:#c4b5fd;margin-bottom:6px;text-align:center}
+#binmat-root table.bm-grid td.bm-ghost-bright::after{color:rgba(196,181,253,.55)!important;font-size:.72em!important;text-shadow:0 0 6px rgba(167,139,250,.45)}
 @media (max-width:700px){
   #binmat-root .bm-shell{padding:10px;min-height:0}
   #binmat-root .bm-stage{min-height:360px;padding:10px 6px}
