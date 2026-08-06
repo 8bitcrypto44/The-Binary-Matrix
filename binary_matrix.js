@@ -2575,9 +2575,7 @@
     fetchBulletin();
     updateCallsignDisplay();
     updateStreakDisplay();
-    ensureCallsign(function () {
-      if (!records.ftueDone) runInteractiveTutorial(false);
-    }, { defer: true });
+    ensureCallsign(null, { defer: true });
     updateHUD();
     updateContinueBtn();
     updateDailyHint();
