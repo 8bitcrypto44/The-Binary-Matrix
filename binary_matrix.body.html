@@ -1,0 +1,165 @@
+<div id="binmat-root">
+  <canvas id="bm-rain" class="bm-rain" aria-hidden="true"></canvas>
+  <div class="bm-shell">
+    <div class="bm-top">
+      <div class="bm-brand">THE BINARY MATRIX <span>by 8bitcrypto_44 · puzzle link</span></div>
+      <div class="bm-hud">
+        <div>SCORE <b id="bm-score">000000</b></div>
+        <div>TIME <b id="bm-time">0:00</b></div>
+        <div>STRIKES <b id="bm-mistakes">0/5</b></div>
+        <div><b id="bm-diff-label">MEDIUM</b></div>
+      </div>
+      <div class="bm-audio">
+        <label for="bm-vol">MUSIC</label>
+        <input id="bm-vol" type="range" min="0" max="1" step="0.01" value="0.36" aria-label="Music volume">
+        <span id="bm-vol-lbl">36%</span>
+        <label for="bm-sfx">SFX</label>
+        <input id="bm-sfx" type="range" min="0" max="1" step="0.01" value="0.36" aria-label="SFX volume">
+        <span id="bm-sfx-lbl">36%</span>
+        <button type="button" id="bm-mute" class="bm-ghost" aria-pressed="false">MUTE</button>
+      </div>
+    </div>
+
+    <div class="bm-stage">
+      <div id="bm-menu" class="bm-panel">
+        <p class="bm-rules">
+          Fill each matrix with 0s and 1s — campaigns mix <b>4×4</b> and <b>6×6</b> sectors.<br>
+          Equal bits per row/col · no three identical in a line · unique rows &amp; columns.<br>
+          Clear every sector in the link. HUD shows EASY 2/5 etc. Locked clues stay locked. Fresh unique dig each sector.
+        </p>
+        <div class="bm-diffs">
+          <button type="button" class="bm-diff" data-diff="easy">EASY</button>
+          <button type="button" class="bm-diff selected" data-diff="medium">MEDIUM</button>
+          <button type="button" class="bm-diff" data-diff="hard">HARD</button>
+          <button type="button" class="bm-diff" data-diff="genius">GENIUS</button>
+        </div>
+        <div class="bm-actions">
+          <button type="button" id="bm-tutorial" class="bm-ghost">TUTORIAL</button>
+          <button type="button" id="bm-start" class="bm-primary">JACK IN</button>
+        </div>
+        <a class="bm-site-brand" href="https://www.8bitcrypto44.xyz" target="_blank" rel="noopener noreferrer" aria-label="8bitcrypto_44 website">
+          <img src="__BRAND_LOGO_SRC__" alt="" width="100" height="13" decoding="async">
+          <span>www.8bitcrypto44.xyz</span>
+        </a>
+      </div>
+
+      <div id="bm-play" class="bm-panel bm-hidden">
+        <div class="bm-grid-wrap">
+          <table id="bm-grid" class="bm-grid sz6" aria-label="Binary Matrix puzzle grid"></table>
+        </div>
+        <div id="bm-status" class="bm-status"></div>
+        <div class="bm-bar">
+          <button type="button" id="bm-pause-btn" class="bm-ghost">PAUSE</button>
+          <button type="button" id="bm-check" class="bm-warn">CHECK</button>
+          <button type="button" id="bm-restart">RESTART</button>
+          <button type="button" id="bm-solve" class="bm-danger">SOLVE</button>
+          <button type="button" id="bm-menu-btn" class="bm-ghost">MENU</button>
+        </div>
+        <a class="bm-site-brand bm-site-brand-mini" href="https://www.8bitcrypto44.xyz" target="_blank" rel="noopener noreferrer" aria-label="8bitcrypto_44 website">
+          <img src="__BRAND_LOGO_SRC__" alt="" width="80" height="11" decoding="async">
+          <span>www.8bitcrypto44.xyz</span>
+        </a>
+      </div>
+
+      <div id="bm-genius" class="bm-panel bm-wide bm-hidden">
+        <div class="bm-vm-title">NEXCORP KERNEL CRACK · GENIUS</div>
+        <p id="bm-vm-brief" class="bm-brief">Black-box CPU gate. Probe I/O, reverse the checker, submit the key.</p>
+        <div class="bm-isa">
+          <b>NX-8 ISA</b> (8-bit · regs A B · flag Z)<br>
+          <code>00 HALT</code> · <code>01 LDA imm</code> · <code>02 LDB imm</code> · <code>03 TAB</code>(A=B) · <code>04 TBA</code>(B=A)<br>
+          <code>05 ADD</code> A=(A+B)&amp;255 · <code>06 XOR</code> · <code>07 AND</code> · <code>08 OR</code> · <code>09 NOTA</code><br>
+          <code>0A IN</code> A←next input · <code>0B OUT</code> emit A · <code>0C CMP</code> Z=(A==B)<br>
+          <code>0D JZ addr</code> · <code>0E JMP addr</code> · <code>0F LDA [m]</code> · <code>10 STA [m]</code>
+        </div>
+        <div class="bm-vm-row">
+          <input id="bm-probe" type="text" spellcheck="false" placeholder="probe hex — e.g. a7 or 3f 12 90" aria-label="Probe input hex">
+          <button type="button" id="bm-run-probe" class="bm-primary">RUN PROBE</button>
+        </div>
+        <div id="bm-vm-log" class="bm-log meta">Awaiting first probe…</div>
+        <div class="bm-vm-row">
+          <input id="bm-answer" type="text" spellcheck="false" placeholder="submit key hex" aria-label="Submit key hex">
+          <button type="button" id="bm-submit-key" class="bm-warn">SUBMIT KEY</button>
+        </div>
+        <div id="bm-vm-status" class="bm-status"></div>
+        <div class="bm-bar">
+          <button type="button" id="bm-vm-pause" class="bm-ghost">PAUSE</button>
+          <button type="button" id="bm-vm-isa" class="bm-ghost">BRIEFING</button>
+          <button type="button" id="bm-vm-menu" class="bm-ghost">MENU</button>
+        </div>
+        <a class="bm-site-brand bm-site-brand-mini" href="https://www.8bitcrypto44.xyz" target="_blank" rel="noopener noreferrer" aria-label="8bitcrypto_44 website">
+          <img src="__BRAND_LOGO_SRC__" alt="" width="80" height="11" decoding="async">
+          <span>www.8bitcrypto44.xyz</span>
+        </a>
+      </div>
+
+      <div id="bm-pause" class="bm-overlay" role="dialog" aria-label="Paused">
+        <div class="bm-modal" style="text-align:center">
+          <h2>PAUSED</h2>
+          <p>Matrix rain still falls. Your link is frozen.</p>
+          <div class="bm-actions">
+            <button type="button" id="bm-resume" class="bm-primary">RESUME</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="bm-help" class="bm-overlay" role="dialog" aria-label="Tutorial">
+        <div class="bm-modal">
+          <button type="button" id="bm-help-close" class="bm-close bm-ghost">CLOSE</button>
+          <h2>How to Play</h2>
+          <h3>Rules</h3>
+          <ul>
+            <li>Each row/column needs equal 0s and 1s (2 on 4×4, 3 on 6×6).</li>
+            <li>Never place three identical bits in a line (row or column).</li>
+            <li>Every row must be unique. Every column must be unique.</li>
+          </ul>
+          <h3>Controls</h3>
+          <ul>
+            <li>Tap empty cells to cycle: empty → 0 → 1 → empty.</li>
+            <li>Green-rim cells are locked clues.</li>
+            <li>Red glow = rule conflict. Use CHECK to spend a strike confirming errors.</li>
+            <li>Clear a sector to auto-advance. RESTART resets the current sector only (score kept).</li>
+          </ul>
+          <h3>Difficulty</h3>
+          <ul>
+            <li><b>Easy</b> — 5 sectors (4×4→6×6), Solve available, generous strikes.</li>
+            <li><b>Medium</b> — 6 sectors, escalating sparsity, no Solve.</li>
+            <li><b>Hard</b> — 7 sectors, razor clues, 1–2 strikes, no Solve.</li>
+            <li><b>Genius</b> — NexCorp Kernel Crack (8 CPU gates — see Genius briefing).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div id="bm-genius-help" class="bm-overlay" role="dialog" aria-label="Genius briefing">
+        <div class="bm-modal">
+          <button type="button" id="bm-genius-help-close" class="bm-close bm-ghost">CLOSE</button>
+          <h2>Genius Briefing — NexCorp Kernel</h2>
+          <h3>Mission</h3>
+          <p>Crack 8 black-box NX-8 gates. The program is hidden; the ISA is public. Each gate has exactly one key.</p>
+          <h3>How to crack</h3>
+          <ul>
+            <li><b>RUN PROBE</b> — send hex bytes into the CPU (example: <code>a7</code> or <code>3f 12 90</code>).</li>
+            <li>Output <b>OK</b> means that input is the unique key. <b>NO</b> means keep hunting.</li>
+            <li>On <b>NO</b> for exact-match kernels, the log shows a <b>prefix score</b>: how many leading key bytes are already correct. Lock those, then search the next byte (00–ff).</li>
+            <li><b>XOR-leak</b> kernels print syndromes as OUT bytes (input⊕key). Probe all <code>00</code>s → those OUT bytes are the key.</li>
+            <li>Kernels 1–2 also leak registers after probes (secondary hint).</li>
+            <li><b>SUBMIT KEY</b> only when sure. Wrong submit = 1 strike. <b>2 strikes</b> lock the link. No Solve.</li>
+          </ul>
+          <h3>Kernel map</h3>
+          <ul>
+            <li><b>L1</b> — 1-byte XOR leak. Probe <code>00</code>.</li>
+            <li><b>L2</b> — exact 2 bytes. Prefix score.</li>
+            <li><b>L3</b> — exact 3 bytes. Prefix score.</li>
+            <li><b>L4</b> — exact 4 bytes. Prefix score.</li>
+            <li><b>L5</b> — 2-byte XOR leak. Probe <code>0000</code>.</li>
+            <li><b>L6</b> — exact 4 bytes. Prefix score.</li>
+            <li><b>L7</b> — 3-byte XOR leak. Probe <code>000000</code>.</li>
+            <li><b>L8</b> — final exact 4 bytes. Prefix score.</li>
+          </ul>
+          <h3>ISA reminder</h3>
+          <p><code>IN</code> reads your next probe byte into A. <code>OUT</code> emits A. Checkers use <code>XOR</code>, <code>CMP</code>, <code>JZ</code>. Each gate has exactly one key.</p>
+          <p>Win all eight to reveal your matrix keychain.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
