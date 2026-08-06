@@ -6,7 +6,7 @@ import re
 
 root = Path(__file__).resolve().parent
 
-ASSET_VER = "23"
+ASSET_VER = "24"
 PAGES_URL = "https://8bitcrypto44.github.io/The-Binary-Matrix/"
 _brand_logo = root / "assets" / "brand" / "8bitcrypto44_logo.png"
 BRAND_LOGO_URI = (
@@ -113,7 +113,7 @@ pages = (
     "<title>The Binary Matrix by 8bitcrypto_44</title>\n"
     f"<link rel=\"stylesheet\" href=\"binary_matrix.css?v={v}\">\n"
     "<style>html,body{margin:0;background:#020603;}"
-    "html.bm-embed,html.bm-embed body{padding:0;margin:0;background:#020603;height:720px;max-height:720px;min-height:720px;overflow:hidden;overscroll-behavior:none;}</style>\n"
+    "html.bm-embed,html.bm-embed body{padding:0;margin:0;background:#020603;height:920px;min-height:920px;max-height:920px;overflow:hidden;overscroll-behavior:none;}</style>\n"
     "</head>\n<body>\n"
     + body.strip()
     + "\n"
@@ -183,13 +183,13 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
 .bm-gd.is-open .bm-gd-top{{display:none!important}}
 .bm-gd.is-open .bm-gd-card{{padding:0;display:flex;flex-direction:column;overflow:hidden}}
 .bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-stage{{
-  aspect-ratio:auto!important;min-height:720px!important;height:720px!important;max-height:720px!important;border:0!important;border-radius:0!important;overflow:hidden!important
+  aspect-ratio:auto!important;min-height:920px!important;height:920px!important;max-height:920px!important;border:0!important;border-radius:0!important;overflow:hidden!important
 }}
 .bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-play{{
-  position:relative;inset:auto;overflow:hidden;min-height:720px;height:720px;max-height:720px
+  position:relative;inset:auto;overflow:hidden;min-height:920px;height:920px;max-height:920px
 }}
 .bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-play iframe{{
-  position:relative;inset:auto;display:block;overflow:hidden;border:0;min-height:720px;height:720px;max-height:720px
+  position:relative;inset:auto;display:block;overflow:hidden;border:0;min-height:920px;height:920px;max-height:920px
 }}
 .bm-gd.is-open.is-land,.bm-gd.is-fs-mode{{
   position:fixed!important;inset:0!important;width:100vw!important;width:100dvw!important;height:100vh!important;height:100dvh!important;
@@ -254,7 +254,7 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
       </div>
       <div class="bm-gd-play" id="bm-gd-play">
         <div class="bm-gd-load" id="bm-gd-load">Establishing NexCorp link…</div>
-        <iframe id="bm-gd-frame" title="The Binary Matrix" width="100%" height="680"
+        <iframe id="bm-gd-frame" title="The Binary Matrix" width="100%" height="920"
           data-src="{iframe_src_attr}" allow="autoplay; fullscreen" allowfullscreen scrolling="no"></iframe>
       </div>
     </div>
@@ -269,10 +269,10 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
   function land(){{return window.matchMedia&&window.matchMedia("(orientation: landscape)").matches||window.innerWidth>window.innerHeight;}}
   function isFs(){{return root.classList.contains("is-fs-mode")||!!(document.fullscreenElement||document.webkitFullscreenElement);}}
   function syncLand(){{root.classList.toggle("is-land",root.classList.contains("is-open")&&phone()&&land());}}
-  function embedDefaultH(){{return 720;}}
+  function embedDefaultH(){{return 920;}}
   function setFrameHeight(h){{
     if(isFs()||root.classList.contains("is-land"))return;
-    h=720;
+    h=Math.max(920,Math.round(Number(h)||920));
     frame.style.height=h+"px";
     var st=root.querySelector(".bm-gd-stage");
     var pl=document.getElementById("bm-gd-play");
