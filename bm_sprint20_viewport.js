@@ -46,19 +46,39 @@
     if (!EMBED) return EMBED_MIN_H;
     const doc = document.documentElement;
     const bod = document.body;
-    [doc, bod, ROOT].forEach(function (el) {
+    const shell = ROOT.querySelector(".bm-shell");
+    const stage = ROOT.querySelector(".bm-stage");
+    [doc, bod, ROOT, shell, stage].forEach(function (el) {
+      if (!el) return;
       el.style.height = "auto";
       el.style.minHeight = "0";
       el.style.maxHeight = "none";
     });
-    const h = Math.ceil(Math.max(
+    const rootTop = ROOT.getBoundingClientRect().top;
+    let maxBottom = ROOT.getBoundingClientRect().bottom;
+    [shell, stage, ROOT.querySelector(".bm-top"), els.menu, els.play, els.genius].forEach(function (el) {
+      if (!el || el.classList.contains("bm-hidden")) return;
+      const r = el.getBoundingClientRect();
+      if (r.bottom > maxBottom) maxBottom = r.bottom;
+    });
+    ROOT.querySelectorAll("#bm-play .bm-bar, #bm-genius .bm-bar, #bm-grid, .bm-actions").forEach(function (el) {
+      if (!el || el.closest(".bm-hidden")) return;
+      const r = el.getBoundingClientRect();
+      if (r.bottom > maxBottom) maxBottom = r.bottom;
+    });
+    const bboxH = Math.ceil(Math.max(0, maxBottom - rootTop)) + 24;
+    let h = Math.ceil(Math.max(
       EMBED_MIN_H,
+      bboxH,
       ROOT.getBoundingClientRect().height || 0,
       ROOT.scrollHeight || 0,
       ROOT.offsetHeight || 0,
       doc.scrollHeight || 0,
       bod.scrollHeight || 0
     ));
+    if (isMobileEmbed() && (ROOT.classList.contains("bm-ui-play") || ROOT.classList.contains("bm-ui-genius"))) {
+      h = Math.max(h, EMBED_MIN_H + 120);
+    }
     return h;
   }
 
@@ -66,15 +86,25 @@
     if (!EMBED) return h;
     h = Math.max(EMBED_MIN_H, Math.round(h || measureEmbedHeight()));
     const mobile = isMobileEmbed();
-    [document.documentElement, document.body, ROOT].forEach(function (el) {
+    syncMobileClass();
+    const shell = ROOT.querySelector(".bm-shell");
+    const stage = ROOT.querySelector(".bm-stage");
+    [document.documentElement, document.body, ROOT, shell, stage, els.play, els.menu, els.genius].forEach(function (el) {
+      if (!el) return;
       if (mobile) {
         el.style.height = "auto";
-        el.style.minHeight = h + "px";
+        el.style.minHeight = "0";
         el.style.maxHeight = "none";
+        el.style.flex = "";
+      }
+    });
+    [document.documentElement, document.body, ROOT].forEach(function (el) {
+      if (mobile) {
         el.style.overflowX = "hidden";
-        el.style.overflowY = "auto";
-        el.style.webkitOverflowScrolling = "touch";
-        el.style.overscrollBehaviorY = "contain";
+        el.style.overflowY = "visible";
+        el.style.webkitOverflowScrolling = "";
+        el.style.overscrollBehaviorY = "";
+        el.style.touchAction = "pan-y";
       } else {
         el.style.height = h + "px";
         el.style.minHeight = h + "px";
@@ -84,6 +114,15 @@
         el.style.webkitOverflowScrolling = "";
       }
     });
+    if (!mobile) {
+      [shell, stage, els.play, els.menu, els.genius].forEach(function (el) {
+        if (!el) return;
+        el.style.height = "";
+        el.style.minHeight = "";
+        el.style.maxHeight = "";
+        el.style.flex = "";
+      });
+    }
     return h;
   }
 
@@ -97,6 +136,48 @@
     ROOT.classList.toggle("bm-ui-play", !!playOpen);
     ROOT.classList.toggle("bm-ui-genius", !!geniusOpen);
     notifyResize();
+    if (isMobileEmbed()) scheduleEmbedResizeBurst();
+  }
+
+  let embedBurstGen = 0;
+  let embedMutObs = null;
+
+  function flushEmbedResize() {
+    if (!EMBED || !window.parent) return;
+    try {
+      const h = applyEmbedFrameHeight(measureEmbedHeight());
+      window.parent.postMessage({
+        type: "bm-resize",
+        height: h,
+        mobile: isMobileEmbed()
+      }, "*");
+      window.parent.postMessage({
+        type: "bm-mobile",
+        active: isMobileEmbed()
+      }, "*");
+    } catch (e) {}
+  }
+
+  function scheduleEmbedResizeBurst() {
+    if (!EMBED || !isMobileEmbed()) return;
+    flushEmbedResize();
+    const gen = ++embedBurstGen;
+    [32, 96].forEach(function (ms) {
+      setTimeout(function () {
+        if (gen !== embedBurstGen) return;
+        flushEmbedResize();
+      }, ms);
+    });
+  }
+
+  function bindEmbedResizeObserver() {
+    if (!EMBED || !isMobileEmbed() || embedMutObs || !window.MutationObserver) return;
+    let debounce = null;
+    embedMutObs = new MutationObserver(function () {
+      clearTimeout(debounce);
+      debounce = setTimeout(flushEmbedResize, 0);
+    });
+    embedMutObs.observe(ROOT, { childList: true, subtree: true, attributes: true, characterData: true });
   }
 
   function isNativeFs() {
@@ -144,25 +225,14 @@
 
   notifyResize = function () {
     if (!EMBED || !window.parent) return;
-    requestAnimationFrame(function () {
-      try {
-        const h = applyEmbedFrameHeight(measureEmbedHeight());
-        window.parent.postMessage({
-          type: "bm-resize",
-          height: h,
-          mobile: isMobileEmbed()
-        }, "*");
-        window.parent.postMessage({
-          type: "bm-mobile",
-          active: isMobileEmbed()
-        }, "*");
-      } catch (e) {}
-    });
+    flushEmbedResize();
+    requestAnimationFrame(flushEmbedResize);
   };
 
   if (EMBED) {
     syncMobileClass();
     applyEmbedFrameHeight(measureEmbedHeight());
+    bindEmbedResizeObserver();
     document.addEventListener("wheel", blockEmbedScroll, { passive: false });
     document.addEventListener("touchmove", blockEmbedScroll, { passive: false });
     window.addEventListener("resize", syncEmbedUiMode);
@@ -181,6 +251,7 @@
   runBoot = function (cb) {
     _runBootVp(function () {
       syncEmbedUiMode();
+      if (isMobileEmbed()) scheduleEmbedResizeBurst();
       if (cb) cb();
     });
   };
@@ -194,21 +265,25 @@
   var _loadGridVp = loadGridSector;
   loadGridSector = function (freshRun) {
     _loadGridVp(freshRun);
-    setTimeout(syncEmbedUiMode, freshRun ? 80 : 120);
+    setTimeout(syncEmbedUiMode, freshRun ? 0 : 40);
+    if (isMobileEmbed()) {
+      setTimeout(scheduleEmbedResizeBurst, freshRun ? 120 : 160);
+      setTimeout(scheduleEmbedResizeBurst, freshRun ? 320 : 360);
+    }
   };
 
   var _startGeniusVp = typeof startGenius === "function" ? startGenius : null;
   if (_startGeniusVp) {
     startGenius = function () {
       _startGeniusVp();
-      setTimeout(syncEmbedUiMode, 80);
+      setTimeout(syncEmbedUiMode, 0);
     };
   }
 
   var _showVictoryVp = showVictory;
   showVictory = function (opts) {
     _showVictoryVp(opts);
-    setTimeout(syncEmbedUiMode, 80);
+    setTimeout(syncEmbedUiMode, 0);
   };
 
   if (els.fsBtn) {
@@ -219,6 +294,13 @@
   window.addEventListener("message", function (e) {
     if (!e.data || typeof e.data !== "object") return;
     if (e.data.type === "bm-fs-state") onFsStateMsg(e.data.active);
+    if (e.data.type === "bm-request-resize") {
+      flushEmbedResize();
+      scheduleEmbedResizeBurst();
+    }
   });
   updateFsBtn();
-  if (EMBED) syncEmbedUiMode();
+  if (EMBED) {
+    syncEmbedUiMode();
+    scheduleEmbedResizeBurst();
+  }
