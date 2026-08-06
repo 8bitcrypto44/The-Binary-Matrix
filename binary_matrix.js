@@ -2165,9 +2165,12 @@
 
   var ftueStep = 0;
   var FTUE_STEPS = [
-    { t: "Tutorial · Step 1", b: "Tap empty cells to cycle: empty → 0 → 1. Green cells are locked clues." },
-    { t: "Tutorial · Step 2", b: "No three identical bits in a row or column. Each line needs equal 0s and 1s." },
-    { t: "Tutorial · Step 3", b: "Use PING (−200 score) for a hint · CHECK spends strikes on errors · Enter = CHECK on keyboard." }
+    { t: "Welcome · Step 1 of 6", b: "Tap empty cells to cycle: empty → 0 → 1. Green-rim cells are locked clues — do not change them." },
+    { t: "Rules · Step 2 of 6", b: "Each row/column needs equal 0s and 1s. Never three identical bits in a line. Every row and column must be unique." },
+    { t: "Controls · Step 3 of 6", b: "PING = hint (−200 score). CHECK finds errors but costs strikes. Keyboard: arrows move · Space cycles · Enter = CHECK." },
+    { t: "Campaign · Step 4 of 6", b: "Pick Easy/Medium/Hard, choose a loadout perk, then JACK IN. Clear every sector on the map to finish the link." },
+    { t: "Heat & extras · Step 5 of 6", b: "NexCorp HEAT rises as you clear sectors. High heat unlocks pursuit, bonus nodes, extraction, and side doors — ignore until you see them." },
+    { t: "Full guide · Step 6 of 6", b: "Overwhelmed? Menu → FULL GUIDE explains every button, HUD bar, black-market item, and special mode. Tap NEXT to play." }
   ];
 
   function runInteractiveTutorial(force) {
@@ -2191,6 +2194,7 @@
           els.ftue.classList.remove("show");
           records.ftueDone = true;
           saveRecords();
+          if (els.helpOv) els.helpOv.classList.add("show");
           return;
         }
         showStep();
@@ -6045,12 +6049,19 @@
   if (els.victoryCard) els.victoryCard.addEventListener("click", downloadVictoryCard);
   ROOT.addEventListener("keydown", onGridKey);
   ROOT.querySelector("#bm-tutorial").addEventListener("click", function () {
-    runInteractiveTutorial(true);
+    if (els.helpOv) els.helpOv.classList.add("show");
     beep(600, 0.05, "square", 0.04);
   });
   ROOT.querySelector("#bm-help-close").addEventListener("click", function () {
     els.helpOv.classList.remove("show");
   });
+  const openGeniusHelp = ROOT.querySelector("#bm-open-genius-help");
+  if (openGeniusHelp) {
+    openGeniusHelp.addEventListener("click", function () {
+      els.helpOv.classList.remove("show");
+      if (els.geniusHelp) els.geniusHelp.classList.add("show");
+    });
+  }
   ROOT.querySelector("#bm-menu-btn").addEventListener("click", showMenu);
   ROOT.querySelector("#bm-restart").addEventListener("click", restartSame);
   ROOT.querySelector("#bm-pause-btn").addEventListener("click", togglePause);

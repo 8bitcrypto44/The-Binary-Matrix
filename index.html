@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="description" content="The Binary Matrix — jack in, crack NexCorp grids and CPU gates.">
 <title>The Binary Matrix by 8bitcrypto_44</title>
-<link rel="stylesheet" href="binary_matrix.css?v=26">
+<link rel="stylesheet" href="binary_matrix.css?v=27">
 <style>html,body{margin:0;background:#020603;}html.bm-embed,html.bm-embed body{padding:0;margin:0;background:#020603;overflow:hidden;overscroll-behavior:none;}</style>
 </head>
 <body>
@@ -127,6 +127,7 @@
           <button type="button" class="bm-diff" data-diff="hard">HARD</button>
           <button type="button" class="bm-diff" data-diff="genius">GENIUS</button>
         </div>
+        <p class="bm-guide-hint">New here? Tap <b>FULL GUIDE</b> — it explains every button, bar, and mode.</p>
         <div class="bm-actions">
           <button type="button" id="bm-omega" class="bm-ghost bm-hidden">OMEGA ROOT · 8×8</button>
           <button type="button" id="bm-omega-chain" class="bm-danger bm-hidden">OMEGA CHAIN · 3×8×8</button>
@@ -140,7 +141,7 @@
           <button type="button" id="bm-relay-in" class="bm-ghost bm-hidden">JOIN RELAY</button>
           <button type="button" id="bm-duel-accept" class="bm-danger bm-hidden">DUEL ACCEPT</button>
           <button type="button" id="bm-root-access" class="bm-danger bm-hidden">ROOT ACCESS</button>
-          <button type="button" id="bm-tutorial" class="bm-ghost">TUTORIAL</button>
+          <button type="button" id="bm-tutorial" class="bm-ghost">FULL GUIDE</button>
           <button type="button" id="bm-start" class="bm-primary">JACK IN</button>
         </div>
         <p class="bm-daily-hint" id="bm-daily-hint"></p>
@@ -296,31 +297,124 @@
         </div>
       </div>
 
-      <div id="bm-help" class="bm-overlay bm-tut-scroll" role="dialog" aria-label="Tutorial">
-        <div class="bm-modal">
+      <div id="bm-help" class="bm-overlay bm-tut-scroll" role="dialog" aria-label="Full game guide">
+        <div class="bm-modal bm-guide-modal">
           <button type="button" id="bm-help-close" class="bm-close bm-ghost">CLOSE</button>
-          <h2>How to Play</h2>
-          <h3>Rules</h3>
+          <h2>Full Guide — How Everything Works</h2>
+          <p class="bm-guide-lede">Overwhelmed? Start with <b>Quick start</b>, then skim the sections you care about. You can reopen this anytime from <b>FULL GUIDE</b> on the menu.</p>
+
+          <h3>Quick start (60 seconds)</h3>
+          <ol class="bm-guide-steps">
+            <li>Pick a difficulty (Easy is best for learning).</li>
+            <li>Pick a <b>loadout perk</b> and optional <b>crew oath</b> — defaults are fine.</li>
+            <li>Tap <b>JACK IN</b> to start a campaign link.</li>
+            <li>Tap empty grid cells to cycle <b>empty → 0 → 1</b>. Green cells are locked clues.</li>
+            <li>Fill the board so every rule passes — the sector clears automatically. Use <b>CHECK</b> only if you want to hunt mistakes (costs strikes).</li>
+          </ol>
+
+          <h3>Puzzle rules (every grid mode)</h3>
           <ul>
-            <li>Each row/column needs equal 0s and 1s (2 on 4×4, 3 on 6×6).</li>
-            <li>Never place three identical bits in a line (row or column).</li>
-            <li>Every row must be unique. Every column must be unique.</li>
+            <li>Each row and column needs <b>equal 0s and 1s</b> (two of each on 4×4, three on 6×6, four on 8×8).</li>
+            <li>Never place <b>three identical bits in a row</b> (horizontal or vertical).</li>
+            <li>Every completed row must be <b>unique</b>. Every column must be unique.</li>
+            <li>Red glow = rule conflict. A perfect board clears without pressing CHECK.</li>
           </ul>
+
           <h3>Controls</h3>
           <ul>
-            <li>Tap empty cells to cycle: empty → 0 → 1 → empty.</li>
-            <li>Green-rim cells are locked clues.</li>
-            <li>Red glow = rule conflict. Use CHECK to spend a strike confirming errors.</li>
-            <li>Clear a sector to auto-advance. RESTART resets the current sector only (score kept).</li>
-            <li><b>Keyboard:</b> arrows move · Space cycles cell · Enter = CHECK</li>
+            <li><b>Tap / click</b> — cycle a cell: empty → 0 → 1 → empty.</li>
+            <li><b>Keyboard</b> — arrow keys move · Space cycles cell · Enter = CHECK.</li>
+            <li><b>CHECK</b> — finds rule errors and spends a strike. Too many strikes = link failed.</li>
+            <li><b>PING</b> — hint: locks one wrong empty cell to the correct value (−200 score; limited uses).</li>
+            <li><b>RESTART</b> — replay current sector only (score kept).</li>
+            <li><b>PAUSE / MENU</b> — freeze timer or return to main menu.</li>
+            <li><b>SOLVE</b> — Easy mode only; instantly completes the sector.</li>
           </ul>
-          <h3>Difficulty</h3>
+
+          <h3>Difficulty &amp; main modes</h3>
           <ul>
-            <li><b>Easy</b> — 5 sectors, Solve available, generous strikes.</li>
-            <li><b>Medium</b> — 6 sectors, escalating sparsity, no Solve.</li>
-            <li><b>Hard</b> — 7 sectors, razor clues, 1–2 strikes, no Solve.</li>
-            <li><b>Genius</b> — NexCorp Kernel Crack (8 CPU gates — see Genius briefing).</li>
+            <li><b>EASY</b> — 5 sectors · SOLVE allowed · generous strikes · best for learning.</li>
+            <li><b>MEDIUM</b> — 6 sectors · no SOLVE · tighter clues.</li>
+            <li><b>HARD</b> — 7 sectors · very sparse clues · 1–2 strikes · unlocks endgame content when cleared.</li>
+            <li><b>GENIUS</b> — not a grid campaign: crack <b>8 CPU gates</b> by probing hex I/O. See <button type="button" id="bm-open-genius-help" class="bm-ghost bm-guide-link">Genius briefing</button>.</li>
+            <li><b>JACK IN</b> — start campaign at selected difficulty (may show story briefing first time).</li>
+            <li><b>CONTINUE LINK</b> — resume a saved run (appears when you have one).</li>
+            <li><b>DAILY NODE</b> — one shared 6×6 puzzle per day; builds streak &amp; calendar stamps.</li>
+            <li><b>ARCADE ∞</b> — endless escalating nodes; no heat meter; tracks best depth.</li>
           </ul>
+
+          <h3>Endgame &amp; special runs (unlock over time)</h3>
+          <ul>
+            <li><b>OMEGA ROOT · 8×8</b> — single brutal 8×8 grid (after Hard clear).</li>
+            <li><b>OMEGA CHAIN · 3×8×8</b> — three back-to-back 8×8 nodes; big payout.</li>
+            <li><b>ROOT ACCESS</b> — classified 8×8 after prestige + omega progress.</li>
+            <li><b>BONUS NODE · 2×</b> — at 100% heat: one high-risk 6×6 with double score.</li>
+            <li><b>EXTRACT · 3 NODES</b> — at max heat: 3-node exfil instead of bonus; big loot if you survive.</li>
+            <li><b>DEEP NET · SIDE DOOR</b> — at 70%+ heat (once/day): one genius gate for credits &amp; intel.</li>
+            <li><b>WEEKLY CONTRACT</b> — rotating black-market puzzle; bonus credits once per week.</li>
+            <li><b>JOIN RELAY / DUEL ACCEPT</b> — appear when you open a shared relay or duel link.</li>
+          </ul>
+
+          <h3>HUD bars — what they mean</h3>
+          <ul>
+            <li><b>SCORE / TIME / STRIKES</b> — session score, elapsed time, mistakes left this sector.</li>
+            <li><b>◈ CR (credits)</b> — spend at black market, ghost bets, intel, insurance.</li>
+            <li><b>NEXCORP HEAT</b> — 0–100% wanted level; rises when you clear sectors, falls when you fail or wait on menu.</li>
+            <li><b>Chain multiplier</b> — consecutive zero-strike clears boost score (loadout CHAIN adds +15%).</li>
+            <li><b>PURSUIT timer</b> — at high heat: trace closes; timeout fails the sector.</li>
+            <li><b>Ghost race bar</b> — your time vs personal best (or duel/rival ghost).</li>
+            <li><b>Campaign map</b> — numbered nodes: done · current · upcoming sectors.</li>
+            <li><b>Story HUD</b> — Book 1 chapter line during campaign (dialogue on sector clears).</li>
+          </ul>
+
+          <h3>Menu panels — before you jack in</h3>
+          <ul>
+            <li><b>Rank / Syndicate rank</b> — clearance from campaigns; underground REP from contracts, extractions, heat feats.</li>
+            <li><b>Crew oath</b> — HUNTERS (+heat, +CR) · GHOSTS (rival ghost on race bar) · MERCS (+1 strike).</li>
+            <li><b>Loadout perk</b> — CHAIN (+15% mult) · PING (+1 hint) · STRIKE (+1 mistake) · HEAT (+35% heat gain).</li>
+            <li><b>Black market (menu)</b> — INTEL CACHE (300 CR) · HEAT→INTEL (−25% heat) · WEEKLY CONTRACT.</li>
+            <li><b>Heat calendar</b> — stamp each day you play; 7 stamps in a week = +500 CR.</li>
+            <li><b>Streak / daily ghost board</b> — consecutive daily clears &amp; your daily PB list.</li>
+            <li><b>Streak insurance (150 CR)</b> — protects daily streak if you miss a day.</li>
+            <li><b>Bulletin / world event / bounty</b> — rotating NexCorp news &amp; status summary.</li>
+            <li><b>Relay board / archive log / memos</b> — squad shares, ISA unlocks, lore you have discovered.</li>
+            <li><b>Fast boot</b> — skip long boot animation (veterans).</li>
+            <li><b>LEGACY CARD</b> — download PNG summary of your operator stats.</li>
+          </ul>
+
+          <h3>In-run tools (during a sector)</h3>
+          <ul>
+            <li><b>MARKET</b> — mid-run shop: swap loadout (400 CR), buy intel (300 CR), counter-intel (250 CR freezes Hunter AI one sector).</li>
+            <li><b>GHOST BET · 200 CR</b> — wager you beat your sector PB before clearing; win = 2× CR back.</li>
+            <li><b>RELAY</b> — copy a shareable squad link with your current run state.</li>
+            <li><b>Intel boost</b> — brightens ghost hints (faint correct cells from past zero-strike clears).</li>
+          </ul>
+
+          <h3>Campaign sector twists</h3>
+          <ul>
+            <li><b>FOG</b> — clue values hidden until you tap those cells.</li>
+            <li><b>MIRROR</b> — grid flipped horizontally.</li>
+            <li><b>TIMER</b> — bonus score if cleared under 90 seconds.</li>
+            <li><b>Boss gate</b> — final sector with alert intro and higher pressure.</li>
+            <li><b>Hunter AI</b> — at high heat, decoy cells and pursuit; counter-intel can freeze it.</li>
+          </ul>
+
+          <h3>Progression &amp; prestige</h3>
+          <ul>
+            <li>Earn <b>credits</b> from clears, contracts, extractions, duels, calendar bonus.</li>
+            <li><b>Prestige</b> — after Hard clear at max heat: reset heat, keep syndicate rank, unlock legacy rain colors.</li>
+            <li><b>Badges</b> — shown on victory (no strikes, omega, streak, daily, genius, arcade depth, archivist, duel, etc.).</li>
+            <li><b>Challenge / duel links</b> — share seed URLs or duel ghosts from the victory screen.</li>
+          </ul>
+
+          <h3>Story mode (Book 1)</h3>
+          <ul>
+            <li>First campaign jack-in may show a <b>story briefing</b> (skip anytime).</li>
+            <li>Sector clears can show <b>character dialogue</b> instead of default lore.</li>
+            <li>Victory adds an <b>epilogue</b> for your difficulty path.</li>
+          </ul>
+
+          <p class="bm-guide-footer">Tip: ignore modes you have not unlocked yet — focus on one campaign difficulty until Heat, Omega, and side doors appear naturally.</p>
         </div>
       </div>
 
@@ -436,25 +530,36 @@
         <div class="bm-modal">
           <button type="button" id="bm-genius-help-close" class="bm-close bm-ghost">CLOSE</button>
           <h2>Genius Briefing — NexCorp Kernel</h2>
+          <p class="bm-guide-lede">GENIUS is a different game mode: reverse-engineer hidden CPU gates instead of filling binary grids.</p>
           <h3>Mission</h3>
           <p>Crack 8 black-box NX-8 gates. The program is hidden; the ISA is public. Each gate has exactly one key.</p>
           <h3>How to crack</h3>
           <ul>
             <li><b>RUN PROBE</b> — send hex bytes into the CPU (example: <code>a7</code> or <code>3f 12 90</code>).</li>
             <li>Output <b>OK</b> means that input is the unique key. <b>NO</b> means keep hunting.</li>
-            <li>On <b>NO</b> for exact-match kernels, the log shows a <b>prefix score</b>.</li>
-            <li><b>XOR-leak</b> kernels print syndromes as OUT bytes. Probe all <code>00</code>s → key bytes.</li>
+            <li>On <b>NO</b> for exact-match kernels, the log shows a <b>prefix score</b> (how many bytes matched).</li>
+            <li><b>XOR-leak</b> kernels print syndromes as OUT bytes — probe <code>00 00 …</code> to read key bytes one at a time.</li>
             <li><b>SUBMIT KEY</b> when sure. Wrong submit = 1 strike. <b>2 strikes</b> lock the link.</li>
+            <li>Tap <b>ISA</b> during genius mode to reopen this briefing.</li>
           </ul>
           <h3>Kernel map</h3>
           <ul>
-            <li><b>L1</b> — 1-byte XOR leak · <b>L2–L4</b> exact keys · <b>L5,L7</b> XOR leaks · <b>L8</b> final gate</li>
+            <li><b>L1</b> — 1-byte XOR leak (learn probing)</li>
+            <li><b>L2–L4</b> — exact-match keys (use prefix scores)</li>
+            <li><b>L5, L7</b> — XOR leak variants</li>
+            <li><b>L6</b> — multi-byte exact match</li>
+            <li><b>L8</b> — final gate (hardest)</li>
+          </ul>
+          <h3>When genius appears elsewhere</h3>
+          <ul>
+            <li><b>DEEP NET · SIDE DOOR</b> — one bonus genius gate at high heat (once/day).</li>
+            <li>Story dialogue may append to kernel lore panels during Book 1 campaign.</li>
           </ul>
         </div>
       </div>
     </div>
   </div>
 </div>
-<script src="binary_matrix.js?v=26"></script>
+<script src="binary_matrix.js?v=27"></script>
 </body>
 </html>
