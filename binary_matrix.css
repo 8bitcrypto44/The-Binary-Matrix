@@ -14,19 +14,143 @@
 #binmat-root.bm-mood-omega{--rain:#eab308;--lime:#fde047;border-color:#fde047;box-shadow:0 0 36px rgba(253,224,71,.35),inset 0 0 40px rgba(0,0,0,.45)}
 #binmat-root .bm-rank{font-size:11px;letter-spacing:1.2px;color:#fbbf24;margin:0 0 10px;text-shadow:0 0 8px rgba(251,191,36,.35)}
 #binmat-root #bm-omega{border-color:#fde047;color:#fde68a;box-shadow:0 0 12px rgba(253,224,71,.25)}
-#binmat-root .bm-sector-lore{font-size:12px;font-style:italic;color:#86efac;margin:8px 0;max-width:28em;line-height:1.45;padding:0 8px}
+#binmat-root .bm-story-hud{font-size:10px;letter-spacing:1.2px;color:#c4b5fd;text-align:center;margin:4px 0 0;padding:0 8px;text-shadow:0 0 8px rgba(196,181,253,.35)}
+#binmat-root .bm-story-dialog{max-width:32em;margin:10px auto;text-align:left;line-height:1.45}
+#binmat-root .bm-dlg-row{margin:6px 0;padding:6px 10px;border-left:3px solid #14532d;background:rgba(2,12,4,.55);border-radius:0 6px 6px 0;font-size:12px;color:#bbf7d0}
+#binmat-root .bm-dlg-row b{display:block;font-size:10px;letter-spacing:1px;margin-bottom:2px}
+#binmat-root .bm-dlg-row .bm-dlg-tag{font-size:9px;color:#6b7280;font-weight:400;letter-spacing:.5px}
+#binmat-root .bm-sector-lore{font-size:12px;color:#86efac;margin:8px auto;max-width:32em;line-height:1.45;padding:0 8px;text-align:left}
+#binmat-root .bm-sector-lore .bm-dlg-row{font-size:11px}
+#binmat-root .bm-story-brief{z-index:26;background:rgba(0,6,2,.94)}
+#binmat-root .bm-story-brief-modal{max-width:420px;text-align:center}
+#binmat-root .bm-story-brief-kicker{font-size:10px;letter-spacing:2px;color:#67e8f9;margin-bottom:6px}
+#binmat-root .bm-story-brief-modal h2{margin:0 0 12px;color:var(--lime);font-size:20px}
+#binmat-root .bm-victory-story{margin:12px 0 4px;padding:8px;border:1px solid #14532d;border-radius:8px;background:rgba(0,8,2,.5)}
 #binmat-root .bm-grid-wrap.bm-omega-grid{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+html.bm-embed #binmat-root .bm-grid-wrap.bm-omega-grid{overflow:hidden}
+html.bm-embed,html.bm-embed body{
+  overflow:hidden!important;height:720px!important;max-height:720px!important;min-height:720px!important;
+  overscroll-behavior:none;scrollbar-width:none;-ms-overflow-style:none
+}
+html.bm-embed::-webkit-scrollbar,html.bm-embed body::-webkit-scrollbar{display:none;width:0;height:0}
+html.bm-embed #binmat-root{
+  max-width:none;width:100%;height:720px!important;max-height:720px!important;min-height:720px!important;margin:0;border:0;border-radius:0;
+  box-shadow:none;background:#020603;display:flex;flex-direction:column;overflow:hidden!important;overscroll-behavior:none
+}
+html.bm-embed #binmat-root .bm-shell{
+  flex:1 1 auto;min-height:0!important;max-height:100%!important;height:100%!important;padding:4px 6px 4px;gap:2px;
+  overflow:hidden!important;display:flex;flex-direction:column
+}
+html.bm-embed #binmat-root .bm-stage{
+  flex:1 1 auto;min-height:0!important;max-height:100%!important;height:auto!important;padding:4px;border:0;border-radius:0;
+  background:rgba(0,0,0,.35);overflow:hidden!important;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start
+}
+html.bm-embed #binmat-root .bm-stage > .bm-panel,
+html.bm-embed #binmat-root .bm-stage > #bm-play{
+  flex:1 1 auto;min-height:0!important;max-height:100%!important;width:100%;overflow:hidden!important;overscroll-behavior:none
+}
+html.bm-embed #binmat-root #bm-play{display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+html.bm-embed #binmat-root #bm-play .bm-grid-wrap{flex:0 0 auto;margin:0 auto}
+html.bm-embed #binmat-root #bm-play .bm-status{flex:0 0 auto;margin:2px 0}
+html.bm-embed #binmat-root #bm-play .bm-bar{flex:0 0 auto;margin-top:2px}
+html.bm-embed #binmat-root #bm-play .bm-sector-pb{margin:0 0 2px;font-size:9px}
+html.bm-embed #binmat-root .bm-overlay.show{overflow:hidden!important}
+html.bm-embed #binmat-root .bm-overlay.bm-tut-scroll.show{
+  overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain
+}
+html.bm-embed #binmat-root .bm-tut-scroll .bm-modal{max-height:92%;overflow-y:auto}
+html.bm-embed #binmat-root .bm-modal{overflow:hidden;max-height:92%}
+html.bm-embed #binmat-root .bm-cmap,
+html.bm-embed #binmat-root .bm-mult{display:none!important}
+html.bm-embed #binmat-root.bm-ui-menu .bm-wanted-wrap,
+html.bm-embed #binmat-root.bm-ui-menu .bm-pursuit-wrap,
+html.bm-embed #binmat-root.bm-ui-menu .bm-ghost-race,
+html.bm-embed #binmat-root.bm-ui-menu .bm-extract-bar,
+html.bm-embed #binmat-root.bm-ui-menu .bm-side-door-bar,
+html.bm-embed #binmat-root.bm-ui-menu .bm-hunter-status,
+html.bm-embed #binmat-root.bm-ui-menu .bm-duel-bar,
+html.bm-embed #binmat-root.bm-ui-menu .bm-progress-wrap,
+html.bm-embed #binmat-root.bm-ui-menu .bm-story-hud{display:none!important}
+html.bm-embed #binmat-root.bm-ui-play .bm-wanted-wrap{margin:0 0 2px;padding:0}
+html.bm-embed #binmat-root.bm-ui-play .bm-wanted-label{margin:0 0 2px;font-size:9px}
+html.bm-embed #binmat-root.bm-ui-play .bm-progress-wrap{margin:0 0 2px}
+html.bm-embed #binmat-root .bm-top{
+  gap:2px;flex-shrink:0;display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:center
+}
+html.bm-embed #binmat-root .bm-brand{grid-column:1;grid-row:1;font-size:13px;line-height:1.1;margin:0}
+html.bm-embed #binmat-root .bm-brand span{display:none}
+html.bm-embed #binmat-root .bm-hud{grid-column:1/-1;grid-row:2;font-size:9px;gap:2px 8px;margin:0}
+html.bm-embed #binmat-root .bm-hud .bm-best,
+html.bm-embed #binmat-root .bm-hud .bm-credits-hud{display:none}
+html.bm-embed #binmat-root .bm-audio{grid-column:2;grid-row:1;font-size:8px;gap:2px 4px;justify-self:end}
+html.bm-embed #binmat-root .bm-audio label,
+html.bm-embed #binmat-root .bm-audio input,
+html.bm-embed #binmat-root .bm-audio span{display:none!important}
+html.bm-embed #binmat-root .bm-audio button{padding:4px 6px;font-size:9px}
+html.bm-embed #binmat-root #bm-menu .bm-syndicate-crew,
+html.bm-embed #binmat-root #bm-menu .bm-syndicate-rank,
+html.bm-embed #binmat-root #bm-menu .bm-loadout,
+html.bm-embed #binmat-root #bm-menu .bm-blackmarket,
+html.bm-embed #binmat-root #bm-menu .bm-rules,
+html.bm-embed #binmat-root #bm-menu .bm-site-brand,
+html.bm-embed #binmat-root #bm-menu .bm-bulletin,
+html.bm-embed #binmat-root #bm-menu .bm-world-event,
+html.bm-embed #binmat-root #bm-menu .bm-bounty,
+html.bm-embed #binmat-root #bm-menu .bm-streak,
+html.bm-embed #binmat-root #bm-menu .bm-daily-loadout,
+html.bm-embed #binmat-root #bm-menu .bm-streak-insure,
+html.bm-embed #binmat-root #bm-menu .bm-fast-boot-wrap,
+html.bm-embed #binmat-root #bm-menu .bm-daily-hint,
+html.bm-embed #binmat-root #bm-menu .bm-declassified,
+html.bm-embed #binmat-root #bm-menu #bm-arcade,
+html.bm-embed #binmat-root #bm-menu #bm-legacy-card,
+html.bm-embed #binmat-root #bm-menu #bm-bonus-node,
+html.bm-embed #binmat-root #bm-menu #bm-extract,
+html.bm-embed #binmat-root #bm-menu #bm-deep-net,
+html.bm-embed #binmat-root #bm-menu #bm-relay-in,
+html.bm-embed #binmat-root #bm-menu #bm-duel-accept,
+html.bm-embed #binmat-root #bm-menu #bm-root-access,
+html.bm-embed #binmat-root #bm-menu #bm-omega-chain,
+html.bm-embed #binmat-root #bm-menu #bm-omega,
+html.bm-embed #binmat-root .bm-relay-board,
+html.bm-embed #binmat-root .bm-archive-log,
+html.bm-embed #binmat-root .bm-archives-panel,
+html.bm-embed #binmat-root .bm-heat-calendar-wrap,
+html.bm-embed #binmat-root .bm-daily-ghost-board{display:none!important}
+html.bm-embed #binmat-root #bm-menu .bm-rank{margin:0 0 2px;font-size:10px}
+html.bm-embed #binmat-root #bm-menu .bm-callsign{margin:0 0 4px;font-size:10px}
+html.bm-embed #binmat-root #bm-menu .bm-diffs{margin-bottom:4px;gap:4px}
+html.bm-embed #binmat-root #bm-menu .bm-diffs button{padding:5px 8px;font-size:10px}
+html.bm-embed #binmat-root #bm-menu .bm-actions{gap:3px;margin-top:2px}
+html.bm-embed #binmat-root #bm-menu .bm-actions button{padding:5px 7px;font-size:9px}
+html.bm-embed #binmat-root #bm-play #bm-market,
+html.bm-embed #binmat-root #bm-play #bm-ghost-bet,
+html.bm-embed #binmat-root #bm-play #bm-relay-out,
+html.bm-embed #binmat-root #bm-play #bm-ping,
+html.bm-embed #binmat-root #bm-play #bm-solve{display:none!important}
+html.bm-embed #binmat-root table.bm-grid.sz4 td{width:42px;height:42px;font-size:1.05rem}
+html.bm-embed #binmat-root table.bm-grid.sz6 td{width:34px;height:34px;font-size:.95rem}
+html.bm-embed #binmat-root table.bm-grid.sz8 td{width:28px;height:28px;font-size:.8rem}
+html.bm-embed #binmat-root .bm-grid-wrap{padding:2px}
+html.bm-embed #binmat-root #bm-play .bm-site-brand-mini,
+html.bm-embed #binmat-root #bm-genius .bm-site-brand-mini{display:none}
+html.bm-embed #binmat-root #bm-play .bm-bar button,
+html.bm-embed #binmat-root #bm-genius .bm-bar button{padding:4px 6px;font-size:9px}
+html.bm-embed #binmat-root #bm-play .bm-status{font-size:10px;margin:2px 0;min-height:16px}
+html.bm-embed #binmat-root #bm-genius .bm-isa{max-height:36px;overflow:hidden;font-size:8px;line-height:1.25;margin-bottom:2px}
+html.bm-embed #binmat-root #bm-genius .bm-log{min-height:40px;max-height:40px;overflow:hidden;margin-bottom:2px;font-size:10px}
+html.bm-embed #binmat-root #bm-genius .bm-vm-title{font-size:11px;margin-bottom:2px}
+html.bm-embed #binmat-root #bm-genius .bm-brief{font-size:9px;margin:0 0 2px}
+html.bm-embed #binmat-root #bm-genius .bm-cpu-viz{display:none}
+html.bm-embed #binmat-root .bm-victory-modal{overflow:hidden;max-height:96%}
+html.bm-embed #binmat-root .bm-victory-story{max-height:56px;overflow:hidden;margin:4px 0}
+html.bm-embed #binmat-root .bm-keychain{max-height:36px;overflow:hidden;margin-bottom:4px}
+html.bm-embed #binmat-root .bm-story-brief-dialog{max-height:140px;overflow:hidden}
+html.bm-embed #binmat-root .bm-sector-lore{max-height:100px;overflow:hidden}
+html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
 #binmat-root table.bm-grid.sz8 td{width:52px;height:52px;font-size:1.3rem}
 #binmat-root.bm-glitch{animation:bmGlitch .35s steps(2) 1}
 @keyframes bmGlitch{0%,100%{filter:none;transform:none}25%{filter:hue-rotate(90deg) contrast(1.2);transform:translateX(-2px)}75%{filter:hue-rotate(-40deg);transform:translateX(2px)}}
-html.bm-embed #binmat-root{max-width:none;width:100%;min-height:100%;margin:0;border:0;border-radius:0;box-shadow:none;background:#020603}
-html.bm-embed #binmat-root .bm-shell{min-height:0;padding:8px 10px 12px;gap:8px}
-html.bm-embed #binmat-root .bm-stage{min-height:320px;padding:10px 8px;border:0;border-radius:0;background:rgba(0,0,0,.35)}
-html.bm-embed #binmat-root .bm-top{gap:6px}
-html.bm-embed #binmat-root .bm-brand{font-size:clamp(14px,2.8vw,20px)}
-html.bm-embed #binmat-root .bm-hud{font-size:11px;gap:6px 10px}
-html.bm-embed #binmat-root .bm-audio{font-size:10px;flex-wrap:wrap}
-html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
 #binmat-root *{box-sizing:border-box}
 #binmat-root .bm-rain{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
 #binmat-root .bm-rain-back{z-index:0;opacity:.45}
@@ -57,6 +181,7 @@ html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
 #binmat-root .bm-hud b{color:var(--lime)}
 #binmat-root .bm-audio{display:flex;align-items:center;gap:8px;font-size:11px;color:#a7f3d0}
 #binmat-root .bm-audio input[type=range]{width:88px;accent-color:var(--lime)}
+#binmat-root button.bm-fs-btn{padding:8px 10px;font-size:10px;letter-spacing:.3px;white-space:nowrap}
 #binmat-root button{
   font-family:inherit;font-weight:700;letter-spacing:.4px;cursor:pointer;
   border:2px solid var(--lime);border-radius:8px;padding:10px 16px;

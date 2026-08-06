@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="description" content="The Binary Matrix — jack in, crack NexCorp grids and CPU gates.">
 <title>The Binary Matrix by 8bitcrypto_44</title>
-<link rel="stylesheet" href="binary_matrix.css?v=18">
-<style>html,body{margin:0;min-height:100%;background:#020603;}html.bm-embed,html.bm-embed body{padding:0;background:#020603;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;}</style>
+<link rel="stylesheet" href="binary_matrix.css?v=23">
+<style>html,body{margin:0;background:#020603;}html.bm-embed,html.bm-embed body{padding:0;margin:0;background:#020603;height:720px;max-height:720px;min-height:720px;overflow:hidden;overscroll-behavior:none;}</style>
 </head>
 <body>
 <div id="binmat-root">
@@ -32,9 +32,11 @@
         <input id="bm-sfx" type="range" min="0" max="1" step="0.01" value="0.36" aria-label="SFX volume">
         <span id="bm-sfx-lbl">36%</span>
         <button type="button" id="bm-mute" class="bm-ghost" aria-pressed="false">MUTE</button>
+        <button type="button" id="bm-fullscreen" class="bm-ghost bm-fs-btn" aria-pressed="false" title="Enter fullscreen">FULLSCREEN</button>
       </div>
     </div>
 
+    <p class="bm-story-hud" id="bm-story-hud" hidden>STORY · BOOK 1</p>
     <div class="bm-progress-wrap" id="bm-progress-wrap" hidden>
       <div class="bm-progress-label" id="bm-progress-label">SECTOR 1/6</div>
       <div class="bm-progress-track"><div class="bm-progress-fill" id="bm-progress-fill"></div></div>
@@ -237,6 +239,18 @@
         </div>
       </div>
 
+      <div id="bm-story-brief" class="bm-overlay bm-story-brief" role="dialog" aria-label="Story briefing">
+        <div class="bm-modal bm-story-brief-modal">
+          <div class="bm-story-brief-kicker">STORY LINK · BOOK 1</div>
+          <h2 id="bm-story-brief-title">The Binary Matrix</h2>
+          <div class="bm-story-dialog" id="bm-story-brief-dialog"></div>
+          <div class="bm-actions">
+            <button type="button" id="bm-story-brief-skip" class="bm-ghost">SKIP DIALOGUE</button>
+            <button type="button" id="bm-story-brief-go" class="bm-primary">JACK IN</button>
+          </div>
+        </div>
+      </div>
+
       <div id="bm-sector" class="bm-overlay bm-sector-card" role="dialog" aria-label="Sector transition">
         <div class="bm-sector-inner">
           <div class="bm-sector-kicker" id="bm-sector-kicker">SECTOR CLEARED</div>
@@ -260,6 +274,7 @@
             <div>BEST <b id="bm-victory-best">—</b></div>
           </div>
           <div class="bm-badges" id="bm-badges"></div>
+          <div class="bm-story-dialog bm-victory-story bm-hidden" id="bm-victory-story" aria-label="Story epilogue"></div>
           <div class="bm-actions">
             <button type="button" id="bm-victory-card" class="bm-primary">DOWNLOAD CARD</button>
             <button type="button" id="bm-challenge-link" class="bm-warn">CHALLENGE LINK</button>
@@ -281,7 +296,7 @@
         </div>
       </div>
 
-      <div id="bm-help" class="bm-overlay" role="dialog" aria-label="Tutorial">
+      <div id="bm-help" class="bm-overlay bm-tut-scroll" role="dialog" aria-label="Tutorial">
         <div class="bm-modal">
           <button type="button" id="bm-help-close" class="bm-close bm-ghost">CLOSE</button>
           <h2>How to Play</h2>
@@ -399,7 +414,7 @@
         </div>
       </div>
 
-      <div id="bm-ftue" class="bm-overlay bm-ftue" role="dialog" aria-label="Quick tutorial">
+      <div id="bm-ftue" class="bm-overlay bm-ftue bm-tut-scroll" role="dialog" aria-label="Quick tutorial">
         <div class="bm-modal">
           <h2 id="bm-ftue-title">Tutorial · Step 1</h2>
           <p id="bm-ftue-body">Tap cells to cycle empty → 0 → 1. Green cells are locked clues.</p>
@@ -417,7 +432,7 @@
         </div>
       </div>
 
-      <div id="bm-genius-help" class="bm-overlay" role="dialog" aria-label="Genius briefing">
+      <div id="bm-genius-help" class="bm-overlay bm-tut-scroll" role="dialog" aria-label="Genius briefing">
         <div class="bm-modal">
           <button type="button" id="bm-genius-help-close" class="bm-close bm-ghost">CLOSE</button>
           <h2>Genius Briefing — NexCorp Kernel</h2>
@@ -440,6 +455,6 @@
     </div>
   </div>
 </div>
-<script src="binary_matrix.js?v=18"></script>
+<script src="binary_matrix.js?v=23"></script>
 </body>
 </html>

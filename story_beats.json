@@ -1,0 +1,273 @@
+{
+  "book": 1,
+  "title": "The Binary Matrix",
+  "characters": {
+    "mara": { "name": "MARA", "tag": "Syndicate fixer", "color": "#c4b5fd" },
+    "you": { "name": "YOU", "tag": "Operator", "color": "#86efac" },
+    "kane": { "name": "DIR. KANE", "tag": "NexCorp compliance", "color": "#ff6b81" },
+    "echo": { "name": "ECHO-7", "tag": "Rival operator", "color": "#fde68a" },
+    "relay": { "name": "RELAY", "tag": "Syndicate net", "color": "#67e8f9" },
+    "archivist": { "name": "ARCHIVIST", "tag": "Declassified", "color": "#a3e635" }
+  },
+  "briefing": [
+    { "who": "mara", "line": "You still breathing? Good. NexCorp left the back door cracked — for now." },
+    { "who": "you", "line": "I know the rules. Zero or one. No maybe on the wire." },
+    { "who": "kane", "line": "Unregistered jack-in detected. Compliance is… watching." },
+    { "who": "mara", "line": "Ignore the bulletin. Clear each node, read the traffic, stay off their heat map." },
+    { "who": "relay", "line": "Story link active · Book 1 · every sector leaks a piece of the file." }
+  ],
+  "campaign": {
+    "easy": [
+      {
+        "id": "easy-0",
+        "chapter": "Ch.1 · Jack In",
+        "dialogue": [
+          { "who": "mara", "line": "First grid's always a lie wrapped in clues. Trust the rows, not the noise." },
+          { "who": "you", "line": "Recruit node cleared. Signal's clean." },
+          { "who": "kane", "line": "Log entry 4410: unknown operator placed seventeen bits without permission." }
+        ]
+      },
+      {
+        "id": "easy-1",
+        "chapter": "Ch.2 · Thin Signal",
+        "dialogue": [
+          { "who": "echo", "line": "You're slow. I ghosted this sector in forty-two seconds last week." },
+          { "who": "you", "line": "I'm not racing ghosts. I'm racing compliance." },
+          { "who": "mara", "line": "Let ECHO talk. Every rival ping means NexCorp's looking the wrong way." }
+        ]
+      },
+      {
+        "id": "easy-2",
+        "chapter": "Ch.3 · Open Field",
+        "dialogue": [
+          { "who": "relay", "line": "Syndicate relay up · six-by-six field means they think you're harmless." },
+          { "who": "you", "line": "Harmless operators don't leave matrix codes behind." },
+          { "who": "kane", "line": "Harmless operators also don't survive sector three. Note for the file." }
+        ]
+      },
+      {
+        "id": "easy-3",
+        "chapter": "Ch.4 · Standard Link",
+        "dialogue": [
+          { "who": "mara", "line": "Standard link, non-standard operator. Keep your strikes. I need you readable on the board." },
+          { "who": "you", "line": "Readable is a funny word for wanted." },
+          { "who": "kane", "line": "Heat index climbing. Hunter division has your fingerprint cached." }
+        ]
+      },
+      {
+        "id": "easy-4",
+        "chapter": "Ch.5 · Exit Gate",
+        "dialogue": [
+          { "who": "mara", "line": "Exit gate's open. Easy run done — but NexCorp doesn't forget easy runs." },
+          { "who": "you", "line": "I cracked the chain. What's on the other side?" },
+          { "who": "archivist", "line": "Declassified fragment: recruit clearance expires the moment you jack in again." }
+        ]
+      }
+    ],
+    "medium": [
+      {
+        "id": "med-0",
+        "chapter": "Ch.6 · Spar",
+        "dialogue": [
+          { "who": "echo", "line": "Medium tier. So you stopped tripping on fours. Cute." },
+          { "who": "you", "line": "I stopped tripping. You still talk on every channel." },
+          { "who": "mara", "line": "Spar clean. Medium means fewer strikes — NexCorp expects fewer mistakes." }
+        ]
+      },
+      {
+        "id": "med-1",
+        "chapter": "Ch.7 · Entry Tunnel",
+        "dialogue": [
+          { "who": "relay", "line": "Tunnel node mirrors Book 1 · firewall chapter. Coincidence? We don't believe those." },
+          { "who": "kane", "line": "Firewall logs show repeated probes from the same callsign." },
+          { "who": "you", "line": "Then stop logging me. I haven't finished reading your grid." }
+        ]
+      },
+      {
+        "id": "med-2",
+        "chapter": "Ch.8 · Dense Pack",
+        "dialogue": [
+          { "who": "mara", "line": "Dense pack — every clue fights the next. Breathe between rows." },
+          { "who": "you", "line": "Breathing's optional. Accuracy isn't." },
+          { "who": "echo", "line": "Accuracy won't save you when pursuit hits seventy percent." }
+        ]
+      },
+      {
+        "id": "med-3",
+        "chapter": "Ch.9 · Sparse Core",
+        "dialogue": [
+          { "who": "kane", "line": "Sparse cores are traps. One wrong bit and the whole node screams." },
+          { "who": "you", "line": "Then it screamed for nothing. Core's mine." },
+          { "who": "mara", "line": "Good. Syndicate rep just ticked up — black market's watching." }
+        ]
+      },
+      {
+        "id": "med-4",
+        "chapter": "Ch.10 · Tight Weave",
+        "dialogue": [
+          { "who": "relay", "line": "Tight weave detected · extraction paths forming three nodes out." },
+          { "who": "mara", "line": "When heat maxes, run the relay board. Don't hero the last strike." },
+          { "who": "you", "line": "Heroes get logged twice. I read the memos." }
+        ]
+      },
+      {
+        "id": "med-5",
+        "chapter": "Ch.11 · Firewall",
+        "dialogue": [
+          { "who": "kane", "line": "Final medium gate. Compliance recommends surrender. You won't." },
+          { "who": "you", "line": "Recommendations aren't orders. Firewall's down." },
+          { "who": "archivist", "line": "Book 1 · firewall breach logged under operator handle — full file on 8bitcrypto44.xyz." }
+        ]
+      }
+    ],
+    "hard": [
+      {
+        "id": "hard-0",
+        "chapter": "Ch.12 · Razor Entry",
+        "dialogue": [
+          { "who": "mara", "line": "Hard chain. Two strikes on some nodes. NexCorp wants you dead on the wire." },
+          { "who": "you", "line": "They'll have to catch me between bits." },
+          { "who": "kane", "line": "Razor entry approved. Hunter AI standing by." }
+        ]
+      },
+      {
+        "id": "hard-1",
+        "chapter": "Ch.13 · Pressure",
+        "dialogue": [
+          { "who": "echo", "line": "Pressure sublevel. I folded here once. Your ghost'll remember." },
+          { "who": "you", "line": "Your ghost can keep the memory. I keep the code." },
+          { "who": "relay", "line": "Ghost race channel open · beat your PB or beat ECHO's trash talk." }
+        ]
+      },
+      {
+        "id": "hard-2",
+        "chapter": "Ch.14 · Deep Dig",
+        "dialogue": [
+          { "who": "mara", "line": "Deep dig — four passes through the matrix. They're burying truth under noise." },
+          { "who": "kane", "line": "Truth is proprietary. Cease excavation." },
+          { "who": "you", "line": "Cease this." }
+        ]
+      },
+      {
+        "id": "hard-3",
+        "chapter": "Ch.15 · Zero Margin",
+        "dialogue": [
+          { "who": "relay", "line": "Zero margin node · syndicate crews betting on your next strike." },
+          { "who": "you", "line": "Tell the mercs I don't miss on purpose." },
+          { "who": "mara", "line": "Don't miss on accident either. Exfil's one sector out." }
+        ]
+      },
+      {
+        "id": "hard-4",
+        "chapter": "Ch.16 · One Strike",
+        "dialogue": [
+          { "who": "kane", "line": "One strike remaining on record. A compliance dream." },
+          { "who": "you", "line": "A nightmare for your firewall." },
+          { "who": "echo", "line": "If you wipe here, I inherit your rank flash. No pressure." }
+        ]
+      },
+      {
+        "id": "hard-5",
+        "chapter": "Ch.17 · Near Blank",
+        "dialogue": [
+          { "who": "mara", "line": "Near blank grid. They stripped every clue to see if you'd panic." },
+          { "who": "you", "line": "Panic's a luxury. I only have time and ones and zeros." },
+          { "who": "archivist", "line": "Kernel files reference this node — genius gates unlock the rest of Book 1." }
+        ]
+      },
+      {
+        "id": "hard-6",
+        "chapter": "Ch.18 · Final Gate",
+        "dialogue": [
+          { "who": "kane", "line": "NexCorp core gate. Turn back. This is not a recruit problem." },
+          { "who": "you", "line": "I'm not a recruit anymore." },
+          { "who": "mara", "line": "Clear it and OMEGA opens. Run root when you're ready — the CPU's dreaming." },
+          { "who": "relay", "line": "Final gate down · full story continues in the books · link live on relay." }
+        ]
+      }
+    ]
+  },
+  "genius": [
+    {
+      "id": "gen-0",
+      "dialogue": [
+        { "who": "mara", "line": "Gate α — XOR leak. First kernel file. NexCorp never meant outsiders to see syndromes." },
+        { "who": "kane", "line": "Outsider status revoked upon breach. Proceed to prosecution." }
+      ]
+    },
+    {
+      "id": "gen-1",
+      "dialogue": [
+        { "who": "you", "line": "Dual keys on β. Which lock breaks first?" },
+        { "who": "mara", "line": "The one you can prove. Math doesn't negotiate." }
+      ]
+    },
+    {
+      "id": "gen-2",
+      "dialogue": [
+        { "who": "kane", "line": "Tripwire γ logged your first wrong probe." },
+        { "who": "you", "line": "Then the log's outdated. I'm still here." }
+      ]
+    },
+    {
+      "id": "gen-3",
+      "dialogue": [
+        { "who": "echo", "line": "Quad lock δ broke me twice. Third time's your charm?" },
+        { "who": "you", "line": "Third time's your leaderboard entry getting erased." }
+      ]
+    },
+    {
+      "id": "gen-4",
+      "dialogue": [
+        { "who": "relay", "line": "Syndrome ε mapped your fingerprint the first time you blinked." },
+        { "who": "mara", "line": "Blink slower. Or crack faster." }
+      ]
+    },
+    {
+      "id": "gen-5",
+      "dialogue": [
+        { "who": "kane", "line": "Deep hash ζ — we hash fear." },
+        { "who": "you", "line": "We hash back." }
+      ]
+    },
+    {
+      "id": "gen-6",
+      "dialogue": [
+        { "who": "mara", "line": "Triple XOR η. Three masks, one truth underneath." },
+        { "who": "archivist", "line": "Truth matches Book 1 climax — declassified after gate seven." }
+      ]
+    },
+    {
+      "id": "gen-7",
+      "dialogue": [
+        { "who": "kane", "line": "OMEGA root. The CPU dreams in ones and zeros." },
+        { "who": "you", "line": "Then wake up. Root key's mine." },
+        { "who": "mara", "line": "All kernels down. You're not recruit, ghost, or merc anymore. You're the story." }
+      ]
+    }
+  ],
+  "victory": {
+    "easy": {
+      "dialogue": [
+        { "who": "mara", "line": "Easy chain broken. Don't get comfortable — medium's where they start hunting." },
+        { "who": "you", "line": "Comfort's offline. What's next?" },
+        { "who": "relay", "line": "Book 1 · chapter six waits on the medium tunnel node." }
+      ]
+    },
+    "medium": {
+      "dialogue": [
+        { "who": "echo", "line": "Medium clear. Fine. Hard tier's where legends and corpses split." },
+        { "who": "mara", "line": "Hard unlocks the core gate. Read the books between runs — the file fills in." },
+        { "who": "kane", "line": "Medium campaign flagged for escalation. Hunters en route." }
+      ]
+    },
+    "hard": {
+      "dialogue": [
+        { "who": "kane", "line": "Core gate breached. NexCorp will not forget this callsign." },
+        { "who": "you", "line": "Good. I won't forget the matrix." },
+        { "who": "archivist", "line": "Book 1 arc complete in-game · OMEGA root optional · full novel at 8bitcrypto44.xyz." },
+        { "who": "mara", "line": "Jack OMEGA when you're ready. One strike. No mercy. Same as life." }
+      ]
+    }
+  }
+}

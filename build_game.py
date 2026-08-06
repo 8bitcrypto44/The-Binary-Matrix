@@ -6,7 +6,7 @@ import re
 
 root = Path(__file__).resolve().parent
 
-ASSET_VER = "18"
+ASSET_VER = "23"
 PAGES_URL = "https://8bitcrypto44.github.io/The-Binary-Matrix/"
 _brand_logo = root / "assets" / "brand" / "8bitcrypto44_logo.png"
 BRAND_LOGO_URI = (
@@ -92,6 +92,13 @@ def merge_js():
             merged = js_path.read_text(encoding="utf-8")
             merged = merged.replace(wire, block + wire, 1)
             js_path.write_text(merged, encoding="utf-8")
+    for sname in ("bm_sprint19_story.js", "bm_sprint20_viewport.js"):
+        sp = root.joinpath(sname)
+        if sp.exists() and wire in merged:
+            block = sp.read_text(encoding="utf-8").strip() + "\n\n"
+            merged = js_path.read_text(encoding="utf-8")
+            merged = merged.replace(wire, block + wire, 1)
+            js_path.write_text(merged, encoding="utf-8")
     return js_path.read_text(encoding="utf-8")
 
 
@@ -105,8 +112,8 @@ pages = (
     "<meta name=\"description\" content=\"The Binary Matrix — jack in, crack NexCorp grids and CPU gates.\">\n"
     "<title>The Binary Matrix by 8bitcrypto_44</title>\n"
     f"<link rel=\"stylesheet\" href=\"binary_matrix.css?v={v}\">\n"
-    "<style>html,body{margin:0;min-height:100%;background:#020603;}"
-    "html.bm-embed,html.bm-embed body{padding:0;background:#020603;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;}</style>\n"
+    "<style>html,body{margin:0;background:#020603;}"
+    "html.bm-embed,html.bm-embed body{padding:0;margin:0;background:#020603;height:720px;max-height:720px;min-height:720px;overflow:hidden;overscroll-behavior:none;}</style>\n"
     "</head>\n<body>\n"
     + body.strip()
     + "\n"
@@ -171,29 +178,34 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
 .bm-gd.is-loading .bm-gd-load{{display:flex}}
 .bm-gd.is-fading .bm-gd-cover{{opacity:0}}
 .bm-gd.is-open .bm-gd-cover{{display:none}}
-.bm-gd.is-open .bm-gd-play{{display:block}}
+.bm-gd.is-open{{overflow:hidden;max-height:100vh;max-height:100dvh}}
+.bm-gd.is-open .bm-gd-play{{display:block;overflow:hidden}}
 .bm-gd.is-open .bm-gd-top{{display:none!important}}
-.bm-gd.is-open .bm-gd-card{{padding:0;display:flex;flex-direction:column}}
+.bm-gd.is-open .bm-gd-card{{padding:0;display:flex;flex-direction:column;overflow:hidden}}
 .bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-stage{{
-  aspect-ratio:auto!important;min-height:680px;height:auto!important;border:0!important;border-radius:0!important;overflow:visible
+  aspect-ratio:auto!important;min-height:720px!important;height:720px!important;max-height:720px!important;border:0!important;border-radius:0!important;overflow:hidden!important
 }}
 .bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-play{{
-  position:relative;inset:auto;min-height:680px
+  position:relative;inset:auto;overflow:hidden;min-height:720px;height:720px;max-height:720px
 }}
 .bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-play iframe{{
-  position:relative;inset:auto;min-height:680px;height:680px
+  position:relative;inset:auto;display:block;overflow:hidden;border:0;min-height:720px;height:720px;max-height:720px
 }}
 .bm-gd.is-open.is-land,.bm-gd.is-fs-mode{{
   position:fixed!important;inset:0!important;width:100vw!important;width:100dvw!important;height:100vh!important;height:100dvh!important;
-  max-width:none!important;margin:0!important;padding:0!important;z-index:2147483646!important;background:#020603!important
+  max-width:none!important;margin:0!important;padding:0!important;z-index:2147483646!important;background:#020603!important;overflow:hidden!important
 }}
 .bm-gd.is-open.is-land .bm-gd-card,.bm-gd.is-fs-mode .bm-gd-card{{
   height:100%!important;width:100%!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important;
-  display:flex!important;flex-direction:column!important;background:#020603!important
+  display:flex!important;flex-direction:column!important;background:#020603!important;overflow:hidden!important
 }}
 .bm-gd.is-open.is-land .bm-gd-top,.bm-gd.is-fs-mode .bm-gd-top{{display:none!important}}
 .bm-gd.is-open.is-land .bm-gd-stage,.bm-gd.is-fs-mode .bm-gd-stage{{
-  flex:1!important;min-height:0!important;aspect-ratio:auto!important;height:auto!important;border:0!important;border-radius:0!important
+  flex:1!important;min-height:0!important;aspect-ratio:auto!important;height:auto!important;border:0!important;border-radius:0!important;overflow:hidden!important
+}}
+.bm-gd.is-open.is-land .bm-gd-play,.bm-gd.is-fs-mode .bm-gd-play{{flex:1!important;min-height:0!important;overflow:hidden!important}}
+.bm-gd.is-open.is-land .bm-gd-play iframe,.bm-gd.is-fs-mode .bm-gd-play iframe{{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;border:0!important
 }}
 @media (max-width:700px){{
   .bm-gd-card{{padding:4px;border-width:2px}}
@@ -243,7 +255,7 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
       <div class="bm-gd-play" id="bm-gd-play">
         <div class="bm-gd-load" id="bm-gd-load">Establishing NexCorp link…</div>
         <iframe id="bm-gd-frame" title="The Binary Matrix" width="100%" height="680"
-          data-src="{iframe_src_attr}" allow="autoplay; fullscreen" allowfullscreen scrolling="auto"></iframe>
+          data-src="{iframe_src_attr}" allow="autoplay; fullscreen" allowfullscreen scrolling="no"></iframe>
       </div>
     </div>
   </div>
@@ -257,24 +269,27 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
   function land(){{return window.matchMedia&&window.matchMedia("(orientation: landscape)").matches||window.innerWidth>window.innerHeight;}}
   function isFs(){{return root.classList.contains("is-fs-mode")||!!(document.fullscreenElement||document.webkitFullscreenElement);}}
   function syncLand(){{root.classList.toggle("is-land",root.classList.contains("is-open")&&phone()&&land());}}
+  function embedDefaultH(){{return 720;}}
   function setFrameHeight(h){{
-    h=Math.max(560,Math.min(Number(h)||680,960));
+    if(isFs()||root.classList.contains("is-land"))return;
+    h=720;
     frame.style.height=h+"px";
     var st=root.querySelector(".bm-gd-stage");
     var pl=document.getElementById("bm-gd-play");
-    if(st){{st.style.minHeight=h+"px";st.style.aspectRatio="auto";}}
-    if(pl)pl.style.minHeight=h+"px";
+    if(st){{st.style.minHeight=h+"px";st.style.height=h+"px";st.style.maxHeight=h+"px";st.style.aspectRatio="auto";}}
+    if(pl){{pl.style.minHeight=h+"px";pl.style.height=h+"px";pl.style.maxHeight=h+"px";}}
   }}
+  function postFsState(active){{try{{if(frame.contentWindow)frame.contentWindow.postMessage({{type:"bm-fs-state",active:!!active}},"*");}}catch(e){{}}}}
   function mountFs(){{if(root.dataset.bmMounted==="1")return;var slot=document.createElement("div");slot.setAttribute("data-bm-slot","1");slot.style.cssText="display:block;width:100%;max-width:920px;margin:0 auto;height:"+Math.max(1,Math.round(root.getBoundingClientRect().height))+"px";if(root.parentNode)root.parentNode.insertBefore(slot,root);document.body.appendChild(root);root.dataset.bmMounted="1";}}
   function unmountFs(){{if(root.dataset.bmMounted!=="1")return;var slot=document.querySelector("[data-bm-slot]");if(slot&&slot.parentNode){{slot.parentNode.insertBefore(root,slot);slot.parentNode.removeChild(slot);}}delete root.dataset.bmMounted;}}
-  function finishExit(){{unmountFs();root.classList.remove("is-fs-mode");try{{document.documentElement.style.overflow="";document.body.style.overflow="";}}catch(e){{}}syncLand();}}
-  function enterFs(){{mountFs();root.classList.add("is-fs-mode");try{{document.documentElement.style.overflow="hidden";document.body.style.overflow="hidden";}}catch(e){{}}var req=frame.requestFullscreen||frame.webkitRequestFullscreen;if(req&&!document.fullscreenElement){{try{{var p=req.call(frame);if(p&&p.catch)p.catch(function(){{}});}}catch(e){{}}}}}}
+  function finishExit(){{unmountFs();root.classList.remove("is-fs-mode");postFsState(false);try{{document.documentElement.style.overflow="";document.body.style.overflow="";}}catch(e){{}}syncLand();}}
+  function enterFs(){{mountFs();root.classList.add("is-fs-mode");postFsState(true);try{{document.documentElement.style.overflow="hidden";document.body.style.overflow="hidden";}}catch(e){{}}var req=frame.requestFullscreen||frame.webkitRequestFullscreen;if(req&&!document.fullscreenElement){{try{{var p=req.call(frame);if(p&&p.catch)p.catch(function(){{}});}}catch(e){{}}}}}}
   function exitFs(){{root.classList.remove("is-fs-mode");var ex=document.exitFullscreen||document.webkitExitFullscreen;if(ex&&document.fullscreenElement){{try{{var p=ex.call(document);if(p&&p.then)p.then(finishExit).catch(finishExit);else finishExit();}}catch(e){{finishExit();}}}}else finishExit();}}
   btn.addEventListener("click",function(){{
     frame.setAttribute("src",baseSrc);root.classList.add("is-open","is-loading","is-fading");btn.setAttribute("aria-expanded","true");
-    if(phone())enterFs();syncLand();setTimeout(function(){{root.classList.remove("is-fading");}},600);
+    setFrameHeight(embedDefaultH());if(phone())enterFs();syncLand();setTimeout(function(){{root.classList.remove("is-fading");}},600);
   }});
-  frame.addEventListener("load",function(){{root.classList.remove("is-loading");}});
+  frame.addEventListener("load",function(){{root.classList.remove("is-loading");setFrameHeight(embedDefaultH());}});
   setTimeout(function(){{root.classList.remove("is-loading");}},8000);
   window.addEventListener("message",function(e){{
     if(!e.data||typeof e.data!=="object")return;
