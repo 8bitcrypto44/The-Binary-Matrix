@@ -2,40 +2,65 @@
   const ROOT = document.getElementById("binmat-root");
   if (!ROOT) return;
 
+  const EMBED = /\bembed=1\b/.test(location.search);
+  const STORAGE_KEY = "bm_epic_v1";
+  const SAVE_KEY = "bm_link_v1";
+  const REDUCED_MOTION = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (EMBED) document.documentElement.classList.add("bm-embed");
+
   let N = 6;
   let HALF = 3;
   const MUSIC_SRC = "https://archive.org/download/los-angeles_202505/Rob%20Dougan%20-%20Clubbed%20to%20Death%20%5BRadio%20Edit%5D.mp3";
 
-  // Grid campaigns: [size, targetClues, strikes, digPasses, label]
+  // [size, targetClues, strikes, digPasses, lore label]
   const CAMPAIGN = {
     easy: [
-      [4, 10, 5, 1, "4×4 warm-up"],
-      [4, 7, 5, 1, "4×4 thin clues"],
-      [6, 18, 5, 1, "6×6 open field"],
-      [6, 15, 5, 1, "6×6 standard"],
-      [6, 12, 4, 2, "6×6 finale"]
+      [4, 10, 5, 1, "SUBLVL 01 — RECRUIT GRID"],
+      [4, 7, 5, 1, "SUBLVL 02 — THIN SIGNAL"],
+      [6, 18, 5, 1, "NODE 03 — OPEN FIELD"],
+      [6, 15, 5, 1, "NODE 04 — STANDARD LINK"],
+      [6, 12, 4, 2, "NODE 05 — EXIT GATE"]
     ],
     medium: [
-      [4, 6, 3, 1, "4×4 spar"],
-      [6, 14, 3, 2, "6×6 entry"],
-      [6, 12, 3, 2, "6×6 denser"],
-      [6, 10, 3, 2, "6×6 sparse"],
-      [6, 9, 2, 3, "6×6 tight"],
-      [6, 8, 2, 3, "6×6 finale"]
+      [4, 6, 3, 1, "SUBLVL 01 — SPAR"],
+      [6, 14, 3, 2, "NODE 02 — ENTRY TUNNEL"],
+      [6, 12, 3, 2, "NODE 03 — DENSE PACK"],
+      [6, 10, 3, 2, "NODE 04 — SPARSE CORE"],
+      [6, 9, 2, 3, "NODE 05 — TIGHT WEAVE"],
+      [6, 8, 2, 3, "NODE 06 — FIREWALL"]
     ],
     hard: [
-      [6, 10, 2, 3, "6×6 opener"],
-      [4, 5, 2, 2, "4×4 pressure"],
-      [6, 8, 2, 4, "6×6 deep dig"],
-      [6, 7, 2, 4, "6×6 razor"],
-      [4, 4, 1, 2, "4×4 one-strike"],
-      [6, 7, 2, 4, "6×6 near-blank"],
-      [6, 8, 1, 4, "6×6 last gate"]
+      [6, 10, 2, 3, "NODE 01 — RAZOR ENTRY"],
+      [4, 5, 2, 2, "SUBLVL 02 — PRESSURE"],
+      [6, 8, 2, 4, "NODE 03 — DEEP DIG"],
+      [6, 7, 2, 4, "NODE 04 — ZERO MARGIN"],
+      [4, 4, 1, 2, "SUBLVL 05 — ONE STRIKE"],
+      [6, 7, 2, 4, "NODE 06 — NEAR BLANK"],
+      [6, 8, 1, 4, "NEXCORP CORE — FINAL GATE"]
     ]
   };
 
+  const KERNEL_NAMES = [
+    "GATE α — XOR LEAK", "GATE β — DUAL KEY", "GATE γ — TRIPWIRE", "GATE δ — QUAD LOCK",
+    "GATE ε — SYNDROME", "GATE ζ — DEEP HASH", "GATE η — TRIPLE XOR", "OMEGA — ROOT KEY"
+  ];
+
+  const LORE_QUOTES = [
+    "The matrix doesn't lie. Operators do.",
+    "NexCorp sees every bit you place.",
+    "Zero or one. There is no maybe in the link.",
+    "They built the firewall. We taught it to bleed.",
+    "Every unique row is a fingerprint.",
+    "The root matrix remembers who cracked it first.",
+    "Silence on the wire means someone is listening.",
+    "One strike left. Choose like your clearance depends on it."
+  ];
+
+  const OMEGA_SPEC = [8, 14, 1, 5, "OMEGA ROOT MATRIX"];
+
   const els = {
     rain: ROOT.querySelector("#bm-rain"),
+    rainBack: ROOT.querySelector("#bm-rain-back"),
     menu: ROOT.querySelector("#bm-menu"),
     play: ROOT.querySelector("#bm-play"),
     grid: ROOT.querySelector("#bm-grid"),
@@ -57,7 +82,42 @@
     vmStatus: ROOT.querySelector("#bm-vm-status"),
     vmBrief: ROOT.querySelector("#bm-vm-brief"),
     probe: ROOT.querySelector("#bm-probe"),
-    answer: ROOT.querySelector("#bm-answer")
+    answer: ROOT.querySelector("#bm-answer"),
+    boot: ROOT.querySelector("#bm-boot"),
+    bootLog: ROOT.querySelector("#bm-boot-log"),
+    bootSkip: ROOT.querySelector("#bm-boot-skip"),
+    sector: ROOT.querySelector("#bm-sector"),
+    sectorKicker: ROOT.querySelector("#bm-sector-kicker"),
+    sectorTitle: ROOT.querySelector("#bm-sector-title"),
+    sectorCode: ROOT.querySelector("#bm-sector-code"),
+    sectorNext: ROOT.querySelector("#bm-sector-next"),
+    sectorLore: ROOT.querySelector("#bm-sector-lore"),
+    rank: ROOT.querySelector("#bm-rank"),
+    omegaBtn: ROOT.querySelector("#bm-omega"),
+    victory: ROOT.querySelector("#bm-victory"),
+    victoryTitle: ROOT.querySelector("#bm-victory-title"),
+    victorySub: ROOT.querySelector("#bm-victory-sub"),
+    keychain: ROOT.querySelector("#bm-keychain"),
+    victoryScore: ROOT.querySelector("#bm-victory-score"),
+    victoryTime: ROOT.querySelector("#bm-victory-time"),
+    victoryBest: ROOT.querySelector("#bm-victory-best"),
+    copyScore: ROOT.querySelector("#bm-copy-score"),
+    shareX: ROOT.querySelector("#bm-share-x"),
+    victoryMenu: ROOT.querySelector("#bm-victory-menu"),
+    continueBtn: ROOT.querySelector("#bm-continue"),
+    dailyBtn: ROOT.querySelector("#bm-daily"),
+    dailyHint: ROOT.querySelector("#bm-daily-hint"),
+    progressWrap: ROOT.querySelector("#bm-progress-wrap"),
+    progressLabel: ROOT.querySelector("#bm-progress-label"),
+    progressFill: ROOT.querySelector("#bm-progress-fill"),
+    gridWrap: ROOT.querySelector("#bm-grid-wrap"),
+    best: ROOT.querySelector("#bm-best"),
+    vmProgressLabel: ROOT.querySelector("#bm-vm-progress-label"),
+    vmProgressFill: ROOT.querySelector("#bm-vm-progress-fill"),
+    regA: ROOT.querySelector("#bm-reg-a"),
+    regB: ROOT.querySelector("#bm-reg-b"),
+    regZ: ROOT.querySelector("#bm-reg-z"),
+    regProbes: ROOT.querySelector("#bm-reg-probes")
   };
 
   let difficulty = "medium";
@@ -91,51 +151,464 @@
   let sectorGain = 0;
   let sectorClock = 0;
   let advanceTimer = null;
+  let sectorCodes = [];
+  let lastFlipCell = null;
+  let bootDone = false;
+  let records = loadRecords();
+  let dailyMode = false;
+  let omegaMode = false;
+  let focusR = 0;
+  let focusC = 0;
+  let humOsc = null;
+  let humGain = null;
+  let lastVictoryDaily = false;
+  let lastVictoryOmega = false;
   const menuRules = ROOT.querySelector(".bm-rules");
   const RULES_GRID = menuRules ? menuRules.innerHTML : "";
   const RULES_GENIUS = "GENIUS replaces the grid.<br>Reverse a black-box <b>NX-8</b> CPU gate: probe inputs, read outputs, submit the key.<br>8 escalating kernels · 2 strikes · no Solve · ISA shown, program hidden.";
 
-  // --- Matrix rain (inside frame) ---
+  // --- Matrix rain (dual layer) ---
   const ctx = els.rain.getContext("2d");
+  const ctxBack = els.rainBack ? els.rainBack.getContext("2d") : null;
   let fontSize = 14;
   let drops = [];
   let speeds = [];
   let rainCols = 0;
+  let dropsBack = [];
+  let rainHue = "#22c55e";
+  let rainBright = "#39ff14";
+
+  function applyMood() {
+    ROOT.classList.remove("bm-mood-hard", "bm-mood-genius", "bm-mood-omega");
+    if (omegaMode) {
+      ROOT.classList.add("bm-mood-omega");
+      rainHue = "#eab308";
+      rainBright = "#fde047";
+    } else if (difficulty === "hard") {
+      ROOT.classList.add("bm-mood-hard");
+      rainHue = "#ca8a04";
+      rainBright = "#fbbf24";
+    } else if (difficulty === "genius") {
+      ROOT.classList.add("bm-mood-genius");
+      rainHue = "#a16207";
+      rainBright = "#fde68a";
+    } else {
+      rainHue = "#22c55e";
+      rainBright = "#39ff14";
+    }
+  }
+
+  function triggerGlitch() {
+    ROOT.classList.remove("bm-glitch");
+    void ROOT.offsetWidth;
+    ROOT.classList.add("bm-glitch");
+  }
 
   function sizeRain() {
     const r = ROOT.getBoundingClientRect();
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    els.rain.width = Math.max(1, Math.floor(r.width * dpr));
-    els.rain.height = Math.max(1, Math.floor(r.height * dpr));
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    [els.rain, els.rainBack].forEach(function (cv) {
+      if (!cv) return;
+      cv.width = Math.max(1, Math.floor(r.width * dpr));
+      cv.height = Math.max(1, Math.floor(r.height * dpr));
+    });
+    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (ctxBack) ctxBack.setTransform(dpr, 0, 0, dpr, 0, 0);
     fontSize = r.width < 500 ? 12 : 14;
     rainCols = Math.ceil(r.width / fontSize);
     while (drops.length < rainCols) {
       drops.push(Math.random() * 40);
       speeds.push(0.45 + Math.random() * 0.7);
+      dropsBack.push(Math.random() * 60);
     }
     drops.length = rainCols;
     speeds.length = rainCols;
+    dropsBack.length = rainCols;
+  }
+
+  function drawRainLayer(c, dropArr, spdMul, alpha, bright) {
+    if (!c) return;
+    const w = ROOT.clientWidth;
+    const h = ROOT.clientHeight;
+    c.fillStyle = "rgba(0,0,0," + alpha + ")";
+    c.fillRect(0, 0, w, h);
+    c.font = fontSize + "px monospace";
+    for (let i = 0; i < rainCols; i++) {
+      const ch = Math.random() < 0.5 ? "0" : "1";
+      c.fillStyle = Math.random() < 0.08 ? bright : rainHue;
+      c.fillText(ch, i * fontSize, dropArr[i] * fontSize);
+      if (dropArr[i] * fontSize > h && Math.random() > 0.975) dropArr[i] = 0;
+      dropArr[i] += speeds[i] * spdMul * (won ? 1.4 : 1);
+    }
   }
 
   function drawRain() {
-    const w = ROOT.clientWidth;
-    const h = ROOT.clientHeight;
-    ctx.fillStyle = won ? "rgba(0,0,0,0.08)" : "rgba(0,0,0,0.07)";
-    ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = won ? "#86efac" : "#22c55e";
-    ctx.font = fontSize + "px monospace";
-    for (let i = 0; i < rainCols; i++) {
-      const ch = Math.random() < 0.5 ? "0" : "1";
-      ctx.fillText(ch, i * fontSize, drops[i] * fontSize);
-      if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
-      drops[i] += speeds[i] * (won ? 1.35 : 1);
-    }
+    if (REDUCED_MOTION) return;
+    drawRainLayer(ctxBack, dropsBack, 0.55, 0.04, rainBright);
+    drawRainLayer(ctx, drops, 1, won ? 0.08 : 0.07, rainBright);
   }
-  setInterval(drawRain, 50);
+  if (!REDUCED_MOTION) setInterval(drawRain, 50);
   window.addEventListener("resize", sizeRain);
   if (window.ResizeObserver) {
     new ResizeObserver(function () { sizeRain(); }).observe(ROOT);
+  }
+
+  // --- Embed + persistence ---
+  function notifyParent(inGame) {
+    if (!EMBED || !window.parent) return;
+    try { window.parent.postMessage({ type: "bm-chrome", inGame: !!inGame }, "*"); } catch (e) {}
+  }
+
+  function loadRecords() {
+    try {
+      const r = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (!r.clears) r.clears = {};
+      return r;
+    } catch (e) { return { clears: {} }; }
+  }
+
+  function ensureClears() {
+    if (!records.clears) records.clears = {};
+  }
+
+  function markCampaignClear(key) {
+    ensureClears();
+    records.clears[key] = true;
+    saveRecords();
+    updateRankDisplay();
+    updateOmegaBtn();
+  }
+
+  function computeRank() {
+    ensureClears();
+    const c = records.clears;
+    if (c.omega || c.genius) return "OMEGA";
+    if (c.hard) return "GHOST";
+    if (c.medium || c.easy) return "OPERATOR";
+    return "RECRUIT";
+  }
+
+  function updateRankDisplay() {
+    if (els.rank) els.rank.textContent = "RANK · " + computeRank();
+  }
+
+  function updateOmegaBtn() {
+    if (!els.omegaBtn) return;
+    ensureClears();
+    if (records.clears.hard || records.clears.omega) {
+      els.omegaBtn.classList.remove("bm-hidden");
+    } else {
+      els.omegaBtn.classList.add("bm-hidden");
+    }
+  }
+
+  function saveRecords() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); } catch (e) {}
+  }
+
+  function bestKey() {
+    if (dailyMode) return "daily";
+    if (omegaMode) return "omega";
+    return geniusMode ? "genius" : difficulty;
+  }
+
+  function dateSeed() {
+    const d = new Date();
+    return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  }
+
+  function dailyDateLabel() {
+    return new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  }
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0;
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function withSeed(seed, fn) {
+    const rng = mulberry32(seed);
+    const orig = Math.random;
+    Math.random = rng;
+    try { return fn(); } finally { Math.random = orig; }
+  }
+
+  function updateDailyHint() {
+    if (!els.dailyHint) return;
+    const best = records.daily;
+    els.dailyHint.innerHTML = "Daily node · " + dailyDateLabel() + (best ? " · best <b>" + best + "</b>" : "");
+  }
+
+  function updateContinueBtn() {
+    if (!els.continueBtn) return;
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) {
+      els.continueBtn.classList.add("bm-hidden");
+      return;
+    }
+    try {
+      const s = JSON.parse(raw);
+      els.continueBtn.classList.remove("bm-hidden");
+      els.continueBtn.textContent = "CONTINUE " + s.difficulty.toUpperCase() + " " + (s.gridLevel + 1) + "/" + (CAMPAIGN[s.difficulty] ? CAMPAIGN[s.difficulty].length : "?");
+    } catch (e) {
+      els.continueBtn.classList.add("bm-hidden");
+    }
+  }
+
+  function saveLink() {
+    if (dailyMode || omegaMode || geniusMode || !playing || won) return;
+    if (difficulty === "genius") return;
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        difficulty: difficulty,
+        gridLevel: gridLevel,
+        score: score,
+        elapsedMs: elapsedMs,
+        mistakes: mistakes,
+        maxMistakes: maxMistakes,
+        grid: grid,
+        puzzle: puzzle,
+        given: given,
+        solution: solution,
+        N: N,
+        sectorCodes: sectorCodes.slice()
+      }));
+      updateContinueBtn();
+    } catch (e) {}
+  }
+
+  function clearLink() {
+    try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+    updateContinueBtn();
+  }
+
+  function shareText() {
+    const diff = lastVictoryDaily ? "DAILY" : (lastVictoryOmega ? "OMEGA" : (geniusMode ? "GENIUS" : difficulty.toUpperCase()));
+    const site = "https://www.8bitcrypto44.xyz";
+    return "THE BINARY MATRIX · " + diff + " · score " + score + " · time " + fmtTime(elapsedMs) + " · " + site + " · 8bitcrypto_44";
+  }
+
+  function shareOnX() {
+    const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText());
+    window.open(url, "_blank", "noopener,noreferrer,width=550,height=420");
+    beep(720, 0.06, "triangle", 0.06);
+  }
+
+  function restoreLink() {
+    let s;
+    try { s = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { return; }
+    if (!s || !s.grid) return;
+    ensureAudio();
+    hideVictory();
+    dailyMode = false;
+    omegaMode = false;
+    geniusMode = false;
+    difficulty = s.difficulty;
+    gridLevel = s.gridLevel;
+    score = s.score;
+    elapsedMs = s.elapsedMs;
+    mistakes = s.mistakes;
+    maxMistakes = s.maxMistakes;
+    grid = s.grid;
+    puzzle = s.puzzle;
+    given = s.given;
+    solution = s.solution;
+    N = s.N;
+    HALF = N / 2;
+    sectorCodes = s.sectorCodes || [];
+    playing = true;
+    paused = false;
+    won = false;
+    focusR = 0;
+    focusC = 0;
+    applyMood();
+    ROOT.querySelectorAll(".bm-diff").forEach(function (b) {
+      b.classList.toggle("selected", b.dataset.diff === difficulty);
+    });
+    if (menuRules) menuRules.innerHTML = RULES_GRID;
+    els.menu.classList.add("bm-hidden");
+    els.genius.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    setGridSize(N);
+    els.solveBtn.classList.toggle("bm-hidden", difficulty !== "easy");
+    startedAt = Date.now() - elapsedMs;
+    setStatus("Link restored · " + sectorSpec()[4]);
+    renderGrid(false);
+    updateHUD();
+    startTimer();
+    playMusic();
+    notifyParent(true);
+    beep(600, 0.08, "triangle", 0.06);
+  }
+
+  function updateBestDisplay() {
+    if (!els.best) return;
+    const b = records[bestKey()];
+    els.best.textContent = b ? "BEST " + String(b).padStart(6, "0") : "BEST —";
+  }
+
+  function maybeSaveBest(sc) {
+    const k = bestKey();
+    if (!records[k] || sc > records[k]) {
+      records[k] = sc;
+      saveRecords();
+    }
+    updateBestDisplay();
+  }
+
+  function updateProgressBar() {
+    if (dailyMode || omegaMode) {
+      if (els.progressWrap) els.progressWrap.hidden = false;
+      if (els.progressLabel) {
+        els.progressLabel.textContent = dailyMode
+          ? ("DAILY · " + dailyDateLabel())
+          : "OMEGA ROOT · 8×8";
+      }
+      if (els.progressFill) els.progressFill.style.width = won ? "100%" : (omegaMode ? "50%" : "66%");
+      return;
+    }
+    if (!els.progressWrap || geniusMode) {
+      if (els.progressWrap) els.progressWrap.hidden = true;
+      return;
+    }
+    els.progressWrap.hidden = false;
+    const len = campaignLen();
+    const pct = len ? ((gridLevel + 1) / len) * 100 : 0;
+    if (els.progressLabel) els.progressLabel.textContent = "SECTOR " + (gridLevel + 1) + "/" + len;
+    if (els.progressFill) els.progressFill.style.width = Math.min(100, pct) + "%";
+  }
+
+  function updateVmProgress() {
+    if (!geniusMode) return;
+    const n = vmN();
+    if (els.vmProgressLabel) els.vmProgressLabel.textContent = (KERNEL_NAMES[vmLevel] || ("GATE " + (vmLevel + 1))) + " · " + (vmLevel + 1) + "/" + n;
+    if (els.vmProgressFill) els.vmProgressFill.style.width = ((vmLevel + 0.35) / n) * 100 + "%";
+  }
+
+  function updateVmRegs(res) {
+    if (els.regProbes) els.regProbes.textContent = String(vmProbes);
+    if (!res || !vmShowRegs) {
+      if (els.regA) els.regA.textContent = "--";
+      if (els.regB) els.regB.textContent = "--";
+      if (els.regZ) els.regZ.textContent = "--";
+      return;
+    }
+    if (els.regA) els.regA.textContent = hexByte(res.A);
+    if (els.regB) els.regB.textContent = hexByte(res.B);
+    if (els.regZ) els.regZ.textContent = String(res.Z);
+  }
+
+  // --- Boot sequence ---
+  const BOOT_LINES = [
+    { t: "NEXCORP UPLINK v3.7.2", c: "hi" },
+    { t: "Handshake................ OK", c: "" },
+    { t: "Matrix rain shader....... OK", c: "" },
+    { t: "Takuzu engine............ OK", c: "" },
+    { t: "NX-8 sandbox............. STANDBY", c: "" },
+    { t: "", c: "" },
+    { t: "Operator authenticated.", c: "hi" },
+    { t: "> AWAITING JACK IN_", c: "hi" }
+  ];
+
+  function runBoot(cb) {
+    if (!els.boot || !els.bootLog) {
+      bootDone = true;
+      if (els.menu) els.menu.classList.remove("bm-hidden");
+      cb();
+      return;
+    }
+    els.menu.classList.add("bm-hidden");
+    els.boot.classList.add("show");
+    els.bootLog.textContent = "";
+    let i = 0;
+    let skipped = false;
+    function finish() {
+      bootDone = true;
+      els.boot.classList.remove("show");
+      if (els.menu) els.menu.classList.remove("bm-hidden");
+      cb();
+    }
+    function step() {
+      if (skipped || i >= BOOT_LINES.length) {
+        setTimeout(finish, 400);
+        return;
+      }
+      const line = BOOT_LINES[i++];
+      const span = document.createElement("span");
+      if (line.c === "hi") span.className = "hi";
+      if (line.c === "dim") span.className = "dim";
+      span.textContent = line.t + (line.t ? "\n" : "");
+      els.bootLog.appendChild(span);
+      beep(880 + i * 20, 0.03, "square", 0.03);
+      setTimeout(step, line.t ? 280 : 120);
+    }
+    if (els.bootSkip) {
+      els.bootSkip.classList.remove("bm-hidden");
+      els.bootSkip.onclick = function () { skipped = true; finish(); };
+    }
+    setTimeout(step, 350);
+  }
+
+  function showSectorCard(clearedLabel, code, nextLabel, cb, loreQuote) {
+    if (!els.sector) { if (cb) cb(); return; }
+    if (els.sectorKicker) els.sectorKicker.textContent = "SECTOR CLEARED";
+    if (els.sectorTitle) els.sectorTitle.textContent = clearedLabel;
+    if (els.sectorCode) els.sectorCode.textContent = "matrix code " + code;
+    if (els.sectorLore) {
+      if (loreQuote) {
+        els.sectorLore.textContent = "\u201C" + loreQuote + "\u201D";
+        els.sectorLore.classList.remove("bm-hidden");
+      } else {
+        els.sectorLore.textContent = "";
+        els.sectorLore.classList.add("bm-hidden");
+      }
+    }
+    if (els.sectorNext) els.sectorNext.textContent = nextLabel || "Next node loading…";
+    if (els.gridWrap) {
+      els.gridWrap.classList.add("bm-dissolve");
+      setTimeout(function () { els.gridWrap.classList.remove("bm-dissolve"); }, 560);
+    }
+    els.sector.classList.add("show");
+    beep(520, 0.08, "triangle", 0.07);
+    beep(780, 0.1, "triangle", 0.08);
+    setTimeout(function () {
+      els.sector.classList.remove("show");
+      if (cb) cb();
+    }, 1200);
+  }
+
+  function showVictory(opts) {
+    opts = opts || {};
+    lastVictoryDaily = !!opts.daily;
+    lastVictoryOmega = !!opts.omega;
+    clearLink();
+    if (els.victoryTitle) els.victoryTitle.textContent = opts.title || "LINK COMPLETE";
+    if (els.victorySub) els.victorySub.textContent = opts.sub || "NexCorp firewall breached.";
+    if (els.victoryScore) els.victoryScore.textContent = String(score);
+    if (els.victoryTime) els.victoryTime.textContent = fmtTime(elapsedMs);
+    if (els.victoryBest) els.victoryBest.textContent = records[bestKey()] ? String(records[bestKey()]) : "—";
+    if (els.keychain) {
+      els.keychain.innerHTML = "";
+      (opts.codes || []).forEach(function (c, i) {
+        const k = document.createElement("span");
+        k.className = "bm-key";
+        k.textContent = (opts.genius ? "K" : "S") + (i + 1) + " · " + c;
+        els.keychain.appendChild(k);
+      });
+    }
+    if (els.victory) els.victory.classList.add("show");
+    notifyParent(false);
+    playWinFanfare();
+    if (bgMusic) bgMusic.volume = muted ? 0 : Math.min(musicVol, 0.22);
+  }
+
+  function hideVictory() {
+    if (els.victory) els.victory.classList.remove("show");
   }
 
   // --- Audio ---
@@ -160,9 +633,42 @@
   }
 
   function playWinFanfare() {
-    [523, 659, 784, 1046].forEach(function (f, i) {
-      setTimeout(function () { beep(f, 0.28, "triangle", 0.1); }, i * 220);
+    [392, 523, 659, 784, 1046, 1318].forEach(function (f, i) {
+      setTimeout(function () { beep(f, 0.32, "triangle", 0.11); }, i * 180);
     });
+  }
+
+  function playStrikeStinger() {
+    beep(120, 0.25, "sawtooth", 0.12);
+    setTimeout(function () { beep(90, 0.35, "sawtooth", 0.1); }, 80);
+    triggerGlitch();
+  }
+
+  function startHum() {
+    if (REDUCED_MOTION || muted || !musicVol) return;
+    ensureAudio();
+    if (humOsc) return;
+    humOsc = audioCtx.createOscillator();
+    humGain = audioCtx.createGain();
+    humOsc.type = "sine";
+    humOsc.frequency.value = 58;
+    humGain.gain.value = musicVol * 0.07;
+    humOsc.connect(humGain);
+    humGain.connect(audioCtx.destination);
+    humOsc.start();
+  }
+
+  function stopHum() {
+    if (!humOsc) return;
+    try { humOsc.stop(); } catch (e) {}
+    humOsc.disconnect();
+    humGain.disconnect();
+    humOsc = null;
+    humGain = null;
+  }
+
+  function syncHum() {
+    if (humGain) humGain.gain.value = muted || !musicVol ? 0 : musicVol * 0.07;
   }
 
   function setupMusic() {
@@ -176,16 +682,20 @@
     if (!bgMusic) setupMusic();
     bgMusic.volume = muted ? 0 : musicVol;
     bgMusic.play().catch(function () {});
+    startHum();
+    syncHum();
   }
 
   function stopMusic() {
     if (!bgMusic) return;
     bgMusic.pause();
     bgMusic.currentTime = 0;
+    stopHum();
   }
 
   function pauseMusic() {
     if (bgMusic) bgMusic.pause();
+    syncHum();
   }
 
   // --- Takuzu / Binary puzzle engine ---
@@ -321,11 +831,14 @@
   }
 
   function campaignLen() {
+    if (dailyMode || omegaMode) return 1;
     const c = CAMPAIGN[difficulty];
     return c ? c.length : 1;
   }
 
   function sectorSpec() {
+    if (omegaMode) return OMEGA_SPEC.slice();
+    if (dailyMode) return [6, 12, 3, 2, "DAILY NODE — " + dailyDateLabel()];
     const c = CAMPAIGN[difficulty];
     return c ? c[Math.min(gridLevel, c.length - 1)] : [6, 11, 3, 2, "matrix"];
   }
@@ -416,10 +929,13 @@
     if (els.time) els.time.textContent = fmtTime(elapsedMs);
     if (els.mistakes) els.mistakes.textContent = mistakes + "/" + maxMistakes;
     if (els.diffLabel) {
-      els.diffLabel.textContent = geniusMode
-        ? ("GENIUS " + (vmLevel + 1) + "/" + vmN())
-        : (difficulty.toUpperCase() + " " + (gridLevel + 1) + "/" + campaignLen());
+      if (omegaMode) els.diffLabel.textContent = "OMEGA ROOT · 8×8";
+      else if (geniusMode) els.diffLabel.textContent = "GENIUS " + (vmLevel + 1) + "/" + vmN();
+      else els.diffLabel.textContent = difficulty.toUpperCase() + " " + (gridLevel + 1) + "/" + campaignLen();
     }
+    updateProgressBar();
+    updateVmProgress();
+    if (els.regProbes) els.regProbes.textContent = String(vmProbes);
   }
 
   function setStatus(msg, cls) {
@@ -443,12 +959,15 @@
         if (won) td.classList.add("won-cell");
         if (mask && mask[r][c]) td.classList.add("bad");
         if (v !== -1) td.textContent = String(v);
+        if (lastFlipCell === r + "," + c) td.classList.add("bm-flip");
+        if (playing && !won && !geniusMode && focusR === r && focusC === c) td.classList.add("bm-focus");
         td.dataset.r = r;
         td.dataset.c = c;
         tr.appendChild(td);
       }
       els.grid.appendChild(tr);
     }
+    lastFlipCell = null;
   }
 
   function tick() {
@@ -464,6 +983,12 @@
 
   function calcSectorScore() {
     const spec = sectorSpec();
+    if (omegaMode) {
+      const sparseBonus = Math.max(0, (spec[0] * spec[0] - spec[1]) * 28);
+      const timePenalty = Math.floor((Date.now() - sectorClock) / 1000) * 4;
+      const missPenalty = mistakes * 250;
+      return Math.max(200, 5000 + sparseBonus - timePenalty - missPenalty);
+    }
     const base = difficulty === "hard" ? 2200 : difficulty === "medium" ? 1500 : 900;
     const sizeBonus = spec[0] === 6 ? 400 : 150;
     const sparseBonus = Math.max(0, (spec[0] * spec[0] - spec[1]) * 18);
@@ -483,18 +1008,56 @@
     playing = false;
     sectorGain = calcSectorScore();
     score += sectorGain;
+    const code = matrixCode();
+    sectorCodes.push(code);
     updateHUD();
     renderGrid(false);
+    if (dailyMode) {
+      score += 500;
+      maybeSaveBest(score);
+      setStatus("DAILY CLEARED +" + (sectorGain + 500), "ok");
+      showVictory({
+        title: "DAILY NODE CLEARED",
+        sub: dailyDateLabel() + " · same puzzle for every operator worldwide",
+        codes: [code],
+        daily: true
+      });
+      return;
+    }
+    if (omegaMode) {
+      score += 3000;
+      maybeSaveBest(score);
+      markCampaignClear("omega");
+      setStatus("OMEGA ROOT CLEARED +" + (sectorGain + 3000), "ok");
+      showVictory({
+        title: "OMEGA ROOT BREACHED",
+        sub: "8×8 root matrix cracked · clearance: OMEGA · one strike only",
+        codes: [code],
+        omega: true
+      });
+      return;
+    }
+    const spec = sectorSpec();
     const more = gridLevel < campaignLen() - 1;
     if (more) {
-      setStatus("SECTOR " + (gridLevel + 1) + " CLEAR +" + sectorGain + " — next matrix…", "ok");
+      setStatus("SECTOR " + (gridLevel + 1) + " CLEAR +" + sectorGain, "ok");
       beep(660, 0.1, "triangle", 0.07);
       beep(880, 0.12, "square", 0.06);
-      advanceTimer = setTimeout(advanceSector, 850);
+      advanceTimer = setTimeout(function () {
+        const lore = LORE_QUOTES[gridLevel % LORE_QUOTES.length];
+        showSectorCard(spec[4], code, "Routing to next node…", advanceSector, lore);
+      }, 400);
     } else {
-      setStatus("LINK COMPLETE — matrix code " + matrixCode() + " · score " + score, "ok");
-      playWinFanfare();
-      if (bgMusic) bgMusic.volume = muted ? 0 : Math.min(musicVol, 0.22);
+      setStatus("LINK COMPLETE", "ok");
+      markCampaignClear(difficulty);
+      maybeSaveBest(score);
+      let sub = difficulty.toUpperCase() + " campaign cleared · NexCorp node chain broken.";
+      if (difficulty === "hard") sub += " OMEGA ROOT MATRIX unlocked.";
+      showVictory({
+        title: "LINK COMPLETE",
+        sub: sub,
+        codes: sectorCodes
+      });
     }
   }
 
@@ -517,6 +1080,8 @@
       paused = false;
       won = false;
       geniusMode = false;
+      focusR = 0;
+      focusC = 0;
       mistakes = 0;
       maxMistakes = spec[2];
       sectorClock = Date.now();
@@ -528,12 +1093,14 @@
         startedAt = Date.now() - elapsedMs;
       }
       els.pauseOv.classList.remove("show");
-      els.solveBtn.classList.toggle("bm-hidden", difficulty !== "easy");
+      els.solveBtn.classList.toggle("bm-hidden", difficulty !== "easy" || omegaMode);
+      if (els.gridWrap) els.gridWrap.classList.toggle("bm-omega-grid", omegaMode || spec[0] === 8);
       let clues = 0;
       for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (given[r][c]) clues++;
       setStatus("Sector " + (gridLevel + 1) + "/" + campaignLen() + " · " + spec[4] + " · " + N + "×" + N + " · " + clues + " clues · " + maxMistakes + " strikes");
       renderGrid(false);
       updateHUD();
+      notifyParent(true);
       startTimer();
       if (freshRun) {
         playMusic();
@@ -542,6 +1109,7 @@
         beep(600, 0.08, "triangle", 0.06);
       }
       sizeRain();
+      saveLink();
     }, freshRun ? 30 : 40);
   }
 
@@ -549,14 +1117,17 @@
     playing = false;
     if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
     setStatus("SYSTEM LOCK — too many errors. Restart sector or ease difficulty.", "err");
-    beep(140, 0.4, "sawtooth", 0.1);
+    playStrikeStinger();
     pauseMusic();
+    notifyParent(false);
   }
 
   function cellClick(e) {
     const td = e.target.closest("td");
     if (!td || !playing || paused || won) return;
     const r = +td.dataset.r, c = +td.dataset.c;
+    focusR = r;
+    focusC = c;
     if (given[r][c]) {
       beep(220, 0.08, "sine", 0.04);
       return;
@@ -564,7 +1135,9 @@
     // cycle empty -> 0 -> 1 -> empty
     const cur = grid[r][c];
     grid[r][c] = cur === -1 ? 0 : cur === 0 ? 1 : -1;
-    beep(760, 0.06, "square", 0.05);
+    const nv = grid[r][c];
+    beep(nv === 0 ? 640 : nv === 1 ? 920 : 480, 0.06, nv === 1 ? "square" : "sine", 0.05);
+    lastFlipCell = r + "," + c;
     renderGrid(true);
     const mask = violationMask(grid);
     let hasBad = false;
@@ -572,24 +1145,156 @@
     if (hasBad) setStatus("Conflict highlighted — fix before CHECK", "err");
     else setStatus("Signal clean…");
     if (isCompleteValid(grid)) onWin();
+    else saveLink();
+  }
+
+  function moveFocus(dr, dc) {
+    if (!grid || N < 1) return;
+    focusR = (focusR + dr + N) % N;
+    focusC = (focusC + dc + N) % N;
+    renderGrid(true);
+    beep(420, 0.03, "sine", 0.03);
+  }
+
+  function cycleFocusCell() {
+    if (!playing || paused || won || !grid) return;
+    const r = focusR, c = focusC;
+    if (given[r][c]) {
+      beep(220, 0.08, "sine", 0.04);
+      return;
+    }
+    const cur = grid[r][c];
+    grid[r][c] = cur === -1 ? 0 : cur === 0 ? 1 : -1;
+    const nv = grid[r][c];
+    beep(nv === 0 ? 640 : nv === 1 ? 920 : 480, 0.06, nv === 1 ? "square" : "sine", 0.05);
+    lastFlipCell = r + "," + c;
+    renderGrid(true);
+    const mask = violationMask(grid);
+    let hasBad = false;
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) if (mask[i][j]) hasBad = true;
+    if (hasBad) setStatus("Conflict highlighted — fix before CHECK", "err");
+    else setStatus("Signal clean…");
+    if (isCompleteValid(grid)) onWin();
+    else saveLink();
+  }
+
+  function onGridKey(e) {
+    if (!playing || paused || won || geniusMode) return;
+    if (!els.play || els.play.classList.contains("bm-hidden")) return;
+    if (e.key === "ArrowUp") { e.preventDefault(); moveFocus(-1, 0); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); moveFocus(1, 0); return; }
+    if (e.key === "ArrowLeft") { e.preventDefault(); moveFocus(0, -1); return; }
+    if (e.key === "ArrowRight") { e.preventDefault(); moveFocus(0, 1); return; }
+    if (e.key === " " || e.key === "Spacebar") { e.preventDefault(); cycleFocusCell(); return; }
+    if (e.key === "Enter") { e.preventDefault(); checkBoard(); return; }
   }
 
   function showMenu() {
     playing = false;
     paused = false;
     geniusMode = false;
+    dailyMode = false;
+    omegaMode = false;
+    hideVictory();
     if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
     els.pauseOv.classList.remove("show");
     if (els.geniusHelp) els.geniusHelp.classList.remove("show");
     els.menu.classList.remove("bm-hidden");
     els.play.classList.add("bm-hidden");
     if (els.genius) els.genius.classList.add("bm-hidden");
+    if (els.progressWrap) els.progressWrap.hidden = true;
+    if (els.gridWrap) els.gridWrap.classList.remove("bm-omega-grid");
     stopMusic();
     clearInterval(timerId);
+    applyMood();
+    updateBestDisplay();
+    updateContinueBtn();
+    updateDailyHint();
+    updateRankDisplay();
+    updateOmegaBtn();
+    notifyParent(false);
+  }
+
+  function startDaily() {
+    ensureAudio();
+    hideVictory();
+    if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+    dailyMode = true;
+    omegaMode = false;
+    geniusMode = false;
+    gridLevel = 0;
+    sectorCodes = [];
+    score = 0;
+    mistakes = 0;
+    maxMistakes = 3;
+    elapsedMs = 0;
+    startedAt = Date.now();
+    applyMood();
+    els.menu.classList.add("bm-hidden");
+    if (els.genius) els.genius.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    notifyParent(true);
+    const pack = withSeed(dateSeed(), function () {
+      setGridSize(6);
+      const full = generateFull();
+      const dug = digPuzzle(full, 12, 2);
+      const giv = [];
+      for (let r = 0; r < N; r++) {
+        giv[r] = [];
+        for (let c = 0; c < N; c++) giv[r][c] = dug[r][c] !== -1;
+      }
+      return { solution: full, puzzle: dug, given: giv };
+    });
+    solution = pack.solution;
+    puzzle = pack.puzzle;
+    given = pack.given;
+    grid = clone(puzzle);
+    playing = true;
+    paused = false;
+    won = false;
+    focusR = 0;
+    focusC = 0;
+    sectorClock = Date.now();
+    els.pauseOv.classList.remove("show");
+    els.solveBtn.classList.add("bm-hidden");
+    setStatus("Daily node · " + dailyDateLabel() + " · 6×6 · 3 strikes");
+    renderGrid(false);
+    updateHUD();
+    startTimer();
+    playMusic();
+    beep(880, 0.08, "square", 0.06);
+    sizeRain();
+  }
+
+  function startOmega() {
+    ensureAudio();
+    hideVictory();
+    if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+    omegaMode = true;
+    dailyMode = false;
+    geniusMode = false;
+    gridLevel = 0;
+    sectorCodes = [];
+    score = 0;
+    mistakes = 0;
+    elapsedMs = 0;
+    startedAt = Date.now();
+    applyMood();
+    els.menu.classList.add("bm-hidden");
+    if (els.genius) els.genius.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    notifyParent(true);
+    loadGridSector(true);
   }
 
   function startGame() {
     ensureAudio();
+    hideVictory();
+    applyMood();
+    dailyMode = false;
+    omegaMode = false;
+    sectorCodes = [];
+    clearLink();
     if (difficulty === "genius") {
       startGenius();
       return;
@@ -599,6 +1304,7 @@
     els.menu.classList.add("bm-hidden");
     if (els.genius) els.genius.classList.add("bm-hidden");
     els.play.classList.remove("bm-hidden");
+    notifyParent(true);
     loadGridSector(true);
   }
 
@@ -731,7 +1437,7 @@
       }
       return {
         code: code, key: key, len: s.n, leak: !!s.leak, scored: !!s.scored, syndrome: !!s.xor,
-        brief: "L" + (i + 1) + "/" + total + " · " + s.b
+        brief: KERNEL_NAMES[i] + " · L" + (i + 1) + "/" + total + " · " + s.b
       };
     });
   }
@@ -795,6 +1501,7 @@
     if (els.probe) els.probe.value = "";
     if (els.answer) els.answer.value = "";
     setVmStatus("Kernel " + (vmLevel + 1) + "/" + vmN() + " online. Probes: " + vmProbes);
+    updateVmRegs(null);
     updateHUD();
   }
 
@@ -812,10 +1519,12 @@
     vmChallenges = buildGeniusChallenges();
     elapsedMs = 0;
     startedAt = Date.now();
+    applyMood();
     els.menu.classList.add("bm-hidden");
     els.play.classList.add("bm-hidden");
     els.genius.classList.remove("bm-hidden");
     els.pauseOv.classList.remove("show");
+    if (els.progressWrap) els.progressWrap.hidden = true;
     els.vmLog.classList.add("meta");
     els.vmLog.textContent = "NX-8 sandbox ready. Program hidden. ISA visible.\nEnter probe hex and RUN. SUBMIT when sure.";
     loadVmLevel();
@@ -824,13 +1533,14 @@
     beep(880, 0.08, "square", 0.06);
     beep(440, 0.12, "triangle", 0.06);
     sizeRain();
+    notifyParent(true);
   }
 
   function geniusFailStrike(why) {
     mistakes++;
     updateHUD();
     setVmStatus(why + " · strikes " + mistakes + "/" + maxMistakes, "err");
-    beep(160, 0.2, "sawtooth", 0.09);
+    playStrikeStinger();
     if (mistakes >= maxMistakes) {
       playing = false;
       setVmStatus("KERNEL LOCK — genius link severed.", "err");
@@ -866,6 +1576,7 @@
     }
     appendLog(html);
     setVmStatus("Probes: " + vmProbes + " · Kernel " + (vmLevel + 1) + "/" + vmN());
+    updateVmRegs(res.err ? null : res);
     beep(okTone(res), 0.07, "square", 0.05);
     updateHUD();
   }
@@ -908,11 +1619,15 @@
     const bonus = Math.max(0, 10000 - vmProbes * 30 - mistakes * 500 - Math.floor(elapsedMs / 1000) * 3);
     score = 8000 + vmN() * 1000 + bonus;
     updateHUD();
-    const code = vmSecrets.join("");
-    setVmStatus("NEXCORP BREACHED — matrix key " + code + " · score " + score, "ok");
-    appendLog("<span class='ok'>ALL KERNELS OPEN · KEYCHAIN " + code + "</span>");
-    playWinFanfare();
-    if (bgMusic) bgMusic.volume = muted ? 0 : Math.min(musicVol, 0.22);
+    maybeSaveBest(score);
+    markCampaignClear("genius");
+    appendLog("<span class='ok'>ALL KERNELS OPEN · KEYCHAIN " + vmSecrets.join("") + "</span>");
+    showVictory({
+      title: "NEXCORP BREACHED",
+      sub: "All 8 CPU gates cracked · Operator clearance: OMEGA",
+      codes: vmSecrets.slice(),
+      genius: true
+    });
   }
 
   function restartSame() {
@@ -991,12 +1706,17 @@
       difficulty = btn.dataset.diff;
       ROOT.querySelectorAll(".bm-diff").forEach(function (b) { b.classList.toggle("selected", b === btn); });
       if (menuRules) menuRules.innerHTML = difficulty === "genius" ? RULES_GENIUS : RULES_GRID;
-      updateHUD();
+      applyMood();
+      updateBestDisplay();
       beep(700, 0.05, "square", 0.04);
     });
   });
 
   ROOT.querySelector("#bm-start").addEventListener("click", startGame);
+  if (els.dailyBtn) els.dailyBtn.addEventListener("click", startDaily);
+  if (els.omegaBtn) els.omegaBtn.addEventListener("click", startOmega);
+  if (els.continueBtn) els.continueBtn.addEventListener("click", restoreLink);
+  ROOT.addEventListener("keydown", onGridKey);
   ROOT.querySelector("#bm-tutorial").addEventListener("click", function () {
     els.helpOv.classList.add("show");
     beep(600, 0.05, "square", 0.04);
@@ -1039,6 +1759,7 @@
     if (bgMusic) bgMusic.volume = muted ? 0 : musicVol;
     ROOT.querySelector("#bm-vol-lbl").textContent = Math.round(musicVol * 100) + "%";
     ROOT.querySelector("#bm-sfx-lbl").textContent = Math.round(sfxVol * 100) + "%";
+    syncHum();
   }
   els.vol.addEventListener("input", syncVol);
   els.sfx.addEventListener("input", syncVol);
@@ -1047,12 +1768,39 @@
     els.mute.textContent = muted ? "UNMUTE" : "MUTE";
     els.mute.setAttribute("aria-pressed", muted ? "true" : "false");
     if (bgMusic) bgMusic.volume = muted ? 0 : musicVol;
+    if (muted) stopHum();
+    else if (playing && !paused) startHum();
+    syncHum();
     beep(500, 0.06, "square", 0.05);
   });
+
+  if (els.victoryMenu) els.victoryMenu.addEventListener("click", showMenu);
+  if (els.shareX) els.shareX.addEventListener("click", shareOnX);
+  if (els.copyScore) {
+    els.copyScore.addEventListener("click", function () {
+      const txt = shareText();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(function () {
+          els.copyScore.textContent = "COPIED!";
+          setTimeout(function () { els.copyScore.textContent = "COPY SCORE"; }, 1600);
+        }).catch(function () {});
+      }
+      beep(720, 0.06, "triangle", 0.06);
+    });
+  }
 
   // init
   setupMusic();
   sizeRain();
+  applyMood();
+  updateBestDisplay();
   requestAnimationFrame(function () { sizeRain(); drawRain(); });
-  updateHUD();
+  runBoot(function () {
+    updateHUD();
+    updateContinueBtn();
+    updateDailyHint();
+    updateRankDisplay();
+    updateOmegaBtn();
+    notifyParent(false);
+  });
 })();
