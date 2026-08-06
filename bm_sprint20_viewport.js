@@ -1,5 +1,5 @@
-  // === VIEWPORT SPRINT — tall fixed embed frame, no scroll except tutorials ===
-  const EMBED_FRAME_H = 920;
+  // === VIEWPORT SPRINT — dynamic embed height, no scroll except tutorials ===
+  const EMBED_MIN_H = 680;
   let embedFsActive = false;
 
   Object.assign(els, {
@@ -16,21 +16,36 @@
     e.preventDefault();
   }
 
+  function measureEmbedHeight() {
+    if (!EMBED) return EMBED_MIN_H;
+    const doc = document.documentElement;
+    const bod = document.body;
+    [doc, bod, ROOT].forEach(function (el) {
+      el.style.height = "auto";
+      el.style.minHeight = "0";
+      el.style.maxHeight = "none";
+    });
+    const h = Math.ceil(Math.max(
+      EMBED_MIN_H,
+      ROOT.getBoundingClientRect().height || 0,
+      ROOT.scrollHeight || 0,
+      ROOT.offsetHeight || 0,
+      doc.scrollHeight || 0,
+      bod.scrollHeight || 0
+    ));
+    return h;
+  }
+
   function applyEmbedFrameHeight(h) {
     if (!EMBED) return;
-    h = Math.max(EMBED_FRAME_H, Math.round(h || EMBED_FRAME_H));
-    document.documentElement.style.height = h + "px";
-    document.documentElement.style.minHeight = h + "px";
-    document.documentElement.style.maxHeight = h + "px";
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.height = h + "px";
-    document.body.style.minHeight = h + "px";
-    document.body.style.maxHeight = h + "px";
-    document.body.style.overflow = "hidden";
-    ROOT.style.height = h + "px";
-    ROOT.style.minHeight = h + "px";
-    ROOT.style.maxHeight = h + "px";
-    ROOT.style.overflow = "hidden";
+    h = Math.max(EMBED_MIN_H, Math.round(h || measureEmbedHeight()));
+    [document.documentElement, document.body, ROOT].forEach(function (el) {
+      el.style.height = h + "px";
+      el.style.minHeight = h + "px";
+      el.style.maxHeight = h + "px";
+      el.style.overflow = "hidden";
+    });
+    return h;
   }
 
   function syncEmbedUiMode() {
@@ -41,7 +56,6 @@
     ROOT.classList.toggle("bm-ui-menu", !!menuOpen);
     ROOT.classList.toggle("bm-ui-play", !!playOpen);
     ROOT.classList.toggle("bm-ui-genius", !!geniusOpen);
-    applyEmbedFrameHeight(EMBED_FRAME_H);
     notifyResize();
   }
 
@@ -92,13 +106,14 @@
     if (!EMBED || !window.parent) return;
     requestAnimationFrame(function () {
       try {
-        window.parent.postMessage({ type: "bm-resize", height: EMBED_FRAME_H }, "*");
+        const h = applyEmbedFrameHeight(measureEmbedHeight());
+        window.parent.postMessage({ type: "bm-resize", height: h }, "*");
       } catch (e) {}
     });
   };
 
   if (EMBED) {
-    applyEmbedFrameHeight(EMBED_FRAME_H);
+    applyEmbedFrameHeight(measureEmbedHeight());
     document.addEventListener("wheel", blockEmbedScroll, { passive: false });
     document.addEventListener("touchmove", blockEmbedScroll, { passive: false });
     window.addEventListener("resize", syncEmbedUiMode);

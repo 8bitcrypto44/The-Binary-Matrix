@@ -29,13 +29,13 @@
 #binmat-root .bm-grid-wrap.bm-omega-grid{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
 html.bm-embed #binmat-root .bm-grid-wrap.bm-omega-grid{overflow-x:auto;max-width:100%}
 html.bm-embed,html.bm-embed body{
-  overflow:hidden!important;height:920px!important;min-height:920px!important;max-height:920px!important;
-  overscroll-behavior:none;scrollbar-width:none;-ms-overflow-style:none
+  overflow:hidden!important;overscroll-behavior:none;
+  scrollbar-width:none;-ms-overflow-style:none
 }
 html.bm-embed::-webkit-scrollbar,html.bm-embed body::-webkit-scrollbar{display:none;width:0;height:0}
 html.bm-embed #binmat-root{
-  max-width:none;width:100%;height:920px!important;min-height:920px!important;max-height:920px!important;
-  margin:0;border:0;border-radius:0;box-shadow:none;background:#020603;overflow:hidden!important;overscroll-behavior:none
+  max-width:none;width:100%;margin:0;border:0;border-radius:0;box-shadow:none;background:#020603;
+  overflow:hidden!important;overscroll-behavior:none
 }
 html.bm-embed #binmat-root .bm-shell{
   min-height:0!important;height:100%!important;max-height:none!important;padding:10px 12px 12px;gap:8px;

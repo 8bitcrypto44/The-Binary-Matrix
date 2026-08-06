@@ -6,7 +6,7 @@ import re
 
 root = Path(__file__).resolve().parent
 
-ASSET_VER = "24"
+ASSET_VER = "25"
 PAGES_URL = "https://8bitcrypto44.github.io/The-Binary-Matrix/"
 _brand_logo = root / "assets" / "brand" / "8bitcrypto44_logo.png"
 BRAND_LOGO_URI = (
@@ -113,7 +113,7 @@ pages = (
     "<title>The Binary Matrix by 8bitcrypto_44</title>\n"
     f"<link rel=\"stylesheet\" href=\"binary_matrix.css?v={v}\">\n"
     "<style>html,body{margin:0;background:#020603;}"
-    "html.bm-embed,html.bm-embed body{padding:0;margin:0;background:#020603;height:920px;min-height:920px;max-height:920px;overflow:hidden;overscroll-behavior:none;}</style>\n"
+    "html.bm-embed,html.bm-embed body{padding:0;margin:0;background:#020603;overflow:hidden;overscroll-behavior:none;}</style>\n"
     "</head>\n<body>\n"
     + body.strip()
     + "\n"
@@ -178,18 +178,18 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
 .bm-gd.is-loading .bm-gd-load{{display:flex}}
 .bm-gd.is-fading .bm-gd-cover{{opacity:0}}
 .bm-gd.is-open .bm-gd-cover{{display:none}}
-.bm-gd.is-open{{overflow:hidden;max-height:100vh;max-height:100dvh}}
+.bm-gd.is-open{{overflow:visible}}
 .bm-gd.is-open .bm-gd-play{{display:block;overflow:hidden}}
 .bm-gd.is-open .bm-gd-top{{display:none!important}}
-.bm-gd.is-open .bm-gd-card{{padding:0;display:flex;flex-direction:column;overflow:hidden}}
+.bm-gd.is-open .bm-gd-card{{padding:0;display:flex;flex-direction:column;overflow:visible}}
 .bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-stage{{
-  aspect-ratio:auto!important;min-height:920px!important;height:920px!important;max-height:920px!important;border:0!important;border-radius:0!important;overflow:hidden!important
+  aspect-ratio:auto!important;border:0!important;border-radius:0!important;overflow:hidden!important
 }}
 .bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-play{{
-  position:relative;inset:auto;overflow:hidden;min-height:920px;height:920px;max-height:920px
+  position:relative;inset:auto;overflow:hidden
 }}
 .bm-gd.is-open:not(.is-fs-mode):not(.is-land) .bm-gd-play iframe{{
-  position:relative;inset:auto;display:block;overflow:hidden;border:0;min-height:920px;height:920px;max-height:920px
+  position:relative;inset:auto;display:block;overflow:hidden;border:0;width:100%
 }}
 .bm-gd.is-open.is-land,.bm-gd.is-fs-mode{{
   position:fixed!important;inset:0!important;width:100vw!important;width:100dvw!important;height:100vh!important;height:100dvh!important;
@@ -272,12 +272,12 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
   function embedDefaultH(){{return 920;}}
   function setFrameHeight(h){{
     if(isFs()||root.classList.contains("is-land"))return;
-    h=Math.max(920,Math.round(Number(h)||920));
+    h=Math.max(680,Math.round(Number(h)||920));
     frame.style.height=h+"px";
     var st=root.querySelector(".bm-gd-stage");
     var pl=document.getElementById("bm-gd-play");
-    if(st){{st.style.minHeight=h+"px";st.style.height=h+"px";st.style.maxHeight=h+"px";st.style.aspectRatio="auto";}}
-    if(pl){{pl.style.minHeight=h+"px";pl.style.height=h+"px";pl.style.maxHeight=h+"px";}}
+    if(st){{st.style.minHeight=h+"px";st.style.height=h+"px";st.style.maxHeight="none";st.style.aspectRatio="auto";}}
+    if(pl){{pl.style.minHeight=h+"px";pl.style.height=h+"px";pl.style.maxHeight="none";}}
   }}
   function postFsState(active){{try{{if(frame.contentWindow)frame.contentWindow.postMessage({{type:"bm-fs-state",active:!!active}},"*");}}catch(e){{}}}}
   function mountFs(){{if(root.dataset.bmMounted==="1")return;var slot=document.createElement("div");slot.setAttribute("data-bm-slot","1");slot.style.cssText="display:block;width:100%;max-width:920px;margin:0 auto;height:"+Math.max(1,Math.round(root.getBoundingClientRect().height))+"px";if(root.parentNode)root.parentNode.insertBefore(slot,root);document.body.appendChild(root);root.dataset.bmMounted="1";}}
@@ -287,7 +287,7 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
   function exitFs(){{root.classList.remove("is-fs-mode");var ex=document.exitFullscreen||document.webkitExitFullscreen;if(ex&&document.fullscreenElement){{try{{var p=ex.call(document);if(p&&p.then)p.then(finishExit).catch(finishExit);else finishExit();}}catch(e){{finishExit();}}}}else finishExit();}}
   btn.addEventListener("click",function(){{
     frame.setAttribute("src",baseSrc);root.classList.add("is-open","is-loading","is-fading");btn.setAttribute("aria-expanded","true");
-    setFrameHeight(embedDefaultH());if(phone())enterFs();syncLand();setTimeout(function(){{root.classList.remove("is-fading");}},600);
+    setFrameHeight(embedDefaultH());try{{document.documentElement.style.overflow="hidden";document.body.style.overflow="hidden";}}catch(e){{}}if(phone())enterFs();syncLand();setTimeout(function(){{root.classList.remove("is-fading");}},600);
   }});
   frame.addEventListener("load",function(){{root.classList.remove("is-loading");setFrameHeight(embedDefaultH());}});
   setTimeout(function(){{root.classList.remove("is-loading");}},8000);
