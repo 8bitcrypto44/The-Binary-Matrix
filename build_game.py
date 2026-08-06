@@ -6,7 +6,7 @@ import re
 
 root = Path(__file__).resolve().parent
 
-ASSET_VER = "12"
+ASSET_VER = "13"
 PAGES_URL = "https://8bitcrypto44.github.io/The-Binary-Matrix/"
 _brand_logo = root / "assets" / "brand" / "8bitcrypto44_logo.png"
 BRAND_LOGO_URI = (
@@ -52,6 +52,12 @@ def merge_js():
         s6 = s6_path.read_text(encoding="utf-8").strip() + "\n\n"
         merged = js_path.read_text(encoding="utf-8")
         merged = merged.replace(wire, s6 + wire, 1)
+        js_path.write_text(merged, encoding="utf-8")
+    s7_path = root.joinpath("bm_sprint7_pursuit.js")
+    if s7_path.exists() and wire in merged:
+        s7 = s7_path.read_text(encoding="utf-8").strip() + "\n\n"
+        merged = js_path.read_text(encoding="utf-8")
+        merged = merged.replace(wire, s7 + wire, 1)
         js_path.write_text(merged, encoding="utf-8")
     return js_path.read_text(encoding="utf-8")
 

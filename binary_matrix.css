@@ -334,6 +334,30 @@ html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
   content:attr(data-ghost);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:.55em;color:rgba(134,239,172,.22);pointer-events:none;font-weight:700
 }
+#binmat-root.bm-pursuit{border-color:#ff3355!important;animation:bmPursuitBorder 1.4s ease infinite}
+#binmat-root.bm-pursuit-urgent{animation:bmPursuitUrgent .65s ease infinite}
+@keyframes bmPursuitBorder{0%,100%{box-shadow:0 0 28px rgba(255,51,85,.35)}50%{box-shadow:0 0 42px rgba(255,51,85,.55)}}
+@keyframes bmPursuitUrgent{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
+#binmat-root .bm-pursuit-wrap{margin:0 0 6px;padding:0 4px;text-align:center}
+#binmat-root .bm-pursuit-timer{
+  font-size:11px;font-weight:700;letter-spacing:1px;color:#ff6b81;
+  text-shadow:0 0 10px rgba(255,51,85,.45);padding:4px 8px;border:1px solid rgba(255,51,85,.35);border-radius:6px
+}
+#binmat-root.bm-pursuit-urgent .bm-pursuit-timer{color:#ff3355;animation:bmPursuitText .5s ease infinite}
+@keyframes bmPursuitText{0%,100%{opacity:1}50%{opacity:.65}}
+#binmat-root .bm-ghost-race{margin:0 0 8px;padding:0 6px}
+#binmat-root .bm-ghost-label{font-size:10px;letter-spacing:.6px;color:#86efac;margin:0 0 4px;text-align:center;min-height:1.2em}
+#binmat-root .bm-ghost-track{position:relative;height:8px;border-radius:4px;background:#041208;border:1px solid #166534;overflow:hidden}
+#binmat-root .bm-ghost-fill{
+  height:100%;width:0;background:linear-gradient(90deg,#166534,var(--lime));transition:width .25s linear
+}
+#binmat-root .bm-ghost-fill.bm-behind{background:linear-gradient(90deg,#7f1d1d,#ff3355)}
+#binmat-root .bm-ghost-mark{
+  position:absolute;top:-2px;bottom:-2px;width:2px;left:100%;margin-left:-1px;background:#fde68a;
+  box-shadow:0 0 8px rgba(253,224,71,.65)
+}
+#binmat-root .bm-bounty{font-size:10px;letter-spacing:.5px;color:#64748b;margin:0 0 6px;text-align:center;min-height:1.2em}
+#binmat-root.bm-heat-high .bm-bounty{color:#86efac}
 @media (max-width:700px){
   #binmat-root .bm-shell{padding:10px;min-height:0}
   #binmat-root .bm-stage{min-height:360px;padding:10px 6px}

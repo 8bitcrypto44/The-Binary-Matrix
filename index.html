@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="description" content="The Binary Matrix — jack in, crack NexCorp grids and CPU gates.">
 <title>The Binary Matrix by 8bitcrypto_44</title>
-<link rel="stylesheet" href="binary_matrix.css?v=12">
+<link rel="stylesheet" href="binary_matrix.css?v=13">
 <style>html,body{margin:0;min-height:100%;background:#020603;}html.bm-embed,html.bm-embed body{padding:0;background:#020603;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;}</style>
 </head>
 <body>
@@ -42,6 +42,16 @@
       <div class="bm-wanted-label" id="bm-wanted-label">NEXCORP HEAT · 0%</div>
       <div class="bm-wanted-track"><div class="bm-wanted-fill" id="bm-wanted-fill"></div></div>
     </div>
+    <div class="bm-pursuit-wrap" id="bm-pursuit-wrap" hidden>
+      <div class="bm-pursuit-timer" id="bm-pursuit-timer">PURSUIT · trace closing</div>
+    </div>
+    <div class="bm-ghost-race" id="bm-ghost-race" hidden>
+      <div class="bm-ghost-label" id="bm-ghost-label">GHOST RACE</div>
+      <div class="bm-ghost-track">
+        <div class="bm-ghost-fill" id="bm-ghost-fill"></div>
+        <div class="bm-ghost-mark" id="bm-ghost-mark" title="Your PB finish line"></div>
+      </div>
+    </div>
     <div class="bm-cmap" id="bm-cmap" aria-label="Campaign node map"></div>
     <p class="bm-mult" id="bm-mult"></p>
 
@@ -51,6 +61,7 @@
         <p class="bm-rank" id="bm-rank">RANK · RECRUIT</p>
         <p class="bm-callsign" id="bm-callsign-label">OPERATOR · —</p>
         <p class="bm-bulletin" id="bm-bulletin"></p>
+        <p class="bm-bounty" id="bm-bounty-board"></p>
         <p class="bm-streak" id="bm-streak"></p>
         <div class="bm-loadout" id="bm-loadout" aria-label="Operator loadout">
           <div class="bm-loadout-label">LOADOUT · pick one perk</div>
@@ -318,6 +329,6 @@
     </div>
   </div>
 </div>
-<script src="binary_matrix.js?v=12"></script>
+<script src="binary_matrix.js?v=13"></script>
 </body>
 </html>

@@ -8,10 +8,20 @@
   if (!records.wantedDay) records.wantedDay = 0;
   if (!records.sectorPB) records.sectorPB = {};
   if (!records.ghost) records.ghost = {};
+  function daysBetweenDates(fromSeed, toSeed) {
+    if (!fromSeed || !toSeed) return 0;
+    function toDate(s) {
+      return new Date(Math.floor(s / 10000), Math.floor((s % 10000) / 100) - 1, s % 100);
+    }
+    return Math.max(0, Math.floor((toDate(toSeed) - toDate(fromSeed)) / 86400000));
+  }
   if (records.wantedDay !== dateSeed()) {
-    records.wanted = 0;
+    const gap = daysBetweenDates(records.wantedDay, dateSeed());
+    if (gap > 0 && records.wantedDay) {
+      records.wanted = Math.max(0, Math.round((records.wanted || 0) - gap * 12));
+      if (records.wanted < 100) records.bonusUnlocked = false;
+    }
     records.wantedDay = dateSeed();
-    records.bonusUnlocked = false;
     saveRecords();
   }
   loadoutPerk = records.loadout || "chain";
