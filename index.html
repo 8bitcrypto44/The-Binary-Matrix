@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="description" content="The Binary Matrix — jack in, crack NexCorp grids and CPU gates.">
 <title>The Binary Matrix by 8bitcrypto_44</title>
-<link rel="stylesheet" href="binary_matrix.css?v=17">
+<link rel="stylesheet" href="binary_matrix.css?v=18">
 <style>html,body{margin:0;min-height:100%;background:#020603;}html.bm-embed,html.bm-embed body{padding:0;background:#020603;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;}</style>
 </head>
 <body>
@@ -58,6 +58,9 @@
     </div>
     <div class="bm-side-door-bar" id="bm-side-door-bar" hidden>DEEP NET · SIDE DOOR ACTIVE · 1 STRIKE</div>
     <div class="bm-hunter-status" id="bm-hunter-status" hidden>HUNTER AI</div>
+    <div class="bm-duel-bar" id="bm-duel-bar" hidden>
+      <div class="bm-duel-label" id="bm-duel-label">DUEL ACTIVE</div>
+    </div>
     <div class="bm-cmap" id="bm-cmap" aria-label="Campaign node map"></div>
     <p class="bm-mult" id="bm-mult"></p>
 
@@ -76,9 +79,12 @@
         </div>
         <p class="bm-callsign" id="bm-callsign-label">OPERATOR · —</p>
         <p class="bm-bulletin" id="bm-bulletin"></p>
+        <p class="bm-world-event" id="bm-world-event"></p>
         <p class="bm-bounty" id="bm-bounty-board"></p>
         <div class="bm-relay-board" id="bm-relay-board" aria-label="Squad relay leaderboard"></div>
         <div class="bm-archive-log" id="bm-archive-log" aria-label="NexCorp archive"></div>
+        <div class="bm-archives-panel" id="bm-archives" aria-label="Declassified memos"></div>
+        <a class="bm-declassified" id="bm-declassified" href="https://www.8bitcrypto44.xyz" target="_blank" rel="noopener">◈ DECCLASSIFIED FILES · Binary Matrix books</a>
         <p class="bm-streak" id="bm-streak"></p>
         <p class="bm-daily-loadout" id="bm-daily-loadout-line"></p>
         <div class="bm-heat-calendar-wrap">
@@ -130,6 +136,7 @@
           <button type="button" id="bm-extract" class="bm-warn bm-hidden">EXTRACT · 3 NODES</button>
           <button type="button" id="bm-deep-net" class="bm-danger bm-hidden">DEEP NET · SIDE DOOR</button>
           <button type="button" id="bm-relay-in" class="bm-ghost bm-hidden">JOIN RELAY</button>
+          <button type="button" id="bm-duel-accept" class="bm-danger bm-hidden">DUEL ACCEPT</button>
           <button type="button" id="bm-root-access" class="bm-danger bm-hidden">ROOT ACCESS</button>
           <button type="button" id="bm-tutorial" class="bm-ghost">TUTORIAL</button>
           <button type="button" id="bm-start" class="bm-primary">JACK IN</button>
@@ -372,6 +379,13 @@
         </div>
       </div>
 
+      <div id="bm-duel-result" class="bm-overlay bm-duel-result" role="dialog" aria-label="Duel result">
+        <div class="bm-duel-result-inner">
+          <div class="bm-duel-result-title" id="bm-duel-result-title">DUEL WON</div>
+          <div class="bm-duel-result-sub" id="bm-duel-result-sub"></div>
+        </div>
+      </div>
+
       <div id="bm-callsign-ov" class="bm-overlay bm-callsign-ov" role="dialog" aria-label="Operator callsign">
         <div class="bm-modal" style="text-align:center">
           <h2>OPERATOR CALLSIGN</h2>
@@ -426,6 +440,6 @@
     </div>
   </div>
 </div>
-<script src="binary_matrix.js?v=17"></script>
+<script src="binary_matrix.js?v=18"></script>
 </body>
 </html>

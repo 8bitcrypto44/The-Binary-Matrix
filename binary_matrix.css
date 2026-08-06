@@ -451,6 +451,22 @@ html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
 #binmat-root .bm-prestige-ov{z-index:30}
 #binmat-root.bm-omega-chain{border-color:#fde047!important;box-shadow:0 0 40px rgba(253,224,71,.35)}
 #binmat-root.bm-root-protocol{border-color:#ff3355!important;animation:bmPursuitBorder 1.2s ease infinite}
+#binmat-root .bm-world-event{font-size:10px;color:#64748b;text-align:center;margin:-2px 0 6px;font-style:italic;min-height:1.2em}
+#binmat-root .bm-duel-bar{margin:0 0 6px;padding:4px 8px;text-align:center;border:1px solid rgba(255,51,85,.4);border-radius:6px;background:rgba(20,0,4,.35)}
+#binmat-root .bm-duel-label{font-size:10px;font-weight:700;color:#ff6b81;letter-spacing:.8px}
+#binmat-root .bm-duel-result{z-index:31;background:rgba(10,0,2,.94);cursor:pointer}
+#binmat-root .bm-duel-result-inner{text-align:center;padding:22px 16px}
+#binmat-root .bm-duel-result-title{font-size:clamp(24px,5vw,38px);font-weight:700;color:#ff3355;margin-bottom:8px}
+#binmat-root .bm-duel-result-sub{font-size:12px;color:#fda4af}
+#binmat-root .bm-archives-panel{
+  margin:0 0 8px;padding:8px;border:1px solid #1e3a5f;border-radius:6px;background:rgba(0,0,0,.35);
+  font-size:9px;line-height:1.45;color:#64748b;max-height:100px;overflow-y:auto;text-align:left
+}
+#binmat-root .bm-archive-memo{padding:3px 0;border-bottom:1px solid rgba(30,58,95,.3)}
+#binmat-root .bm-archive-memo b{color:#86efac}
+#binmat-root .bm-archive-meta{margin-top:6px;color:#475569;font-size:9px}
+#binmat-root .bm-declassified{display:block;text-align:center;font-size:10px;color:#a78bfa;margin:0 0 8px;text-decoration:none}
+#binmat-root .bm-declassified:hover{color:#c4b5fd}
 @media (max-width:700px){
   #binmat-root .bm-shell{padding:10px;min-height:0}
   #binmat-root .bm-stage{min-height:360px;padding:10px 6px}
