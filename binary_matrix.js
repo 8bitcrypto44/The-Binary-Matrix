@@ -5852,7 +5852,13 @@
 
 // === VIEWPORT SPRINT — dynamic embed height; scroll on mobile only ===
   const EMBED_MIN_H = 680;
+  const EMBED_MENU_MIN_H = 320;
   let embedFsActive = false;
+
+  function embedFloorH() {
+    if (isMobileEmbed() && ROOT.classList.contains("bm-ui-menu")) return EMBED_MENU_MIN_H;
+    return EMBED_MIN_H;
+  }
 
   Object.assign(els, {
     fsBtn: ROOT.querySelector("#bm-fullscreen")
@@ -5907,6 +5913,15 @@
       el.style.maxHeight = "none";
     });
     const rootTop = ROOT.getBoundingClientRect().top;
+    const menuOpen = ROOT.classList.contains("bm-ui-menu");
+    const mobile = isMobileEmbed();
+
+    if (mobile && menuOpen && els.menu && !els.menu.classList.contains("bm-hidden")) {
+      const menuR = els.menu.getBoundingClientRect();
+      const menuH = Math.ceil(Math.max(0, menuR.bottom - rootTop)) + 4;
+      return Math.ceil(Math.max(EMBED_MENU_MIN_H, menuH));
+    }
+
     let maxBottom = ROOT.getBoundingClientRect().bottom;
     [shell, stage, ROOT.querySelector(".bm-top"), els.menu, els.play, els.genius].forEach(function (el) {
       if (!el || el.classList.contains("bm-hidden")) return;
@@ -5918,22 +5933,17 @@
       const r = el.getBoundingClientRect();
       if (r.bottom > maxBottom) maxBottom = r.bottom;
     });
-    const bboxH = Math.ceil(Math.max(0, maxBottom - rootTop)) + 8;
-    const tight = ROOT.classList.contains("bm-ui-play") || ROOT.classList.contains("bm-ui-genius");
-    if (tight) {
-      return Math.ceil(Math.max(EMBED_MIN_H, bboxH));
+    const bboxH = Math.ceil(Math.max(0, maxBottom - rootTop)) + 4;
+    const tight = ROOT.classList.contains("bm-ui-play") || ROOT.classList.contains("bm-ui-genius") || menuOpen;
+    if (tight || mobile) {
+      return Math.ceil(Math.max(embedFloorH(), bboxH));
     }
-    return Math.ceil(Math.max(
-      EMBED_MIN_H,
-      bboxH,
-      ROOT.scrollHeight || 0,
-      doc.scrollHeight || 0
-    ));
+    return Math.ceil(Math.max(EMBED_MIN_H, bboxH));
   }
 
   function applyEmbedFrameHeight(h) {
     if (!EMBED) return h;
-    h = Math.max(EMBED_MIN_H, Math.round(h || measureEmbedHeight()));
+    h = Math.max(embedFloorH(), Math.round(h || measureEmbedHeight()));
     const mobile = isMobileEmbed();
     syncMobileClass();
     const shell = ROOT.querySelector(".bm-shell");

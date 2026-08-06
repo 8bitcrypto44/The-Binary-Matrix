@@ -6,7 +6,7 @@ import re
 
 root = Path(__file__).resolve().parent
 
-ASSET_VER = "39"
+ASSET_VER = "40"
 PAGES_URL = "https://8bitcrypto44.github.io/The-Binary-Matrix/"
 _brand_logo = root / "assets" / "brand" / "8bitcrypto44_logo.png"
 BRAND_LOGO_URI = (
@@ -355,13 +355,16 @@ iframe_snippet = f"""<!-- THE BINARY MATRIX — GoDaddy: cover card → JACK IN 
   function setFrameHeight(h){{
     if(isFs()||root.classList.contains("is-land"))return;
     if(!root.classList.contains("is-open")){{clearCoverHeights();return;}}
-    var contentH=Math.max(680,Math.round(Number(h)||920));
+    var contentH;
     if(mobileMode()&&!root.classList.contains("is-land")){{
+      var reported=Math.round(Number(h)||0);
+      contentH=reported>0?Math.max(320,reported):mobileBootH();
       if(root.classList.contains("is-loading"))contentH=Math.max(contentH,openBootH());
       frame.setAttribute("scrolling","no");
       root.classList.add("is-mobile");
       h=contentH;
     }}else{{
+      contentH=Math.max(680,Math.round(Number(h)||920));
       h=contentH;
       if(!phone())frame.setAttribute("scrolling","no");
     }}
