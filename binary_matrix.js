@@ -2735,6 +2735,2894 @@
   updateMultiplierHUD();
   renderCampaignMap();
 
+// === BOSS SPRINT — new feel ===
+  let loadoutPerk = "chain";
+  let ghostSolution = null;
+  let sectorStartedAt = 0;
+  let bonusNodeMode = false;
+
+  if (!records.wanted) records.wanted = 0;
+  if (!records.wantedDay) records.wantedDay = 0;
+  if (!records.sectorPB) records.sectorPB = {};
+  if (!records.ghost) records.ghost = {};
+  function daysBetweenDates(fromSeed, toSeed) {
+    if (!fromSeed || !toSeed) return 0;
+    function toDate(s) {
+      return new Date(Math.floor(s / 10000), Math.floor((s % 10000) / 100) - 1, s % 100);
+    }
+    return Math.max(0, Math.floor((toDate(toSeed) - toDate(fromSeed)) / 86400000));
+  }
+  if (records.wantedDay !== dateSeed()) {
+    const gap = daysBetweenDates(records.wantedDay, dateSeed());
+    if (gap > 0 && records.wantedDay) {
+      records.wanted = Math.max(0, Math.round((records.wanted || 0) - gap * 12));
+      if (records.wanted < 100) records.bonusUnlocked = false;
+    }
+    records.wantedDay = dateSeed();
+    saveRecords();
+  }
+  loadoutPerk = records.loadout || "chain";
+
+  Object.assign(els, {
+    wantedFill: ROOT.querySelector("#bm-wanted-fill"),
+    wantedLabel: ROOT.querySelector("#bm-wanted-label"),
+    sectorPb: ROOT.querySelector("#bm-sector-pb"),
+    bossIntro: ROOT.querySelector("#bm-boss-intro"),
+    bossTitle: ROOT.querySelector("#bm-boss-title"),
+    bossSub: ROOT.querySelector("#bm-boss-sub"),
+    bonusBtn: ROOT.querySelector("#bm-bonus-node"),
+    loadoutRoot: ROOT.querySelector("#bm-loadout")
+  });
+
+  function sectorKey() {
+    return (difficulty || "m") + "L" + gridLevel + "N" + N + "S" + (challengeSeed || 0);
+  }
+
+  function isBossSector() {
+    if (dailyMode || arcadeMode || omegaMode || geniusMode) return false;
+    const len = campaignLen();
+    if (typeof len !== "number" || len > 50) return false;
+    return gridLevel === len - 1;
+  }
+
+  function perkChainMult(m) {
+    if (loadoutPerk === "chain") return m * 1.15;
+    return m;
+  }
+
+  function addWanted(amt) {
+    const mul = loadoutPerk === "heat" ? 1.35 : 1;
+    records.wanted = Math.min(100, Math.max(0, Math.round(records.wanted + amt * mul)));
+    records.wantedDay = dateSeed();
+    if (records.wanted >= 100 && !records.bonusUnlocked) {
+      records.bonusUnlocked = true;
+    }
+    saveRecords();
+    updateWantedUI();
+  }
+
+  function updateWantedUI() {
+    const w = records.wanted || 0;
+    if (els.wantedFill) els.wantedFill.style.width = w + "%";
+    if (els.wantedLabel) {
+      els.wantedLabel.textContent = w >= 100
+        ? "WANTED · MAX · BONUS NODE LIVE"
+        : ("NEXCORP HEAT · " + w + "%");
+    }
+    ROOT.classList.toggle("bm-heat-high", w >= 70);
+    ROOT.classList.toggle("bm-heat-max", w >= 100);
+    if (els.bonusBtn) {
+      if (records.bonusUnlocked) els.bonusBtn.classList.remove("bm-hidden");
+      else els.bonusBtn.classList.add("bm-hidden");
+    }
+  }
+
+  function updateSectorPbLine() {
+    if (!els.sectorPb || !playing || geniusMode) {
+      if (els.sectorPb) els.sectorPb.textContent = "";
+      return;
+    }
+    const pb = records.sectorPB[sectorKey()];
+    if (!pb) {
+      els.sectorPb.textContent = "Sector PB · none yet — set the ghost";
+      return;
+    }
+    els.sectorPb.textContent = "Sector PB · " + fmtTime(pb.t) + " · " + pb.s + " strikes · score " + pb.sc;
+  }
+
+  function saveSectorPB() {
+    const key = sectorKey();
+    const t = Date.now() - sectorStartedAt;
+    const s = mistakes - sectorMistakesAtStart;
+    const sc = sectorGain;
+    const prev = records.sectorPB[key];
+    if (!prev || sc > prev.sc || (sc === prev.sc && t < prev.t)) {
+      records.sectorPB[key] = { t: t, s: s, sc: sc };
+      saveRecords();
+    }
+    if (s === 0 && solution) {
+      records.ghost[key] = solution.map(function (row) { return row.slice(); });
+      saveRecords();
+    }
+  }
+
+  function loadGhostForSector() {
+    ghostSolution = records.ghost[sectorKey()] || null;
+  }
+
+  function showBossIntro(done) {
+    if (!els.bossIntro) { if (done) done(); return; }
+    ROOT.classList.add("bm-mood-boss");
+    if (els.bossTitle) els.bossTitle.textContent = difficulty.toUpperCase() + " · FINAL GATE";
+    if (els.bossSub) {
+      els.bossSub.textContent = sectorSpec()[4] + " · " + maxMistakes + " strike" + (maxMistakes === 1 ? "" : "s") + " · no margin";
+    }
+    els.bossIntro.classList.add("show");
+    beep(80, 0.35, "sawtooth", 0.14);
+    setTimeout(function () { beep(120, 0.25, "sawtooth", 0.12); }, 200);
+    haptic([100, 50, 100]);
+    setTimeout(function () {
+      els.bossIntro.classList.remove("show");
+      if (done) done();
+    }, 2800);
+  }
+
+  function startBonusNode() {
+    if (!records.bonusUnlocked) return;
+    ensureAudio();
+    hideVictory();
+    records.bonusUnlocked = false;
+    saveRecords();
+    updateWantedUI();
+    dailyMode = false;
+    omegaMode = false;
+    arcadeMode = false;
+    geniusMode = false;
+    gridLevel = 0;
+    difficulty = difficulty === "easy" ? "medium" : difficulty;
+    sectorCodes = [];
+    applyMood();
+    els.menu.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    notifyParent(true);
+    bonusNodeMode = true;
+    const spec = [6, 8, 2, 3, "BONUS NODE · HEAT MAX · 2× SCORE"];
+    setTimeout(function () {
+      const pack = newPuzzleFromSpec(spec);
+      solution = pack.solution;
+      puzzle = pack.puzzle;
+      given = pack.given;
+      grid = clone(puzzle);
+      playing = true;
+      paused = false;
+      won = false;
+      mistakes = 0;
+      maxMistakes = 2;
+      sectorClock = Date.now();
+      sectorStartedAt = Date.now();
+      startedAt = Date.now() - elapsedMs;
+      loadGhostForSector();
+      els.pauseOv.classList.remove("show");
+      setStatus("BONUS NODE · 2× score · 6×6 · 2 strikes");
+      renderGrid(false);
+      updateHUD();
+      updateSectorPbLine();
+      startTimer();
+      playMusic();
+      ROOT.classList.add("bm-mood-boss");
+      beep(440, 0.15, "sawtooth", 0.1);
+    }, 40);
+  }
+
+  function maxPingsAllowed() {
+    return MAX_PINGS + (loadoutPerk === "ping" && playing && !geniusMode ? 1 : 0);
+  }
+
+  function bindLoadout() {
+    if (!els.loadoutRoot || els.loadoutRoot.dataset.bound) return;
+    els.loadoutRoot.dataset.bound = "1";
+    els.loadoutRoot.querySelectorAll(".bm-loadout-btn").forEach(function (btn) {
+      btn.classList.toggle("selected", btn.dataset.loadout === loadoutPerk);
+      btn.addEventListener("click", function () {
+        loadoutPerk = btn.dataset.loadout || "chain";
+        records.loadout = loadoutPerk;
+        saveRecords();
+        els.loadoutRoot.querySelectorAll(".bm-loadout-btn").forEach(function (b) {
+          b.classList.toggle("selected", b === btn);
+        });
+        beep(640, 0.05, "square", 0.05);
+      });
+    });
+  }
+
+  var _streakMultOrig = streakMult;
+  streakMult = function (n) {
+    return perkChainMult(_streakMultOrig(n));
+  };
+
+  var _loadGridBoss = loadGridSector;
+  loadGridSector = function (freshRun) {
+    _loadGridBoss(freshRun);
+    setTimeout(function () {
+      if (loadoutPerk === "strike") maxMistakes += 1;
+      sectorStartedAt = Date.now();
+      loadGhostForSector();
+      updateSectorPbLine();
+      if (isBossSector()) {
+        playing = false;
+        showBossIntro(function () {
+          playing = true;
+          beep(660, 0.12, "triangle", 0.08);
+        });
+      } else if (!bonusNodeMode) {
+        ROOT.classList.remove("bm-mood-boss");
+      }
+    }, freshRun ? 45 : 55);
+  };
+
+  var _calcScoreBoss = calcSectorScore;
+  calcSectorScore = function () {
+    let s = _calcScoreBoss();
+    if (bonusNodeMode) s = Math.floor(s * 2);
+    return s;
+  };
+
+  var _onWinBoss = onWin;
+  onWin = function () {
+    const wasBonus = bonusNodeMode;
+    const wasBoss = isBossSector();
+    _onWinBoss();
+    if (!won) return;
+    saveSectorPB();
+    if (wasBonus) bonusNodeMode = false;
+    if (!dailyMode && !arcadeMode && !geniusMode && !wasBonus) addWanted(wasBoss ? 18 : 10);
+    if (dailyMode) addWanted(6);
+    updateSectorPbLine();
+  };
+
+  var _failOutBoss = failOut;
+  failOut = function () {
+    addWanted(-12);
+    ROOT.classList.remove("bm-mood-boss");
+    _failOutBoss();
+  };
+
+  var _renderGridBoss = renderGrid;
+  renderGrid = function (flashBad) {
+    _renderGridBoss(flashBad);
+    if (!ghostSolution || !els.grid) return;
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        if (grid[r][c] !== -1 || given[r][c]) continue;
+        const td = els.grid.querySelector('td[data-r="' + r + '"][data-c="' + c + '"]');
+        if (!td || ghostSolution[r][c] === undefined) continue;
+        td.classList.add("bm-ghost-hint");
+        td.setAttribute("data-ghost", String(ghostSolution[r][c]));
+      }
+    }
+  };
+
+  var _showMenuBoss = showMenu;
+  showMenu = function () {
+    bonusNodeMode = false;
+    ROOT.classList.remove("bm-mood-boss");
+    _showMenuBoss();
+    updateWantedUI();
+    bindLoadout();
+  };
+
+  var _pingHintBoss = pingHint;
+  pingHint = function () {
+    if (!playing || paused || won || geniusMode || pingsUsed >= maxPingsAllowed() || score < PING_COST) return;
+    if (!solution) return;
+    const candidates = [];
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+      if (given[r][c] || grid[r][c] !== -1) continue;
+      if (grid[r][c] !== solution[r][c]) candidates.push([r, c]);
+    }
+    if (!candidates.length) {
+      setStatus("No empty cells to ping.", "err");
+      return;
+    }
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    const r = pick[0], c = pick[1];
+    grid[r][c] = solution[r][c];
+    given[r][c] = true;
+    score -= PING_COST;
+    pingsUsed++;
+    lastFlipCell = r + "," + c;
+    updateHUD();
+    updatePingBtn();
+    renderGrid(true);
+    setStatus("PING lock · cell [" + r + "," + c + "] confirmed · −" + PING_COST, "ok");
+    beep(1200, 0.12, "sine", 0.08);
+    haptic(30);
+    saveLink();
+    notifyResize();
+  };
+
+  var _updatePingBoss = updatePingBtn;
+  updatePingBtn = function () {
+    _updatePingBoss();
+    if (!els.pingBtn || geniusMode) return;
+    const left = maxPingsAllowed() - pingsUsed;
+    const can = playing && !won && !paused && left > 0 && score >= PING_COST;
+    els.pingBtn.disabled = !can;
+    els.pingBtn.textContent = "PING (−" + PING_COST + ") · " + left;
+  };
+
+  bindLoadout();
+  updateWantedUI();
+  if (els.bonusBtn) els.bonusBtn.addEventListener("click", startBonusNode);
+
+// === PURSUIT SPRINT — heat chases you ===
+  let pursuitPulseOsc = null;
+  let pursuitPulseGain = null;
+  let pursuitPulseTimer = null;
+  let menuHeatAt = Date.now();
+
+  Object.assign(els, {
+    pursuitWrap: ROOT.querySelector("#bm-pursuit-wrap"),
+    pursuitTimer: ROOT.querySelector("#bm-pursuit-timer"),
+    ghostRace: ROOT.querySelector("#bm-ghost-race"),
+    ghostLabel: ROOT.querySelector("#bm-ghost-label"),
+    ghostFill: ROOT.querySelector("#bm-ghost-fill"),
+    ghostMark: ROOT.querySelector("#bm-ghost-mark"),
+    bountyBoard: ROOT.querySelector("#bm-bounty-board")
+  });
+
+  function isPursuitActive() {
+    if (dailyMode || arcadeMode || omegaMode || bonusNodeMode) return false;
+    if (geniusMode) return false;
+    if (!playing || paused || won) return false;
+    const heat = records.wanted || 0;
+    return heat >= 70 || ROOT.classList.contains("bm-mood-boss");
+  }
+
+  function pursuitLimitMs() {
+    const pb = records.sectorPB && records.sectorPB[sectorKey()];
+    if (pb && pb.t > 4000) return Math.floor(pb.t * 1.12);
+    const spec = sectorSpec();
+    return (75 + (spec[0] || 6) * 22) * 1000;
+  }
+
+  function ghostPbMs() {
+    const pb = records.sectorPB && records.sectorPB[sectorKey()];
+    return pb && pb.t > 0 ? pb.t : null;
+  }
+
+  function fmtSec(ms) {
+    return Math.max(0, Math.ceil(ms / 1000)) + "s";
+  }
+
+  function updateBountyBoard() {
+    if (!els.bountyBoard) return;
+    const w = records.wanted || 0;
+    const perk = (loadoutPerk || "chain").toUpperCase();
+    let line = "BOUNTY BOARD · HEAT " + w + "% · LOADOUT " + perk;
+    if (w >= 70) line += " · PURSUIT ACTIVE";
+    if (records.bonusUnlocked) line += " · BONUS LIVE";
+    els.bountyBoard.textContent = line;
+  }
+
+  function applyMenuHeatDecay() {
+    const idle = Date.now() - menuHeatAt;
+    if (idle > 90000 && (records.wanted || 0) > 0) {
+      records.wanted = Math.max(0, (records.wanted || 0) - 1);
+      if (records.wanted < 100) records.bonusUnlocked = false;
+      saveRecords();
+      updateWantedUI();
+    }
+    menuHeatAt = Date.now();
+  }
+
+  function syncPursuitPulse() {
+    const on = isPursuitActive() && !muted && musicVol && !REDUCED_MOTION;
+    if (on && !pursuitPulseOsc) {
+      ensureAudio();
+      pursuitPulseOsc = audioCtx.createOscillator();
+      pursuitPulseGain = audioCtx.createGain();
+      pursuitPulseOsc.type = "triangle";
+      pursuitPulseOsc.frequency.value = 82;
+      pursuitPulseGain.gain.value = 0;
+      pursuitPulseOsc.connect(pursuitPulseGain);
+      pursuitPulseGain.connect(audioCtx.destination);
+      pursuitPulseOsc.start();
+      let up = true;
+      pursuitPulseTimer = setInterval(function () {
+        if (!pursuitPulseGain) return;
+        pursuitPulseGain.gain.setTargetAtTime(up ? musicVol * 0.055 : musicVol * 0.012, audioCtx.currentTime, 0.08);
+        up = !up;
+      }, 520);
+    } else if (!on && pursuitPulseOsc) {
+      clearInterval(pursuitPulseTimer);
+      pursuitPulseTimer = null;
+      try { pursuitPulseOsc.stop(); } catch (e) {}
+      pursuitPulseOsc.disconnect();
+      pursuitPulseGain.disconnect();
+      pursuitPulseOsc = null;
+      pursuitPulseGain = null;
+    }
+  }
+
+  function stopPursuitPulse() {
+    if (!pursuitPulseOsc) return;
+    clearInterval(pursuitPulseTimer);
+    pursuitPulseTimer = null;
+    try { pursuitPulseOsc.stop(); } catch (e) {}
+    pursuitPulseOsc.disconnect();
+    pursuitPulseGain.disconnect();
+    pursuitPulseOsc = null;
+    pursuitPulseGain = null;
+  }
+
+  function updatePursuitUI() {
+    const active = isPursuitActive();
+    ROOT.classList.toggle("bm-pursuit", active);
+    ROOT.classList.toggle("bm-pursuit-urgent", false);
+    if (els.pursuitWrap) els.pursuitWrap.hidden = !active;
+    if (!active) {
+      syncPursuitPulse();
+      return;
+    }
+    const elapsed = Date.now() - sectorStartedAt;
+    const limit = pursuitLimitMs();
+    const left = limit - elapsed;
+    if (left <= 0) {
+      pursuitTimedOut();
+      return;
+    }
+    if (els.pursuitTimer) {
+      els.pursuitTimer.textContent = "PURSUIT · " + fmtTime(left) + " · trace closing";
+    }
+    if (left < 20000) ROOT.classList.add("bm-pursuit-urgent");
+    if (els.rain) els.rain.style.filter = "brightness(1.25) saturate(1.35) hue-rotate(-55deg)";
+    if (els.rainBack) els.rainBack.style.filter = "brightness(1.15) hue-rotate(-40deg)";
+    syncPursuitPulse();
+  }
+
+  function updateGhostRace() {
+    const ghost = ghostPbMs();
+    const show = playing && !paused && !won && !geniusMode && !dailyMode && ghost;
+    if (els.ghostRace) els.ghostRace.hidden = !show;
+    if (!show || !els.ghostFill || !els.ghostLabel) return;
+    const elapsed = Date.now() - sectorStartedAt;
+    const pct = Math.min(100, Math.round(elapsed / ghost * 100));
+    els.ghostFill.style.width = pct + "%";
+    if (els.ghostMark) els.ghostMark.style.left = "100%";
+    const delta = elapsed - ghost;
+    if (delta > 0) {
+      els.ghostLabel.textContent = "GHOST +" + fmtSec(delta) + " ahead · PB " + fmtTime(ghost);
+      els.ghostFill.classList.add("bm-behind");
+    } else {
+      els.ghostLabel.textContent = "YOU +" + fmtSec(-delta) + " ahead · PB " + fmtTime(ghost);
+      els.ghostFill.classList.remove("bm-behind");
+    }
+  }
+
+  function pursuitTimedOut() {
+    if (!playing || won) return;
+    addWanted(8);
+    setStatus("PURSUED — NexCorp trace timed out your node.", "err");
+    beep(55, 0.4, "sawtooth", 0.14);
+    haptic([80, 40, 80]);
+    failOut();
+  }
+
+  function bountyTag() {
+    return "HEAT " + (records.wanted || 0) + "% · " + (loadoutPerk || "chain").toUpperCase();
+  }
+
+  var _tickPursuit = tick;
+  tick = function () {
+    _tickPursuit();
+    updatePursuitUI();
+    updateGhostRace();
+  };
+
+  var _checkPursuit = checkBoard;
+  checkBoard = function () {
+    const m0 = mistakes;
+    const s0 = score;
+    _checkPursuit();
+    if (mistakes > m0 && isPursuitActive()) {
+      const pen = Math.max(90, Math.floor(Math.max(s0, score) * 0.1));
+      score = Math.max(0, score - pen);
+      updateHUD();
+      setStatus("Pursuit penalty · −" + pen + " score · strikes cost double under trace", "err");
+      beep(140, 0.12, "sawtooth", 0.1);
+    }
+  };
+
+  var _loadGridPursuit = loadGridSector;
+  loadGridSector = function (freshRun) {
+    _loadGridPursuit(freshRun);
+    setTimeout(function () {
+      updatePursuitUI();
+      updateGhostRace();
+      if (els.rain && !isPursuitActive()) {
+        els.rain.style.filter = "";
+        if (els.rainBack) els.rainBack.style.filter = "";
+      }
+    }, 60);
+  };
+
+  var _showMenuPursuit = showMenu;
+  showMenu = function () {
+    applyMenuHeatDecay();
+    stopPursuitPulse();
+    ROOT.classList.remove("bm-pursuit", "bm-pursuit-urgent");
+    if (els.rain) els.rain.style.filter = "";
+    if (els.rainBack) els.rainBack.style.filter = "";
+    _showMenuPursuit();
+    updateBountyBoard();
+  };
+
+  var _failOutPursuit = failOut;
+  failOut = function () {
+    stopPursuitPulse();
+    ROOT.classList.remove("bm-pursuit", "bm-pursuit-urgent");
+    _failOutPursuit();
+  };
+
+  var _stopMusicPursuit = stopMusic;
+  stopMusic = function () {
+    stopPursuitPulse();
+    _stopMusicPursuit();
+  };
+
+  var _shareTextPursuit = shareText;
+  shareText = function () {
+    return _shareTextPursuit() + " · " + bountyTag();
+  };
+
+  var _shareChallengePursuit = shareChallengeLink;
+  shareChallengeLink = function () {
+    const seed = challengeSeed || (dateSeed() ^ (gridLevel + 1) * 7919);
+    const base = location.href.split("#")[0].split("?")[0];
+    const url = base + (base.indexOf("?") >= 0 ? "&" : "?") + "seed=" + seed;
+    const txt = "THE BINARY MATRIX · bounty challenge · " + bountyTag() + " · beat seed " + seed + " · " + url;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function () {
+        if (els.challengeLink) {
+          els.challengeLink.textContent = "BOUNTY COPIED!";
+          setTimeout(function () { els.challengeLink.textContent = "CHALLENGE LINK"; }, 1600);
+        }
+      }).catch(function () {});
+    }
+    beep(720, 0.06, "triangle", 0.06);
+  };
+
+  var _relayPayloadPursuit = relayPayload;
+  relayPayload = function () {
+    try {
+      const p = JSON.parse(_relayPayloadPursuit());
+      p.wanted = records.wanted || 0;
+      p.loadout = loadoutPerk || "chain";
+      p.bounty = bountyTag();
+      return JSON.stringify(p);
+    } catch (e) {
+      return _relayPayloadPursuit();
+    }
+  };
+
+  var _shareRelayPursuit = shareRelayLink;
+  shareRelayLink = function () {
+    _shareRelayPursuit();
+    setStatus("Relay copied · squad sees your " + bountyTag(), "ok");
+  };
+
+  var _syncHumPursuit = syncHum;
+  syncHum = function () {
+    _syncHumPursuit();
+    if (humOsc && isPursuitActive()) humOsc.frequency.value = 72;
+    else if (humOsc) humOsc.frequency.value = 58;
+  };
+
+  updateBountyBoard();
+  updateWantedUI();
+
+// === EXTRACTION SPRINT — exfil, squad board, hunter voice ===
+  let extractionMode = false;
+  let extractionProgress = 0;
+  let pursuitHunterShown = false;
+  const EXTRACT_SPECS = [
+    [4, 6, 3, 2, "EXTRACT · NODE 1 · QUIET EXIT"],
+    [6, 10, 2, 2, "EXTRACT · NODE 2 · HUNTER SWARM"],
+    [6, 8, 2, 1, "EXTRACT · NODE 3 · AIRLOCK"]
+  ];
+  const HUNTER_LINES = [
+    "NexCorp hunter · I see your checksum, ghost.",
+    "Trace locked · nowhere left to jack out.",
+    "Heat signature confirmed · proceeding to intercept.",
+    "Sector sweep active · drop the grid and walk away."
+  ];
+
+  if (!records.relayBoard) records.relayBoard = [];
+  if (!records.extractions) records.extractions = 0;
+
+  Object.assign(els, {
+    extractBtn: ROOT.querySelector("#bm-extract"),
+    extractBar: ROOT.querySelector("#bm-extract-bar"),
+    extractLabel: ROOT.querySelector("#bm-extract-label"),
+    extractOv: ROOT.querySelector("#bm-extract-ov"),
+    extractLoot: ROOT.querySelector("#bm-extract-loot"),
+    relayBoard: ROOT.querySelector("#bm-relay-board"),
+    hunterLine: ROOT.querySelector("#bm-hunter-line"),
+    hunterText: ROOT.querySelector("#bm-hunter-text")
+  });
+
+  function updateExtractBar() {
+    if (!els.extractBar || !els.extractLabel) return;
+    if (!extractionMode) {
+      els.extractBar.hidden = true;
+      return;
+    }
+    els.extractBar.hidden = false;
+    els.extractLabel.textContent = "EXTRACTION · " + extractionProgress + " / 3 nodes cleared · do not fail";
+    ROOT.classList.add("bm-extract-active");
+  }
+
+  function loadExtractionSector(idx) {
+    const spec = EXTRACT_SPECS[idx] || EXTRACT_SPECS[EXTRACT_SPECS.length - 1];
+    const pack = newPuzzleFromSpec(spec);
+    solution = pack.solution;
+    puzzle = pack.puzzle;
+    given = pack.given;
+    grid = clone(puzzle);
+    N = spec[0];
+    HALF = N / 2;
+    playing = true;
+    paused = false;
+    won = false;
+    mistakes = 0;
+    maxMistakes = spec[3];
+    sectorClock = Date.now();
+    sectorStartedAt = Date.now();
+    sectorMistakesAtStart = 0;
+    els.pauseOv.classList.remove("show");
+    if (els.gridWrap) els.gridWrap.classList.toggle("bm-omega-grid", N === 8);
+    els.grid.className = "bm-grid sz" + N;
+    setStatus("EXTRACTION " + (idx + 1) + "/3 · " + spec[4] + " · " + maxMistakes + " strike" + (maxMistakes === 1 ? "" : "s"), "ok");
+    renderGrid(false);
+    updateHUD();
+    updateExtractBar();
+    updateSectorPbLine();
+    startTimer();
+    playMusic();
+    ROOT.classList.add("bm-mood-boss", "bm-extract-active");
+    beep(520, 0.1, "triangle", 0.08);
+  }
+
+  function startExtraction() {
+    if (!records.bonusUnlocked || extractionMode) return;
+    ensureAudio();
+    hideVictory();
+    records.bonusUnlocked = false;
+    saveRecords();
+    updateWantedUI();
+    dailyMode = false;
+    omegaMode = false;
+    arcadeMode = false;
+    geniusMode = false;
+    bonusNodeMode = false;
+    extractionMode = true;
+    extractionProgress = 0;
+    pursuitHunterShown = false;
+    score = score || 0;
+    elapsedMs = elapsedMs || 0;
+    startedAt = Date.now() - elapsedMs;
+    applyMood();
+    els.menu.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    notifyParent(true);
+    setTimeout(function () { loadExtractionSector(0); }, 40);
+  }
+
+  function completeExtraction() {
+    extractionMode = false;
+    extractionProgress = 0;
+    const loot = 3500;
+    score += loot;
+    records.wanted = 40;
+    records.bonusUnlocked = false;
+    records.extractions = (records.extractions || 0) + 1;
+    saveRecords();
+    playing = false;
+    updateHUD();
+    updateWantedUI();
+    updateExtractBar();
+    ROOT.classList.remove("bm-extract-active");
+    if (els.extractOv && els.extractLoot) {
+      els.extractLoot.textContent = "+" + loot + " LOOT · HEAT COOLED TO 40%";
+      els.extractOv.classList.add("show");
+      [440, 554, 659, 880].forEach(function (f, i) {
+        setTimeout(function () { beep(f, 0.14, "triangle", 0.1); }, i * 100);
+      });
+      haptic([40, 30, 60, 30, 80]);
+      setTimeout(function () { els.extractOv.classList.remove("show"); }, 3200);
+    }
+    setStatus("EXTRACTION COMPLETE · loot secured · NexCorp trace broken", "ok");
+    pushRelayBoard({
+      callsign: records.callsign || "GHOST",
+      score: score,
+      heat: records.wanted || 0,
+      loadout: loadoutPerk || "chain",
+      tag: "EXTRACTED",
+      ts: Date.now()
+    });
+    notifyResize();
+  }
+
+  function extractionWin() {
+    if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+    won = true;
+    playing = false;
+    sectorGain = calcSectorScore();
+    score += sectorGain;
+    updateHUD();
+    renderGrid(false);
+    if (typeof burstClear === "function") burstClear();
+    extractionProgress++;
+    beep(660, 0.1, "triangle", 0.07);
+    beep(880, 0.12, "square", 0.06);
+    if (extractionProgress >= EXTRACT_SPECS.length) {
+      setTimeout(completeExtraction, 450);
+      return;
+    }
+    setTimeout(function () {
+      won = false;
+      loadExtractionSector(extractionProgress);
+    }, 420);
+  }
+
+  function showHunterLine() {
+    if (!els.hunterLine) return;
+    const line = HUNTER_LINES[Math.floor(Math.random() * HUNTER_LINES.length)];
+    if (els.hunterText) els.hunterText.textContent = line;
+    els.hunterLine.classList.add("show");
+    [90, 70, 110, 85, 120].forEach(function (f, i) {
+      setTimeout(function () { beep(f, 0.07, "sawtooth", 0.09); }, i * 140);
+    });
+    haptic([60, 30, 60]);
+    setTimeout(function () { els.hunterLine.classList.remove("show"); }, 2600);
+  }
+
+  function pushRelayBoard(entry) {
+    if (!entry || !entry.callsign) return;
+    records.relayBoard = records.relayBoard || [];
+    records.relayBoard.unshift(entry);
+    const seen = {};
+    records.relayBoard = records.relayBoard.filter(function (e) {
+      const k = (e.callsign || "?").toUpperCase();
+      if (seen[k]) return false;
+      seen[k] = true;
+      return true;
+    }).slice(0, 8);
+    saveRecords();
+    renderRelayBoard();
+  }
+
+  function renderRelayBoard() {
+    if (!els.relayBoard) return;
+    const rows = (records.relayBoard || []).slice(0, 5);
+    if (!rows.length) {
+      els.relayBoard.innerHTML = "<span class=\"bm-relay-empty\">SQUAD RELAY · share RELAY link to populate board</span>";
+      return;
+    }
+    els.relayBoard.innerHTML = rows.map(function (e, i) {
+      const cs = (e.callsign || "GHOST").toUpperCase();
+      const tag = e.tag ? (" · " + e.tag) : "";
+      return "<div class=\"bm-relay-row" + (i === 0 ? " bm-relay-top" : "") + "\">" +
+        "<b>" + cs + "</b> · " + (e.score || 0) + " pts · HEAT " + (e.heat || 0) + "% · " +
+        (e.loadout || "chain").toUpperCase() + tag + "</div>";
+    }).join("");
+  }
+
+  function recordSelfRelay() {
+    pushRelayBoard({
+      callsign: records.callsign || "GHOST",
+      score: score,
+      heat: records.wanted || 0,
+      loadout: loadoutPerk || "chain",
+      tag: extractionMode ? "EXTRACTING" : (records.wanted >= 70 ? "HOT" : "RELAY"),
+      ts: Date.now()
+    });
+  }
+
+  var _onWinExtract = onWin;
+  onWin = function () {
+    if (extractionMode) {
+      extractionWin();
+      return;
+    }
+    _onWinExtract();
+  };
+
+  var _failOutExtract = failOut;
+  failOut = function () {
+    if (extractionMode) {
+      extractionMode = false;
+      extractionProgress = 0;
+      records.wanted = Math.min(100, (records.wanted || 0) + 5);
+      saveRecords();
+      updateExtractBar();
+      ROOT.classList.remove("bm-extract-active");
+      setStatus("EXTRACTION FAILED — hunters boxed your node.", "err");
+    }
+    _failOutExtract();
+  };
+
+  var _updateWantedExtract = updateWantedUI;
+  updateWantedUI = function () {
+    _updateWantedExtract();
+    if (els.wantedLabel && records.wanted >= 100 && records.bonusUnlocked) {
+      els.wantedLabel.textContent = "WANTED · MAX · BONUS OR EXTRACT LIVE";
+    }
+    if (els.extractBtn) {
+      if (records.bonusUnlocked && !extractionMode && !bonusNodeMode) {
+        els.extractBtn.classList.remove("bm-hidden");
+      } else {
+        els.extractBtn.classList.add("bm-hidden");
+      }
+    }
+    updateExtractBar();
+  };
+
+  var _showMenuExtract = showMenu;
+  showMenu = function () {
+    if (extractionMode) {
+      extractionMode = false;
+      extractionProgress = 0;
+      ROOT.classList.remove("bm-extract-active");
+    }
+    _showMenuExtract();
+    renderRelayBoard();
+    updateBountyBoard();
+  };
+
+  var _loadGridExtract = loadGridSector;
+  loadGridSector = function (freshRun) {
+    if (freshRun && !extractionMode) pursuitHunterShown = false;
+    _loadGridExtract(freshRun);
+  };
+
+  var _tickExtract = tick;
+  tick = function () {
+    _tickExtract();
+    if (isPursuitActive() && !pursuitHunterShown && playing && !won) {
+      pursuitHunterShown = true;
+      showHunterLine();
+    }
+  };
+
+  var _relayPayloadExtract = relayPayload;
+  relayPayload = function () {
+    try {
+      const p = JSON.parse(_relayPayloadExtract());
+      p.callsign = records.callsign || "GHOST";
+      p.extractions = records.extractions || 0;
+      return JSON.stringify(p);
+    } catch (e) {
+      return _relayPayloadExtract();
+    }
+  };
+
+  var _shareRelayExtract = shareRelayLink;
+  shareRelayLink = function () {
+    recordSelfRelay();
+    _shareRelayExtract();
+  };
+
+  var _tryLoadRelayExtract = tryLoadRelay;
+  tryLoadRelay = function () {
+    _tryLoadRelayExtract();
+    try {
+      const m = location.hash.match(/relay=([^&]+)/);
+      if (!m) return;
+      const s = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))));
+      if (!s) return;
+      pushRelayBoard({
+        callsign: s.callsign || "SQUAD",
+        score: s.score || 0,
+        heat: s.wanted || 0,
+        loadout: s.loadout || "chain",
+        tag: "JOINED",
+        ts: Date.now()
+      });
+    } catch (e) {}
+  };
+
+  if (els.extractBtn) els.extractBtn.addEventListener("click", startExtraction);
+  if (els.extractOv) {
+    els.extractOv.addEventListener("click", function () { els.extractOv.classList.remove("show"); });
+  }
+
+  renderRelayBoard();
+  updateWantedUI();
+
+// === BLACK MARKET SPRINT — credits, intel, contracts ===
+  let intelBoostLeft = 0;
+  let contractMode = false;
+  let contractWeekDone = false;
+
+  const CONTRACTS = [
+    { spec: [6, 12, 2, 2], title: "PHANTOM LEDGER", lore: "NexCorp off-books node · numbers that never balance · find the ghost bit." },
+    { spec: [4, 5, 3, 2], title: "SILK ROAD CACHE", lore: "Dead drop matrix · smugglers left a checksum · crack before customs sweep." },
+    { spec: [6, 9, 2, 1], title: "ZERO-DAY VAULT", lore: "Unpatched sector · one strike · high clearance only · data worth millions." },
+    { spec: [6, 11, 2, 2], title: "GHOST MARKET", lore: "Operators trade heat for hints here · this grid is the price list." },
+    { spec: [4, 6, 3, 3], title: "BACKDOOR BAZAAR", lore: "Three strikes · generous clues · NexCorp thinks this node is offline." },
+    { spec: [6, 10, 2, 2], title: "CRYPTO FORGE", lore: "Mint block pending · align the matrix or the chain rejects your key." }
+  ];
+
+  if (records.credits == null) {
+    records.credits = (records.extractions || 0) * 800;
+  }
+  if (!records.contractWeek) records.contractWeek = 0;
+  intelBoostLeft = records.intelBoostLeft || 0;
+
+  Object.assign(els, {
+    creditsHud: ROOT.querySelector("#bm-credits-hud"),
+    creditsMenu: ROOT.querySelector("#bm-credits-menu"),
+    blackMarket: ROOT.querySelector("#bm-blackmarket"),
+    buyIntel: ROOT.querySelector("#bm-buy-intel"),
+    heatIntel: ROOT.querySelector("#bm-heat-intel"),
+    contractBtn: ROOT.querySelector("#bm-contract"),
+    contractFlavor: ROOT.querySelector("#bm-contract-flavor"),
+    marketBtn: ROOT.querySelector("#bm-market"),
+    marketOv: ROOT.querySelector("#bm-market-ov"),
+    contractIntro: ROOT.querySelector("#bm-contract-intro"),
+    contractTitle: ROOT.querySelector("#bm-contract-title"),
+    contractLore: ROOT.querySelector("#bm-contract-lore"),
+    contractArt: ROOT.querySelector("#bm-contract-art")
+  });
+
+  function weekKey() {
+    const d = new Date();
+    const start = new Date(d.getFullYear(), 0, 1);
+    return d.getFullYear() * 100 + Math.floor((d - start) / 604800000);
+  }
+
+  function currentContract() {
+    const wk = weekKey();
+    const c = CONTRACTS[wk % CONTRACTS.length];
+    return { week: wk, spec: c.spec, title: c.title, lore: c.lore };
+  }
+
+  function contractDoneThisWeek() {
+    return records.contractWeek === weekKey();
+  }
+
+  function spendCredits(n) {
+    n = Math.max(0, Math.round(n));
+    if ((records.credits || 0) < n) return false;
+    records.credits -= n;
+    saveRecords();
+    updateCreditsUI();
+    return true;
+  }
+
+  function addCredits(n) {
+    records.credits = (records.credits || 0) + Math.max(0, Math.round(n));
+    saveRecords();
+    updateCreditsUI();
+  }
+
+  function updateCreditsUI() {
+    const cr = records.credits || 0;
+    const txt = cr + " CR";
+    if (els.creditsHud) els.creditsHud.textContent = "◈ " + txt;
+    if (els.creditsMenu) els.creditsMenu.textContent = txt;
+    const marketCr = ROOT.querySelector("#bm-credits-market");
+    if (marketCr) marketCr.textContent = txt;
+    if (els.buyIntel) els.buyIntel.disabled = cr < 300;
+    if (els.heatIntel) {
+      els.heatIntel.disabled = (records.wanted || 0) < 25;
+    }
+    if (els.contractBtn) {
+      els.contractBtn.disabled = contractDoneThisWeek();
+      els.contractBtn.textContent = contractDoneThisWeek() ? "CONTRACT · DONE THIS WEEK" : "WEEKLY CONTRACT · +600 CR";
+    }
+    updateContractFlavor();
+    bindMarketOverlay();
+  }
+
+  function updateContractFlavor() {
+    if (!els.contractFlavor) return;
+    const c = currentContract();
+    els.contractFlavor.textContent = "CONTRACT · " + c.title + " · " + c.lore;
+  }
+
+  function grantIntel(source) {
+    intelBoostLeft += 1;
+    records.intelBoostLeft = intelBoostLeft;
+    saveRecords();
+    setStatus(source + " · ghost intel active next " + intelBoostLeft + " sector(s)", "ok");
+    beep(880, 0.08, "sine", 0.08);
+    haptic(25);
+    if (els.marketOv) els.marketOv.classList.remove("show");
+  }
+
+  function buyIntelCache() {
+    if (!spendCredits(300)) {
+      setStatus("Need 300 CR · extract loot or clear contracts.", "err");
+      return;
+    }
+    grantIntel("INTEL CACHE purchased");
+  }
+
+  function tradeHeatForIntel() {
+    if ((records.wanted || 0) < 25) {
+      setStatus("Need 25%+ heat to trade for intel.", "err");
+      return;
+    }
+    records.wanted = Math.max(0, (records.wanted || 0) - 25);
+    if (records.wanted < 100) records.bonusUnlocked = false;
+    saveRecords();
+    updateWantedUI();
+    grantIntel("HEAT traded for intel");
+  }
+
+  function swapLoadoutRuntime(perk) {
+    if (!playing || paused || won || geniusMode || dailyMode || arcadeMode || contractMode) return;
+    if (!spendCredits(400)) {
+      setStatus("SWAP costs 400 CR · hit MARKET after exfil.", "err");
+      return;
+    }
+    loadoutPerk = perk;
+    records.loadout = perk;
+    saveRecords();
+    if (els.loadoutRoot) {
+      els.loadoutRoot.querySelectorAll(".bm-loadout-btn").forEach(function (b) {
+        b.classList.toggle("selected", b.dataset.loadout === perk);
+      });
+    }
+    updatePingBtn();
+    setStatus("BLACK MARKET · loadout swapped to " + perk.toUpperCase() + " this run", "ok");
+    beep(640, 0.06, "square", 0.06);
+    if (els.marketOv) els.marketOv.classList.remove("show");
+  }
+
+  function canUseMarket() {
+    return playing && !paused && !won && !geniusMode && !dailyMode && !arcadeMode && !omegaMode && !extractionMode && !bonusNodeMode;
+  }
+
+  function openMarket() {
+    if (!canUseMarket()) return;
+    if (!els.marketOv) return;
+    updateCreditsUI();
+    els.marketOv.classList.add("show");
+    beep(520, 0.05, "triangle", 0.05);
+  }
+
+  function bindMarketOverlay() {
+    if (!els.marketOv || els.marketOv.dataset.bound) return;
+    els.marketOv.dataset.bound = "1";
+    els.marketOv.querySelectorAll("[data-bm-swap]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        swapLoadoutRuntime(btn.dataset.bmSwap || "chain");
+      });
+    });
+    const intelBtn = els.marketOv.querySelector("#bm-market-intel");
+    if (intelBtn) intelBtn.addEventListener("click", buyIntelCache);
+    const closeBtn = els.marketOv.querySelector("#bm-market-close");
+    if (closeBtn) closeBtn.addEventListener("click", function () { els.marketOv.classList.remove("show"); });
+  }
+
+  function showContractIntro(c, done) {
+    if (!els.contractIntro) { if (done) done(); return; }
+    if (els.contractTitle) els.contractTitle.textContent = c.title;
+    if (els.contractLore) els.contractLore.textContent = c.lore;
+    if (els.contractArt) {
+      const glyphs = "◈010◈110◈001◈";
+      els.contractArt.textContent = glyphs.repeat(8);
+    }
+    ROOT.classList.add("bm-mood-contract");
+    els.contractIntro.classList.add("show");
+    beep(220, 0.2, "triangle", 0.1);
+    setTimeout(function () { beep(330, 0.15, "triangle", 0.08); }, 180);
+    haptic([40, 20, 40]);
+    setTimeout(function () {
+      els.contractIntro.classList.remove("show");
+      if (done) done();
+    }, 3200);
+  }
+
+  function loadContractNode() {
+    const c = currentContract();
+    const spec = c.spec.concat([c.title + " · WEEKLY CONTRACT"]);
+    const pack = newPuzzleFromSpec(spec);
+    solution = pack.solution;
+    puzzle = pack.puzzle;
+    given = pack.given;
+    grid = clone(puzzle);
+    N = spec[0];
+    HALF = N / 2;
+    playing = false;
+    paused = false;
+    won = false;
+    mistakes = 0;
+    maxMistakes = spec[3];
+    sectorClock = Date.now();
+    sectorStartedAt = Date.now();
+    sectorMistakesAtStart = 0;
+    score = score || 0;
+    elapsedMs = elapsedMs || 0;
+    startedAt = Date.now() - elapsedMs;
+    if (els.gridWrap) els.gridWrap.classList.toggle("bm-omega-grid", N === 8);
+    els.grid.className = "bm-grid sz" + N;
+    renderGrid(false);
+    updateHUD();
+    showContractIntro(c, function () {
+      playing = true;
+      setStatus("CONTRACT · " + c.title + " · +" + (600 + 900) + " CR/score on clear", "ok");
+      startTimer();
+      playMusic();
+    });
+  }
+
+  function startWeeklyContract() {
+    if (contractDoneThisWeek() || contractMode) return;
+    ensureAudio();
+    hideVictory();
+    contractMode = true;
+    dailyMode = false;
+    omegaMode = false;
+    arcadeMode = false;
+    geniusMode = false;
+    bonusNodeMode = false;
+    extractionMode = false;
+    applyMood();
+    ROOT.classList.add("bm-mood-contract");
+    els.menu.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    notifyParent(true);
+    setTimeout(loadContractNode, 40);
+  }
+
+  function completeContract() {
+    contractMode = false;
+    records.contractWeek = weekKey();
+    const scoreBonus = 900;
+    const creditBonus = 600;
+    score += scoreBonus;
+    addCredits(creditBonus);
+    saveRecords();
+    playing = false;
+    updateHUD();
+    ROOT.classList.remove("bm-mood-contract");
+    setStatus("CONTRACT CLEARED · +" + scoreBonus + " score · +" + creditBonus + " CR", "ok");
+    [523, 659, 784].forEach(function (f, i) {
+      setTimeout(function () { beep(f, 0.12, "triangle", 0.09); }, i * 90);
+    });
+    haptic([30, 30, 50]);
+    showMenu();
+  }
+
+  function contractWin() {
+    if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+    won = true;
+    playing = false;
+    sectorGain = calcSectorScore();
+    score += sectorGain;
+    updateHUD();
+    renderGrid(false);
+    setTimeout(completeContract, 500);
+  }
+
+  function useIntelBoostAfterSector() {
+    if (intelBoostLeft > 0) {
+      intelBoostLeft--;
+      records.intelBoostLeft = intelBoostLeft;
+      saveRecords();
+    }
+  }
+
+  var _onWinMarket = onWin;
+  onWin = function () {
+    if (contractMode) {
+      contractWin();
+      return;
+    }
+    _onWinMarket();
+    if (!won) return;
+    if (!dailyMode && !arcadeMode && !geniusMode && !extractionMode && !bonusNodeMode) {
+      addCredits(25);
+    }
+    useIntelBoostAfterSector();
+  };
+
+  var _completeExtractMarket = completeExtraction;
+  completeExtraction = function () {
+    addCredits(800);
+    _completeExtractMarket();
+  };
+
+  var _renderGridMarket = renderGrid;
+  renderGrid = function (flashBad) {
+    _renderGridMarket(flashBad);
+    if (!els.grid || intelBoostLeft <= 0 || !playing) return;
+    els.grid.querySelectorAll("td.bm-ghost-hint").forEach(function (td) {
+      td.classList.add("bm-ghost-bright");
+    });
+  };
+
+  var _loadGridMarket = loadGridSector;
+  loadGridSector = function (freshRun) {
+    _loadGridMarket(freshRun);
+    setTimeout(function () {
+      if (intelBoostLeft > 0 && els.sectorPb) {
+        const extra = els.sectorPb.textContent;
+        els.sectorPb.textContent = (extra ? extra + " · " : "") + "INTEL BOOST · bright ghosts";
+      }
+      renderGrid(false);
+    }, 65);
+  };
+
+  var _showMenuMarket = showMenu;
+  showMenu = function () {
+    contractMode = false;
+    ROOT.classList.remove("bm-mood-contract");
+    if (els.marketOv) els.marketOv.classList.remove("show");
+    _showMenuMarket();
+    updateCreditsUI();
+    renderRelayBoard();
+  };
+
+  var _updateBountyMarket = updateBountyBoard;
+  updateBountyBoard = function () {
+    if (!els.bountyBoard) { _updateBountyMarket(); return; }
+    const w = records.wanted || 0;
+    const perk = (loadoutPerk || "chain").toUpperCase();
+    let line = "BOUNTY BOARD · HEAT " + w + "% · LOADOUT " + perk + " · ◈ " + (records.credits || 0) + " CR";
+    if (w >= 70) line += " · PURSUIT ACTIVE";
+    if (records.bonusUnlocked) line += " · BONUS LIVE";
+    els.bountyBoard.textContent = line;
+  };
+
+  var _failOutMarket = failOut;
+  failOut = function () {
+    if (contractMode) {
+      contractMode = false;
+      ROOT.classList.remove("bm-mood-contract");
+      setStatus("CONTRACT FAILED · NexCorp seized the node.", "err");
+    }
+    _failOutMarket();
+  };
+
+  if (els.buyIntel) els.buyIntel.addEventListener("click", buyIntelCache);
+  if (els.heatIntel) els.heatIntel.addEventListener("click", tradeHeatForIntel);
+  if (els.contractBtn) els.contractBtn.addEventListener("click", startWeeklyContract);
+  if (els.marketBtn) els.marketBtn.addEventListener("click", openMarket);
+
+  bindMarketOverlay();
+  updateCreditsUI();
+
+// === SYNDICATE SPRINT — rank, crew, ghost bets, rivals ===
+  let ghostBetActive = false;
+  let ghostBetWager = 0;
+  let activeRival = null;
+
+  if (!records.syndicateCrew) records.syndicateCrew = "ghosts";
+  if (!records.maxHeat) records.maxHeat = 0;
+  if (!records.contractsTotal) records.contractsTotal = 0;
+
+  Object.assign(els, {
+    syndicateRank: ROOT.querySelector("#bm-syndicate-rank"),
+    syndicateCrew: ROOT.querySelector("#bm-syndicate-crew"),
+    ghostBetBtn: ROOT.querySelector("#bm-ghost-bet")
+  });
+
+  const CREW_PERKS = {
+    hunters: { label: "HUNTERS", heat: 1.1, cr: 1.15, desc: "+10% heat · +15% CR" },
+    ghosts: { label: "GHOSTS", heat: 1, cr: 1, desc: "Rival ghost race always on" },
+    mercs: { label: "MERCS", heat: 1, cr: 1, strike: 1, desc: "+1 strike each sector" }
+  };
+
+  function syndicatePoints() {
+    const ex = records.extractions || 0;
+    const ct = records.contractsTotal || 0;
+    const mh = records.maxHeat || 0;
+    const cr = records.credits || 0;
+    return ex * 12 + ct * 8 + Math.floor(mh / 10) + Math.floor(cr / 250) + (records.relayBoard || []).length * 2;
+  }
+
+  function computeSyndicateRank() {
+    const p = syndicatePoints();
+    const ex = records.extractions || 0;
+    if (ex >= 3 && p >= 55 && (records.maxHeat || 0) >= 100) return "KINGPIN";
+    if (ex >= 2 || p >= 38) return "PHANTOM";
+    if (ex >= 1 || (records.contractsTotal || 0) >= 1 || p >= 22) return "FIXER";
+    if (p >= 8) return "RUNNER";
+    return "RECRUIT";
+  }
+
+  function crewKey() {
+    return CREW_PERKS[records.syndicateCrew] ? records.syndicateCrew : "ghosts";
+  }
+
+  function updateSyndicateUI() {
+    const rank = computeSyndicateRank();
+    if (els.syndicateRank) {
+      els.syndicateRank.textContent = "SYNDICATE · " + rank + " · " + syndicatePoints() + " REP";
+    }
+    if (els.rank) els.rank.textContent = "RANK · " + computeRank() + " · " + rank;
+    if (els.syndicateCrew) {
+      els.syndicateCrew.querySelectorAll(".bm-crew-btn").forEach(function (btn) {
+        btn.classList.toggle("selected", btn.dataset.crew === crewKey());
+      });
+    }
+    if (els.ghostBetBtn) {
+      const ghost = typeof ghostPbMs === "function" ? ghostPbMs() : null;
+      els.ghostBetBtn.disabled = !playing || paused || won || ghostBetActive || !ghost || geniusMode || dailyMode;
+      els.ghostBetBtn.textContent = ghostBetActive
+        ? ("BET LIVE · " + ghostBetWager + " CR")
+        : "GHOST BET · 200 CR";
+    }
+  }
+
+  function bindSyndicateCrew() {
+    if (!els.syndicateCrew || els.syndicateCrew.dataset.bound) return;
+    els.syndicateCrew.dataset.bound = "1";
+    els.syndicateCrew.querySelectorAll(".bm-crew-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        records.syndicateCrew = btn.dataset.crew || "ghosts";
+        saveRecords();
+        updateSyndicateUI();
+        beep(600, 0.05, "square", 0.05);
+      });
+    });
+  }
+
+  function pickRivalEcho() {
+    const board = (records.relayBoard || []).filter(function (e) {
+      return e && e.callsign && (e.callsign || "").toUpperCase() !== (records.callsign || "").toUpperCase();
+    });
+    if (!board.length) return null;
+    return board[Math.floor(Math.random() * board.length)];
+  }
+
+  function rivalGhostMs() {
+    if (!activeRival) return null;
+    const base = typeof ghostPbMs === "function" ? ghostPbMs() : null;
+    if (!base) return null;
+    const jitter = ((activeRival.score || 0) % 17) - 8;
+    return Math.max(4000, base + jitter * 1000);
+  }
+
+  function placeGhostBet() {
+    if (ghostBetActive || !playing || paused || won) return;
+    const ghost = typeof ghostPbMs === "function" ? ghostPbMs() : null;
+    if (!ghost) {
+      setStatus("Set a sector PB before betting.", "err");
+      return;
+    }
+    if (typeof spendCredits !== "function" || !spendCredits(200)) {
+      setStatus("Need 200 CR for ghost bet.", "err");
+      return;
+    }
+    ghostBetActive = true;
+    ghostBetWager = 200;
+    activeRival = pickRivalEcho();
+    updateSyndicateUI();
+    setStatus("Ghost bet live · beat PB under trace · 2× CR payout", "ok");
+    beep(740, 0.07, "triangle", 0.07);
+  }
+
+  function resolveGhostBet() {
+    if (!ghostBetActive) return;
+    const ghost = typeof ghostPbMs === "function" ? ghostPbMs() : null;
+    const elapsed = Date.now() - sectorStartedAt;
+    const target = rivalGhostMs() || ghost;
+    ghostBetActive = false;
+    if (target && elapsed <= target) {
+      const win = ghostBetWager * 2;
+      if (typeof addCredits === "function") addCredits(win);
+      setStatus("Ghost bet WON · +" + win + " CR · syndicate pays", "ok");
+      beep(880, 0.1, "triangle", 0.09);
+    } else {
+      setStatus("Ghost bet LOST · rival held the line", "err");
+      beep(180, 0.12, "sawtooth", 0.08);
+    }
+    ghostBetWager = 0;
+    activeRival = null;
+    updateSyndicateUI();
+  }
+
+  var _addWantedSyn = addWanted;
+  addWanted = function (amt) {
+    const crew = CREW_PERKS[crewKey()];
+    _addWantedSyn(Math.round(amt * (crew.heat || 1)));
+    records.maxHeat = Math.max(records.maxHeat || 0, records.wanted || 0);
+    saveRecords();
+    updateSyndicateUI();
+  };
+
+  var _onWinSyn = onWin;
+  onWin = function () {
+    _onWinSyn();
+    if (!won) return;
+    const crew = CREW_PERKS[crewKey()];
+    if (crew.cr > 1 && typeof addCredits === "function" && !dailyMode && !arcadeMode) {
+      addCredits(Math.floor(25 * (crew.cr - 1)));
+    }
+    resolveGhostBet();
+    updateSyndicateUI();
+  };
+
+  var _loadGridSyn = loadGridSector;
+  loadGridSector = function (freshRun) {
+    ghostBetActive = false;
+    ghostBetWager = 0;
+    activeRival = pickRivalEcho();
+    _loadGridSyn(freshRun);
+    setTimeout(function () {
+      const crew = CREW_PERKS[crewKey()];
+      if (crew.strike && playing && !geniusMode && !dailyMode && !arcadeMode && !extractionMode && !contractMode) {
+        maxMistakes += crew.strike;
+        updateHUD();
+      }
+      updateSyndicateUI();
+    }, 70);
+  };
+
+  var _updateGhostSyn = updateGhostRace;
+  updateGhostRace = function () {
+    if (crewKey() === "ghosts" && playing && !paused && !won && !geniusMode && !dailyMode) {
+      const rival = activeRival || pickRivalEcho();
+      if (rival && els.ghostRace && !(typeof ghostPbMs === "function" && ghostPbMs())) {
+        els.ghostRace.hidden = false;
+        if (els.ghostLabel) {
+          els.ghostLabel.textContent = "RIVAL " + (rival.callsign || "ECHO") + " · syndicate echo";
+        }
+        if (els.ghostFill) els.ghostFill.style.width = Math.min(100, (Date.now() - sectorStartedAt) / 90000 * 100) + "%";
+        return;
+      }
+    }
+    _updateGhostSyn();
+    if (activeRival && els.ghostLabel && playing && typeof ghostPbMs === "function" && ghostPbMs()) {
+      const line = els.ghostLabel.textContent || "";
+      if (line.indexOf("RIVAL") < 0) {
+        els.ghostLabel.textContent = "RIVAL " + (activeRival.callsign || "ECHO") + " · " + line;
+      }
+    }
+  };
+
+  var _showMenuSyn = showMenu;
+  showMenu = function () {
+    _showMenuSyn();
+    updateSyndicateUI();
+    bindSyndicateCrew();
+  };
+
+  var _completeContractSyn = completeContract;
+  completeContract = function () {
+    records.contractsTotal = (records.contractsTotal || 0) + 1;
+    saveRecords();
+    _completeContractSyn();
+    updateSyndicateUI();
+  };
+
+  if (els.ghostBetBtn) els.ghostBetBtn.addEventListener("click", placeGhostBet);
+  bindSyndicateCrew();
+  updateSyndicateUI();
+
+// === DEEP NET SPRINT — side door, ISA, archive, probe tokens ===
+  let sideDoorMode = false;
+
+  if (!records.isaFragments) records.isaFragments = [];
+  if (!records.nexArchive) records.nexArchive = [];
+  if (!records.probeTokens) records.probeTokens = 0;
+  if (!records.sideDoorDay) records.sideDoorDay = 0;
+
+  const ISA_DROPS = [
+    "FRAG · JMP rel16 patches trace routes.",
+    "FRAG · XOR leak gates echo your fingerprint.",
+    "FRAG · Prefix score leaks one byte at a time.",
+    "FRAG · Side doors open above 70% heat only."
+  ];
+
+  Object.assign(els, {
+    deepNetBtn: ROOT.querySelector("#bm-deep-net"),
+    archiveLog: ROOT.querySelector("#bm-archive-log"),
+    sideDoorBar: ROOT.querySelector("#bm-side-door-bar")
+  });
+
+  function appendArchive(line) {
+    records.nexArchive = records.nexArchive || [];
+    records.nexArchive.unshift({ t: Date.now(), line: line });
+    records.nexArchive = records.nexArchive.slice(0, 12);
+    saveRecords();
+    renderArchiveLog();
+  }
+
+  function addIsaFragment(label) {
+    const frag = ISA_DROPS[(records.isaFragments.length + dateSeed()) % ISA_DROPS.length];
+    records.isaFragments.push(label + " · " + frag);
+    records.isaFragments = records.isaFragments.slice(-8);
+    saveRecords();
+    appendArchive("ISA UNLOCK · " + frag);
+    renderArchiveLog();
+  }
+
+  function renderArchiveLog() {
+    if (!els.archiveLog) return;
+    const rows = records.nexArchive || [];
+    if (!rows.length) {
+      els.archiveLog.innerHTML = "<span class=\"bm-archive-empty\">NEXCORP ARCHIVE · crack nodes to leak files</span>";
+      return;
+    }
+    els.archiveLog.innerHTML = rows.map(function (e) {
+      return "<div class=\"bm-archive-row\">" + e.line + "</div>";
+    }).join("");
+  }
+
+  function sideDoorAvailable() {
+    return (records.wanted || 0) >= 70 && records.sideDoorDay !== dateSeed() && !sideDoorMode;
+  }
+
+  function updateDeepNetUI() {
+    if (els.deepNetBtn) {
+      if (sideDoorAvailable()) els.deepNetBtn.classList.remove("bm-hidden");
+      else els.deepNetBtn.classList.add("bm-hidden");
+      if (records.sideDoorDay === dateSeed()) {
+        els.deepNetBtn.textContent = "DEEP NET · SIDE DOOR USED TODAY";
+        els.deepNetBtn.disabled = true;
+      } else {
+        els.deepNetBtn.textContent = "DEEP NET · SIDE DOOR · 1 CPU GATE";
+        els.deepNetBtn.disabled = (records.wanted || 0) < 70;
+      }
+    }
+    if (els.sideDoorBar) els.sideDoorBar.hidden = !sideDoorMode;
+    renderArchiveLog();
+  }
+
+  function startSideDoor() {
+    if (!sideDoorAvailable()) return;
+    ensureAudio();
+    sideDoorMode = true;
+    geniusMode = true;
+    playing = true;
+    paused = false;
+    won = false;
+    mistakes = 0;
+    maxMistakes = 1;
+    vmProbes = 0;
+    vmLevel = 0;
+    vmSecrets = [];
+    vmChallenges = [buildGeniusChallenges()[2]];
+    elapsedMs = 0;
+    startedAt = Date.now();
+    applyMood();
+    ROOT.classList.add("bm-mood-deepnet");
+    els.menu.classList.add("bm-hidden");
+    els.play.classList.add("bm-hidden");
+    els.genius.classList.remove("bm-hidden");
+    if (els.progressWrap) els.progressWrap.hidden = true;
+    if (els.vmBrief) els.vmBrief.textContent = "DEEP NET SIDE DOOR · 1 gate · 1 strike · heat trace active";
+    if (els.kernelLorePanel && records.isaFragments.length) {
+      els.kernelLorePanel.innerHTML = "<b>ISA FRAGMENTS</b> · " + records.isaFragments.slice(-2).join(" · ");
+      els.kernelLorePanel.classList.remove("bm-hidden");
+    }
+    loadVmLevel();
+    startTimer();
+    playMusic();
+    updateDeepNetUI();
+    appendArchive("SIDE DOOR JACK-IN · heat " + (records.wanted || 0) + "%");
+    setStatus("Deep Net side door · crack one NX-8 gate", "ok");
+    notifyParent(true);
+    beep(660, 0.12, "triangle", 0.08);
+  }
+
+  function finishSideDoor() {
+    sideDoorMode = false;
+    geniusMode = false;
+    records.sideDoorDay = dateSeed();
+    records.probeTokens = (records.probeTokens || 0) + 1;
+    addIsaFragment("SIDE DOOR");
+    if (typeof addCredits === "function") addCredits(250);
+    saveRecords();
+    ROOT.classList.remove("bm-mood-deepnet");
+    els.genius.classList.add("bm-hidden");
+    playing = false;
+    appendArchive("SIDE DOOR CLEARED · probe token acquired");
+    setStatus("Side door cleared · +250 CR · probe token · ISA fragment logged", "ok");
+    updateDeepNetUI();
+    showMenu();
+  }
+
+  var _geniusWinDeep = geniusWin;
+  geniusWin = function () {
+    if (sideDoorMode) {
+      finishSideDoor();
+      return;
+    }
+    _geniusWinDeep();
+  };
+
+  var _geniusFailDeep = geniusFailStrike;
+  geniusFailStrike = function (why) {
+    if (sideDoorMode) {
+      sideDoorMode = false;
+      geniusMode = false;
+      ROOT.classList.remove("bm-mood-deepnet");
+      els.genius.classList.add("bm-hidden");
+      playing = false;
+      appendArchive("SIDE DOOR FAILED · " + why);
+      setStatus("Side door collapsed · hunters sealed the gate.", "err");
+      showMenu();
+      return;
+    }
+    _geniusFailDeep(why);
+  };
+
+  var _runProbeDeep = runProbe;
+  runProbe = function () {
+    if (records.probeTokens > 0 && geniusMode && sideDoorMode) {
+      records.probeTokens--;
+      saveRecords();
+      appendArchive("PROBE TOKEN SPENT · free trace");
+    }
+    _runProbeDeep();
+  };
+
+  var _completeContractDeep = completeContract;
+  completeContract = function () {
+    addIsaFragment(typeof currentContract === "function" ? currentContract().title : "CONTRACT");
+    records.probeTokens = (records.probeTokens || 0) + 1;
+    saveRecords();
+    _completeContractDeep();
+    updateDeepNetUI();
+  };
+
+  var _onWinDeep = onWin;
+  onWin = function () {
+    _onWinDeep();
+    if (!won) return;
+    if (!dailyMode && !arcadeMode && !geniusMode && gridLevel === 0) {
+      appendArchive("NODE BREACH · " + (difficulty || "link").toUpperCase() + " sector logged");
+    }
+  };
+
+  var _showMenuDeep = showMenu;
+  showMenu = function () {
+    sideDoorMode = false;
+    ROOT.classList.remove("bm-mood-deepnet");
+    _showMenuDeep();
+    updateDeepNetUI();
+  };
+
+  var _updateWantedDeep = updateWantedUI;
+  updateWantedUI = function () {
+    _updateWantedDeep();
+    updateDeepNetUI();
+  };
+
+  if (els.deepNetBtn) els.deepNetBtn.addEventListener("click", startSideDoor);
+  updateDeepNetUI();
+
+// === HUNTER AI SPRINT — adaptive trace, decoys, counter-intel ===
+  let hunterPressure = 0;
+  let hunterFreezeLeft = 0;
+  let decoyCell = null;
+  let sectorMistakeCount = 0;
+
+  const HUNTER_CALLOUTS = {
+    chain: "Chain runner detected · cutting your multiplier lane.",
+    ping: "Ping spammer · locking hint relays.",
+    strike: "Tank build · hunters stacking strikes on you.",
+    heat: "Heat dealer · NexCorp wants you alive for bait."
+  };
+
+  Object.assign(els, {
+    hunterStatus: ROOT.querySelector("#bm-hunter-status")
+  });
+
+  function hunterActiveNow() {
+    if (hunterFreezeLeft > 0) return false;
+    return typeof isPursuitActive === "function" && isPursuitActive();
+  }
+
+  function updateHunterStatus() {
+    if (!els.hunterStatus) return;
+    if (hunterFreezeLeft > 0) {
+      els.hunterStatus.textContent = "COUNTER-INTEL · hunter frozen " + hunterFreezeLeft + " sector(s)";
+      els.hunterStatus.hidden = false;
+      return;
+    }
+    if (!hunterActiveNow()) {
+      els.hunterStatus.hidden = true;
+      return;
+    }
+    els.hunterStatus.hidden = false;
+    els.hunterStatus.textContent = "HUNTER AI · pressure " + hunterPressure + " · adapts to mistakes";
+  }
+
+  function plantDecoyNode() {
+    decoyCell = null;
+    if ((records.wanted || 0) < 80 || !playing || !grid) return;
+    if (dailyMode || arcadeMode || geniusMode || contractMode || extractionMode) return;
+    const opts = [];
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+      if (!given[r][c] && grid[r][c] === -1) opts.push([r, c]);
+    }
+    if (!opts.length) return;
+    decoyCell = opts[Math.floor(Math.random() * opts.length)];
+  }
+
+  function showHunterCallout() {
+    const perk = (loadoutPerk || "chain").toLowerCase();
+    const line = HUNTER_CALLOUTS[perk] || HUNTER_CALLOUTS.chain;
+    if (els.hunterText) els.hunterText.textContent = line;
+  }
+
+  var _showHunterAI = showHunterLine;
+  showHunterLine = function () {
+    showHunterCallout();
+    _showHunterAI();
+  };
+
+  var _pursuitLimit = pursuitLimitMs;
+  pursuitLimitMs = function () {
+    let base = _pursuitLimit();
+    if (hunterActiveNow()) {
+      base = Math.floor(base * (1 - Math.min(0.35, hunterPressure * 0.07)));
+    }
+    return Math.max(8000, base);
+  };
+
+  var _isPursuitHunter = isPursuitActive;
+  isPursuitActive = function () {
+    if (hunterFreezeLeft > 0) return false;
+    return _isPursuitHunter();
+  };
+
+  function buyCounterIntel() {
+    if (typeof spendCredits !== "function" || !spendCredits(250)) {
+      setStatus("Counter-intel costs 250 CR.", "err");
+      return;
+    }
+    hunterFreezeLeft += 1;
+    hunterPressure = Math.max(0, hunterPressure - 1);
+    setStatus("Counter-intel deployed · hunter frozen next sector", "ok");
+    if (els.marketOv) els.marketOv.classList.remove("show");
+    updateHunterStatus();
+    beep(520, 0.08, "triangle", 0.08);
+  }
+
+  var _checkHunter = checkBoard;
+  checkBoard = function () {
+    const m0 = mistakes;
+    _checkHunter();
+    if (mistakes > m0 && hunterActiveNow()) {
+      hunterPressure = Math.min(5, hunterPressure + 1);
+      sectorMistakeCount++;
+      updateHunterStatus();
+    }
+  };
+
+  var _cellClickHunter = cellClick;
+  cellClick = function (e) {
+    const td = e.target.closest("td");
+    _cellClickHunter(e);
+    if (!decoyCell || !td || !playing || paused || won) return;
+    const r = decoyCell[0], c = decoyCell[1];
+    if (+td.dataset.r !== r || +td.dataset.c !== c) return;
+    if (given[r][c]) return;
+    if (grid[r][c] !== -1) {
+      grid[r][c] = -1;
+      decoyCell = null;
+      if (typeof addWanted === "function") addWanted(8);
+      setStatus("FALSE NODE · NexCorp honeypot · heat spike", "err");
+      beep(100, 0.15, "sawtooth", 0.12);
+      haptic([60, 30, 60]);
+      renderGrid(true);
+    }
+  };
+
+  var _renderGridHunter = renderGrid;
+  renderGrid = function (flashBad) {
+    _renderGridHunter(flashBad);
+    if (!decoyCell || !els.grid) return;
+    const td = els.grid.querySelector('td[data-r="' + decoyCell[0] + '"][data-c="' + decoyCell[1] + '"]');
+    if (td && grid[decoyCell[0]][decoyCell[1]] === -1) td.classList.add("bm-decoy");
+  };
+
+  var _loadGridHunter = loadGridSector;
+  loadGridSector = function (freshRun) {
+    sectorMistakeCount = 0;
+    if (hunterFreezeLeft > 0) hunterFreezeLeft--;
+    _loadGridHunter(freshRun);
+    setTimeout(function () {
+      plantDecoyNode();
+      updateHunterStatus();
+    }, 75);
+  };
+
+  var _failOutHunter = failOut;
+  failOut = function () {
+    hunterPressure = Math.min(5, hunterPressure + 1);
+    decoyCell = null;
+    _failOutHunter();
+    updateHunterStatus();
+  };
+
+  var _onWinHunter = onWin;
+  onWin = function () {
+    _onWinHunter();
+    if (won) {
+      hunterPressure = Math.max(0, hunterPressure - 1);
+      decoyCell = null;
+      updateHunterStatus();
+    }
+  };
+
+  var _tickHunter = tick;
+  tick = function () {
+    _tickHunter();
+    updateHunterStatus();
+  };
+
+  var _bindMarketHunter = bindMarketOverlay;
+  bindMarketOverlay = function () {
+    _bindMarketHunter();
+    const btn = ROOT.querySelector("#bm-market-freeze");
+    if (btn && !btn.dataset.bound) {
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", buyCounterIntel);
+    }
+  };
+
+  bindMarketOverlay();
+  updateHunterStatus();
+
+// === SIGNAL WAR SPRINT — audio layers, rain, stingers, fast boot ===
+  let signalOsc = null;
+  let signalGain = null;
+  let signalMood = "calm";
+  let lastRainMul = 1;
+  let rankStingerPlaying = false;
+
+  if (records.fastBoot == null) records.fastBoot = false;
+
+  Object.assign(els, {
+    fastBootToggle: ROOT.querySelector("#bm-fast-boot")
+  });
+
+  function getSignalMood() {
+    if (typeof contractMode !== "undefined" && contractMode) return "contract";
+    if (ROOT.classList.contains("bm-mood-contract")) return "contract";
+    if (ROOT.classList.contains("bm-mood-boss") || ROOT.classList.contains("bm-extract-active")) return "boss";
+    if (typeof isPursuitActive === "function" && isPursuitActive()) return "pursuit";
+    if (ROOT.classList.contains("bm-mood-deepnet")) return "pursuit";
+    return "calm";
+  }
+
+  function stopSignalLayer() {
+    if (!signalOsc) return;
+    try { signalOsc.stop(); } catch (e) {}
+    signalOsc.disconnect();
+    signalGain.disconnect();
+    signalOsc = null;
+    signalGain = null;
+  }
+
+  function syncSignalWar() {
+    if (muted || !musicVol || REDUCED_MOTION || !playing) {
+      stopSignalLayer();
+      return;
+    }
+    const mood = getSignalMood();
+    if (mood === signalMood && signalOsc) return;
+    signalMood = mood;
+    stopSignalLayer();
+    if (mood === "calm") return;
+    ensureAudio();
+    const freqs = { pursuit: 108, boss: 72, contract: 138 };
+    const vols = { pursuit: 0.04, boss: 0.055, contract: 0.045 };
+    signalOsc = audioCtx.createOscillator();
+    signalGain = audioCtx.createGain();
+    signalOsc.type = mood === "boss" ? "sawtooth" : "triangle";
+    signalOsc.frequency.value = freqs[mood] || 100;
+    signalGain.gain.value = musicVol * (vols[mood] || 0.04);
+    signalOsc.connect(signalGain);
+    signalGain.connect(audioCtx.destination);
+    signalOsc.start();
+    ROOT.classList.toggle("bm-signal-pursuit", mood === "pursuit");
+    ROOT.classList.toggle("bm-signal-boss", mood === "boss");
+    ROOT.classList.toggle("bm-signal-contract", mood === "contract");
+  }
+
+  function playRankStinger(rankName) {
+    if (rankStingerPlaying || muted) return;
+    rankStingerPlaying = true;
+    const r = (rankName || "").toUpperCase();
+    let seq = [523, 659, 784];
+    if (r.indexOf("GHOST") >= 0 || r.indexOf("PHANTOM") >= 0) seq = [440, 554, 659, 880];
+    if (r.indexOf("OMEGA") >= 0 || r.indexOf("KINGPIN") >= 0) seq = [330, 415, 523, 659, 880, 1046];
+    if (r.indexOf("OPERATOR") >= 0 || r.indexOf("FIXER") >= 0) seq = [494, 587, 698];
+    seq.forEach(function (f, i) {
+      setTimeout(function () { beep(f, 0.16, "triangle", 0.11); }, i * 100);
+    });
+    setTimeout(function () { rankStingerPlaying = false; }, seq.length * 100 + 200);
+  }
+
+  var _drawRainSignal = drawRain;
+  drawRain = function () {
+    if (REDUCED_MOTION) return;
+    const left = playing && !won ? Math.max(0, maxMistakes - mistakes) : maxMistakes;
+    const mul = playing && !won ? 1 + (maxMistakes - left) * 0.2 : 1;
+    for (let i = 0; i < speeds.length; i++) {
+      speeds[i] /= lastRainMul;
+      speeds[i] *= mul;
+    }
+    lastRainMul = mul;
+    if (left <= 1 && playing) {
+      rainHue = "#ff6b81";
+      rainBright = "#ff3355";
+    } else if (typeof applyMood === "function" && !ROOT.classList.contains("bm-mood-boss")) {
+      applyMood();
+    }
+    _drawRainSignal();
+  };
+
+  var _showRankUpSignal = showRankUp;
+  showRankUp = function (newRank) {
+    _showRankUpSignal(newRank);
+    playRankStinger(newRank);
+    if (typeof computeSyndicateRank === "function") {
+      setTimeout(function () { playRankStinger(computeSyndicateRank()); }, 450);
+    }
+  };
+
+  var _runBootSignal = runBoot;
+  runBoot = function (cb) {
+    records.bootVisits = (records.bootVisits || 0) + 1;
+    const veteran = records.fastBoot || records.bootVisits > 2 ||
+      (records.clears && (records.clears.medium || records.clears.hard)) ||
+      (typeof computeSyndicateRank === "function" && computeSyndicateRank() !== "RECRUIT");
+    if (veteran && els.boot && els.bootLog) {
+      els.menu.classList.add("bm-hidden");
+      els.boot.classList.add("show");
+      els.bootLog.textContent = "";
+      const lines = [
+        "NEXCORP UPLINK · VETERAN CHANNEL",
+        "Operator " + (records.callsign || "GHOST") + " authenticated.",
+        "> JACK IN READY_"
+      ];
+      lines.forEach(function (t) {
+        const span = document.createElement("span");
+        span.className = "hi";
+        span.textContent = t + "\n";
+        els.bootLog.appendChild(span);
+      });
+      beep(880, 0.06, "square", 0.06);
+      setTimeout(function () {
+        bootDone = true;
+        els.boot.classList.remove("show");
+        if (els.menu) els.menu.classList.remove("bm-hidden");
+        cb();
+      }, 700);
+      return;
+    }
+    _runBootSignal(cb);
+  };
+
+  var _tickSignal = tick;
+  tick = function () {
+    _tickSignal();
+    syncSignalWar();
+  };
+
+  var _stopMusicSignal = stopMusic;
+  stopMusic = function () {
+    stopSignalLayer();
+    ROOT.classList.remove("bm-signal-pursuit", "bm-signal-boss", "bm-signal-contract");
+    _stopMusicSignal();
+  };
+
+  var _showMenuSignal = showMenu;
+  showMenu = function () {
+    stopSignalLayer();
+    _showMenuSignal();
+    if (els.fastBootToggle) els.fastBootToggle.checked = !!records.fastBoot;
+  };
+
+  if (els.fastBootToggle) {
+    els.fastBootToggle.addEventListener("change", function () {
+      records.fastBoot = !!els.fastBootToggle.checked;
+      saveRecords();
+    });
+  }
+
+// === DAILY EMPIRE SPRINT — calendar, ghost board, loadout lock, insurance ===
+  const DAILY_LOADOUTS = ["chain", "ping", "strike", "heat"];
+
+  if (!records.heatCalendar) records.heatCalendar = [];
+  if (!records.dailyGhostBoard) records.dailyGhostBoard = [];
+
+  Object.assign(els, {
+    heatCalendar: ROOT.querySelector("#bm-heat-calendar"),
+    dailyGhostBoard: ROOT.querySelector("#bm-daily-ghost-board"),
+    dailyLoadoutLine: ROOT.querySelector("#bm-daily-loadout-line"),
+    streakInsureBtn: ROOT.querySelector("#bm-streak-insure")
+  });
+
+  function dailyLockedLoadout() {
+    return DAILY_LOADOUTS[dateSeed() % DAILY_LOADOUTS.length];
+  }
+
+  function daysAgo(n) {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  }
+
+  function weekStampCount() {
+    const set = {};
+    (records.heatCalendar || []).forEach(function (d) { set[d] = true; });
+    let n = 0;
+    for (let i = 0; i < 7; i++) if (set[daysAgo(i)]) n++;
+    return n;
+  }
+
+  function stampHeatCalendar() {
+    const today = dateSeed();
+    records.heatCalendar = records.heatCalendar || [];
+    if (records.heatCalendar.indexOf(today) < 0) {
+      records.heatCalendar.push(today);
+      records.heatCalendar = records.heatCalendar.slice(-14);
+    }
+    if (weekStampCount() >= 7) {
+      records.heatCalendar = records.heatCalendar.filter(function (d) { return d !== today; });
+      records.heatCalendar.push(today);
+      if (typeof addCredits === "function") addCredits(500);
+      setStatus("Weekly heat calendar complete · +500 CR syndicate bonus", "ok");
+    }
+    saveRecords();
+    renderHeatCalendar();
+  }
+
+  function renderHeatCalendar() {
+    if (!els.heatCalendar) return;
+    const set = {};
+    (records.heatCalendar || []).forEach(function (d) { set[d] = true; });
+    if (records.dailyLastClear === dateSeed()) set[dateSeed()] = true;
+    let html = "";
+    for (let i = 6; i >= 0; i--) {
+      const d = daysAgo(i);
+      const on = !!set[d];
+      html += "<span class=\"bm-cal-day" + (on ? " done" : "") + "\">" + (on ? "◈" : "·") + "</span>";
+    }
+    els.heatCalendar.innerHTML = html;
+    els.heatCalendar.title = "Weekly calendar · 7 stamps = +500 CR · " + weekStampCount() + "/7";
+  }
+
+  function pushDailyGhost(entry) {
+    records.dailyGhostBoard = records.dailyGhostBoard || [];
+    records.dailyGhostBoard.unshift(entry);
+    records.dailyGhostBoard = records.dailyGhostBoard.slice(0, 5);
+    saveRecords();
+    renderDailyGhostBoard();
+  }
+
+  function renderDailyGhostBoard() {
+    if (!els.dailyGhostBoard) return;
+    const rows = records.dailyGhostBoard || [];
+    if (!rows.length) {
+      els.dailyGhostBoard.innerHTML = "<span class=\"bm-dg-empty\">DAILY GHOST BOARD · clear daily to rank</span>";
+      return;
+    }
+    els.dailyGhostBoard.innerHTML = rows.map(function (e, i) {
+      return "<div class=\"bm-dg-row" + (i === 0 ? " top" : "") + "\"><b>" +
+        (e.callsign || "GHOST") + "</b> · " + e.score + " pts · " + fmtTime(e.t) +
+        (e.pct ? " · top " + e.pct + "%" : "") + "</div>";
+    }).join("");
+  }
+
+  function updateDailyEmpireUI() {
+    renderHeatCalendar();
+    renderDailyGhostBoard();
+    if (els.dailyLoadoutLine) {
+      els.dailyLoadoutLine.textContent = "TODAY'S FAIR LOADOUT · " + dailyLockedLoadout().toUpperCase() +
+        " · all operators locked same perk";
+    }
+    if (els.streakInsureBtn) {
+      els.streakInsureBtn.disabled = !!records.streakInsured || (records.credits || 0) < 150;
+      els.streakInsureBtn.textContent = records.streakInsured
+        ? "STREAK INSURED · active"
+        : "STREAK INSURANCE · 150 CR";
+    }
+  }
+
+  function buyStreakInsurance() {
+    if (records.streakInsured) return;
+    if (typeof spendCredits !== "function" || !spendCredits(150)) {
+      setStatus("Streak insurance costs 150 CR.", "err");
+      return;
+    }
+    records.streakInsured = true;
+    saveRecords();
+    updateDailyEmpireUI();
+    setStatus("Streak insured · next missed day won't break chain", "ok");
+    beep(660, 0.08, "triangle", 0.07);
+  }
+
+  var _startDailyEmpire = startDaily;
+  startDaily = function () {
+    loadoutPerk = dailyLockedLoadout();
+    records.loadout = loadoutPerk;
+    saveRecords();
+    if (els.loadoutRoot) {
+      els.loadoutRoot.querySelectorAll(".bm-loadout-btn").forEach(function (b) {
+        b.classList.toggle("selected", b.dataset.loadout === loadoutPerk);
+      });
+    }
+    _startDailyEmpire();
+    setStatus("Daily node · fair loadout " + loadoutPerk.toUpperCase() + " · 6×6", "ok");
+  };
+
+  var _bumpDailyEmpire = bumpDailyStreak;
+  bumpDailyStreak = function () {
+    const today = dateSeed();
+    const last = records.dailyLastClear || 0;
+    if (last === today) return;
+    const yesterday = today - 1;
+    const contiguous = last === yesterday || last === today - 1;
+    if (!contiguous && last && records.streakInsured) {
+      records.streakInsured = false;
+      records.dailyStreak = (records.dailyStreak || 0) + 1;
+      records.dailyLastClear = today;
+      saveRecords();
+      updateStreakDisplay();
+      setStatus("Streak insurance used · chain preserved", "ok");
+      return;
+    }
+    _bumpDailyEmpire();
+  };
+
+  var _onWinDailyEmpire = onWin;
+  onWin = function () {
+    const wasDaily = dailyMode;
+    const t0 = sectorStartedAt || sectorClock;
+    _onWinDailyEmpire();
+    if (!won || !wasDaily) return;
+    stampHeatCalendar();
+    const pct = typeof dailyPercentile === "function" ? dailyPercentile(score) : 50;
+    pushDailyGhost({
+      callsign: records.callsign || "GHOST",
+      score: score,
+      t: Date.now() - t0,
+      pct: pct,
+      day: dateSeed()
+    });
+    updateDailyEmpireUI();
+  };
+
+  var _showMenuDaily = showMenu;
+  showMenu = function () {
+    _showMenuDaily();
+    updateDailyEmpireUI();
+  };
+
+  if (els.streakInsureBtn) els.streakInsureBtn.addEventListener("click", buyStreakInsurance);
+  updateDailyEmpireUI();
+
+// === OMEGA PROTOCOL SPRINT — prestige, omega chain, legacy card, root access ===
+  let omegaChainMode = false;
+  let omegaChainStep = 0;
+  let rootAccessMode = false;
+  const OMEGA_CHAIN_LEN = 3;
+
+  if (!records.prestigeLevel) records.prestigeLevel = 0;
+  if (!records.prestigeRain) records.prestigeRain = "";
+  if (!records.omegaChainBest) records.omegaChainBest = 0;
+  if (!records.rootProtocolDone) records.rootProtocolDone = false;
+
+  Object.assign(els, {
+    prestigeOv: ROOT.querySelector("#bm-prestige-ov"),
+    prestigeAccept: ROOT.querySelector("#bm-prestige-accept"),
+    omegaChainBtn: ROOT.querySelector("#bm-omega-chain"),
+    legacyBtn: ROOT.querySelector("#bm-legacy-card")
+  });
+
+  const PRESTIGE_RAIN = {
+    gold: { hue: "#eab308", bright: "#fde047" },
+    cyan: { hue: "#22d3ee", bright: "#67e8f9" },
+    crimson: { hue: "#ff3355", bright: "#ff6b81" }
+  };
+
+  function applyPrestigeRain() {
+    if (!records.prestigeRain || !PRESTIGE_RAIN[records.prestigeRain]) return;
+    rainHue = PRESTIGE_RAIN[records.prestigeRain].hue;
+    rainBright = PRESTIGE_RAIN[records.prestigeRain].bright;
+    ROOT.classList.add("bm-prestige-rain");
+  }
+
+  function bestGhostDelta() {
+    let best = null;
+    const pbs = records.sectorPB || {};
+    Object.keys(pbs).forEach(function (k) {
+      const pb = pbs[k];
+      if (pb && pb.t > 0) best = best == null ? pb.t : Math.min(best, pb.t);
+    });
+    return best;
+  }
+
+  function updateOmegaProtocolUI() {
+    if (els.omegaChainBtn) {
+      const show = records.clears && records.clears.hard;
+      els.omegaChainBtn.classList.toggle("bm-hidden", !show);
+      els.omegaChainBtn.textContent = omegaChainMode
+        ? ("OMEGA CHAIN · " + omegaChainStep + "/" + OMEGA_CHAIN_LEN)
+        : "OMEGA CHAIN · 3×8×8";
+    }
+    if (records.prestigeLevel > 0) applyPrestigeRain();
+    if (els.rootAccessBtn && records.rootProtocolDone) {
+      els.rootAccessBtn.textContent = "ROOT ACCESS · PROTOCOL CLEARED";
+    } else if (els.rootAccessBtn && records.prestigeLevel > 0 && records.clears && records.clears.omega) {
+      els.rootAccessBtn.textContent = "ROOT ACCESS · PROTOCOL";
+    }
+  }
+
+  function offerPrestige() {
+    if (records.prestigeLevel > 0 || difficulty !== "hard") return;
+    if ((records.maxHeat || 0) < 100 && (records.wanted || 0) < 100) return;
+    if (!els.prestigeOv) return;
+    els.prestigeOv.classList.add("show");
+    beep(440, 0.15, "triangle", 0.1);
+  }
+
+  function acceptPrestige() {
+    records.prestigeLevel = 1;
+    records.wanted = 0;
+    records.bonusUnlocked = false;
+    const keys = Object.keys(PRESTIGE_RAIN);
+    records.prestigeRain = keys[dateSeed() % keys.length];
+    saveRecords();
+    if (typeof updateWantedUI === "function") updateWantedUI();
+    if (els.prestigeOv) els.prestigeOv.classList.remove("show");
+    applyPrestigeRain();
+    setStatus("PRESTIGE LINK · heat zeroed · syndicate rank kept · rain recolored", "ok");
+    if (typeof appendArchive === "function") appendArchive("PRESTIGE · operator ascended · " + records.prestigeRain);
+    updateOmegaProtocolUI();
+    [523, 659, 880, 1046].forEach(function (f, i) {
+      setTimeout(function () { beep(f, 0.14, "triangle", 0.1); }, i * 90);
+    });
+  }
+
+  function loadOmegaChainSector() {
+    omegaMode = true;
+    gridLevel = omegaChainStep;
+    const spec = [8, 14 - omegaChainStep * 2, 1, 1, "OMEGA CHAIN · NODE " + (omegaChainStep + 1)];
+    setGridSize(8);
+    const pack = newPuzzleFromSpec(spec);
+    solution = pack.solution;
+    puzzle = pack.puzzle;
+    given = pack.given;
+    grid = clone(puzzle);
+    N = 8;
+    HALF = 4;
+    playing = true;
+    paused = false;
+    won = false;
+    mistakes = 0;
+    maxMistakes = 1;
+    sectorClock = Date.now();
+    sectorStartedAt = Date.now();
+    if (els.gridWrap) els.gridWrap.classList.add("bm-omega-grid");
+    els.grid.className = "bm-grid sz8";
+    els.solveBtn.classList.add("bm-hidden");
+    renderGrid(false);
+    updateHUD();
+    startTimer();
+    setStatus("OMEGA CHAIN " + (omegaChainStep + 1) + "/" + OMEGA_CHAIN_LEN + " · 8×8 · 1 strike · no solve", "ok");
+  }
+
+  function startOmegaChain() {
+    if (!(records.clears && records.clears.hard)) return;
+    ensureAudio();
+    hideVictory();
+    omegaChainMode = true;
+    omegaChainStep = 0;
+    dailyMode = false;
+    geniusMode = false;
+    arcadeMode = false;
+    extractionMode = false;
+    contractMode = false;
+    score = score || 0;
+    elapsedMs = elapsedMs || 0;
+    startedAt = Date.now() - elapsedMs;
+    applyMood();
+    ROOT.classList.add("bm-mood-omega", "bm-omega-chain");
+    els.menu.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    notifyParent(true);
+    loadOmegaChainSector();
+    playMusic();
+  }
+
+  function completeOmegaChain() {
+    omegaChainMode = false;
+    omegaChainStep = 0;
+    omegaMode = false;
+    records.omegaChainBest = Math.max(records.omegaChainBest || 0, score);
+    if (typeof addCredits === "function") addCredits(1000);
+    score += 2000;
+    saveRecords();
+    playing = false;
+    ROOT.classList.remove("bm-omega-chain");
+    setStatus("OMEGA CHAIN CLEARED · +2000 score · +1000 CR", "ok");
+    updateOmegaProtocolUI();
+    showMenu();
+  }
+
+  function omegaChainWin() {
+    won = true;
+    playing = false;
+    sectorGain = calcSectorScore();
+    score += sectorGain;
+    updateHUD();
+    omegaChainStep++;
+    if (omegaChainStep >= OMEGA_CHAIN_LEN) {
+      setTimeout(completeOmegaChain, 450);
+      return;
+    }
+    setTimeout(function () {
+      won = false;
+      loadOmegaChainSector();
+    }, 500);
+  }
+
+  function startRootProtocol() {
+    if (!(records.prestigeLevel > 0 && records.clears && records.clears.omega)) {
+      startOmega();
+      return;
+    }
+    ensureAudio();
+    hideVictory();
+    rootAccessMode = true;
+    omegaMode = true;
+    omegaChainMode = false;
+    dailyMode = false;
+    geniusMode = false;
+    gridLevel = 0;
+    score = score || 0;
+    mistakes = 0;
+    maxMistakes = 1;
+    elapsedMs = 0;
+    startedAt = Date.now();
+    applyMood();
+    ROOT.classList.add("bm-mood-omega", "bm-root-protocol");
+    els.menu.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    notifyParent(true);
+    const spec = [8, 10, 1, 1, "ROOT ACCESS PROTOCOL · NEXCORP CORE"];
+    setGridSize(8);
+    const pack = newPuzzleFromSpec(spec);
+    solution = pack.solution;
+    puzzle = pack.puzzle;
+    given = pack.given;
+    grid = clone(puzzle);
+    N = 8;
+    HALF = 4;
+    playing = true;
+    won = false;
+    sectorClock = Date.now();
+    sectorStartedAt = Date.now();
+    els.solveBtn.classList.add("bm-hidden");
+    renderGrid(false);
+    updateHUD();
+    startTimer();
+    playMusic();
+    setStatus("ROOT ACCESS PROTOCOL · 8×8 · 1 strike · classified", "ok");
+    beep(80, 0.2, "sawtooth", 0.12);
+  }
+
+  function completeRootProtocol() {
+    rootAccessMode = false;
+    omegaMode = false;
+    records.rootProtocolDone = true;
+    score += 5000;
+    if (typeof addCredits === "function") addCredits(1500);
+    saveRecords();
+    playing = false;
+    ROOT.classList.remove("bm-root-protocol");
+    markCampaignClear("root");
+    showVictory({
+      title: "ROOT ACCESS GRANTED",
+      sub: "NexCorp core protocol breached · classified clearance logged",
+      codes: [matrixCode()]
+    });
+    updateOmegaProtocolUI();
+  }
+
+  var _drawVictoryLegacy = drawVictoryCard;
+  drawVictoryCard = function () {
+    const cv = _drawVictoryLegacy();
+    const c = cv.getContext("2d");
+    c.fillStyle = "#c4b5fd";
+    c.font = "11px Courier New, monospace";
+    const syn = typeof computeSyndicateRank === "function" ? computeSyndicateRank() : "—";
+    c.fillText("SYNDICATE " + syn + " · EXFIL " + (records.extractions || 0) +
+      " · CONTRACTS " + (records.contractsTotal || 0), 24, 168);
+    c.fillStyle = "#fde68a";
+    const ghost = bestGhostDelta();
+    c.fillText("LEGACY · prestige L" + (records.prestigeLevel || 0) +
+      (ghost ? " · best ghost " + fmtTime(ghost) : ""), 24, 188);
+    return cv;
+  };
+
+  var _onWinOmega = onWin;
+  onWin = function () {
+    if (omegaChainMode) {
+      omegaChainWin();
+      return;
+    }
+    if (rootAccessMode) {
+      won = true;
+      playing = false;
+      sectorGain = calcSectorScore();
+      score += sectorGain;
+      updateHUD();
+      completeRootProtocol();
+      return;
+    }
+    _onWinOmega();
+  };
+
+  var _showVictoryOmega = showVictory;
+  showVictory = function (opts) {
+    if (!omegaChainMode && !rootAccessMode && difficulty === "hard" && !(opts && opts.daily)) {
+      offerPrestige();
+    }
+    _showVictoryOmega(opts);
+  };
+
+  var _startRootAccessOmega = startRootAccess;
+  startRootAccess = function () {
+    if (records.prestigeLevel > 0 && records.clears && records.clears.omega && !records.rootProtocolDone) {
+      startRootProtocol();
+      return;
+    }
+    _startRootAccessOmega();
+  };
+
+  var _failOutOmega = failOut;
+  failOut = function () {
+    if (omegaChainMode) {
+      omegaChainMode = false;
+      omegaChainStep = 0;
+      omegaMode = false;
+      ROOT.classList.remove("bm-omega-chain");
+      setStatus("OMEGA CHAIN broken · NexCorp sealed the root.", "err");
+    }
+    if (rootAccessMode) {
+      rootAccessMode = false;
+      omegaMode = false;
+      ROOT.classList.remove("bm-root-protocol");
+    }
+    _failOutOmega();
+  };
+
+  var _showMenuOmega = showMenu;
+  showMenu = function () {
+    omegaChainMode = false;
+    rootAccessMode = false;
+    ROOT.classList.remove("bm-omega-chain", "bm-root-protocol");
+    _showMenuOmega();
+    updateOmegaProtocolUI();
+  };
+
+  if (els.prestigeAccept) els.prestigeAccept.addEventListener("click", acceptPrestige);
+  if (els.prestigeOv) {
+    els.prestigeOv.addEventListener("click", function (e) {
+      if (e.target === els.prestigeOv) els.prestigeOv.classList.remove("show");
+    });
+  }
+  if (els.omegaChainBtn) els.omegaChainBtn.addEventListener("click", startOmegaChain);
+  if (els.legacyBtn) els.legacyBtn.addEventListener("click", downloadVictoryCard);
+
+  updateOmegaProtocolUI();
+
+// === CHALLENGE WARS SPRINT — duels, ghost links, war cards ===
+  let duelMode = false;
+  let pendingDuel = null;
+  let duelGhostMs = 0;
+  let duelOpponent = null;
+
+  Object.assign(els, {
+    duelAccept: ROOT.querySelector("#bm-duel-accept"),
+    duelBar: ROOT.querySelector("#bm-duel-bar"),
+    duelLabel: ROOT.querySelector("#bm-duel-label"),
+    duelResult: ROOT.querySelector("#bm-duel-result"),
+    duelResultTitle: ROOT.querySelector("#bm-duel-result-title"),
+    duelResultSub: ROOT.querySelector("#bm-duel-result-sub")
+  });
+
+  function buildDuelPayload() {
+    const pb = records.sectorPB && typeof sectorKey === "function" ? records.sectorPB[sectorKey()] : null;
+    return {
+      v: 1,
+      seed: challengeSeed || (dateSeed() ^ ((gridLevel || 0) + 1) * 7919),
+      heat: records.wanted || 0,
+      loadout: loadoutPerk || "chain",
+      rank: typeof computeSyndicateRank === "function" ? computeSyndicateRank() : computeRank(),
+      callsign: records.callsign || "GHOST",
+      ghostMs: pb && pb.t ? pb.t : 0,
+      diff: difficulty || "medium",
+      level: gridLevel || 0,
+      cr: records.credits || 0
+    };
+  }
+
+  function encodeDuel(obj) {
+    return encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(obj)))));
+  }
+
+  function decodeDuel(str) {
+    try {
+      return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(str)))));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function duelShareUrl() {
+    const d = buildDuelPayload();
+    const base = location.href.split("#")[0].split("?")[0];
+    return base + "?seed=" + d.seed + "&duel=" + encodeDuel(d);
+  }
+
+  function updateDuelUI() {
+    if (els.duelAccept) {
+      els.duelAccept.classList.toggle("bm-hidden", !pendingDuel || duelMode);
+    }
+    if (els.duelBar) els.duelBar.hidden = !duelMode;
+    if (els.duelLabel && duelMode && duelOpponent) {
+      els.duelLabel.textContent = "DUEL · vs " + (duelOpponent.callsign || "RIVAL") +
+        " · " + (duelOpponent.rank || "RUNNER") + " · beat " +
+        (duelGhostMs ? fmtTime(duelGhostMs) : "their ghost");
+    }
+  }
+
+  function tryLoadDuel() {
+    try {
+      const q = new URLSearchParams(location.search);
+      const raw = q.get("duel");
+      if (!raw) return;
+      pendingDuel = decodeDuel(raw);
+      if (!pendingDuel || !pendingDuel.seed) return;
+      challengeSeed = pendingDuel.seed;
+      if (els.duelAccept) {
+        els.duelAccept.classList.remove("bm-hidden");
+        els.duelAccept.textContent = "DUEL ACCEPT · vs " + (pendingDuel.callsign || "RIVAL");
+      }
+      if (els.bulletin) {
+        els.bulletin.textContent = "CHALLENGE WAR INCOMING · " + (pendingDuel.callsign || "RIVAL") +
+          " · heat " + (pendingDuel.heat || 0) + "% · " + (pendingDuel.loadout || "chain").toUpperCase();
+      }
+    } catch (e) {}
+  }
+
+  function acceptDuel() {
+    if (!pendingDuel) return;
+    ensureAudio();
+    duelMode = true;
+    duelOpponent = pendingDuel;
+    duelGhostMs = pendingDuel.ghostMs || 0;
+    challengeSeed = pendingDuel.seed;
+    difficulty = pendingDuel.diff || "medium";
+    gridLevel = pendingDuel.level || 0;
+    loadoutPerk = pendingDuel.loadout || loadoutPerk;
+    records.loadout = loadoutPerk;
+    saveRecords();
+    hideVictory();
+    if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+    dailyMode = false;
+    omegaMode = false;
+    arcadeMode = false;
+    geniusMode = false;
+    extractionMode = false;
+    contractMode = false;
+    bonusNodeMode = false;
+    sectorCodes = [];
+    score = score || 0;
+    mistakes = 0;
+    elapsedMs = elapsedMs || 0;
+    startedAt = Date.now() - elapsedMs;
+    applyMood();
+    if (els.duelAccept) els.duelAccept.classList.add("bm-hidden");
+    if (els.duelResult) els.duelResult.classList.remove("show");
+    els.menu.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    notifyParent(true);
+    loadGridSector(true);
+    updateDuelUI();
+    setStatus("DUEL ACCEPTED · beat " + (duelOpponent.callsign || "rival") + "'s ghost", "ok");
+    beep(720, 0.08, "triangle", 0.08);
+  }
+
+  function resolveDuel(outcome) {
+    if (!duelMode) return;
+    duelMode = false;
+    pendingDuel = null;
+    updateDuelUI();
+    if (!els.duelResult) return;
+    if (els.duelResultTitle) els.duelResultTitle.textContent = outcome.won ? "DUEL WON" : "DUEL LOST";
+    if (els.duelResultSub) {
+      els.duelResultSub.textContent = outcome.won
+        ? ("You beat " + (duelOpponent.callsign || "rival") + "'s ghost · +" + outcome.cr + " CR")
+        : ((duelOpponent.callsign || "Rival") + " held the line · train and rematch");
+    }
+    els.duelResult.classList.add("show");
+    if (outcome.won && typeof addCredits === "function") addCredits(outcome.cr);
+    setTimeout(function () { if (els.duelResult) els.duelResult.classList.remove("show"); }, 3200);
+    duelOpponent = null;
+    duelGhostMs = 0;
+  }
+
+  var _shareChallengeWar = shareChallengeLink;
+  shareChallengeLink = function () {
+    const d = buildDuelPayload();
+    const url = duelShareUrl();
+    const ghostLine = d.ghostMs ? (" · ghost " + fmtTime(d.ghostMs)) : "";
+    const txt = "THE BINARY MATRIX · DUEL · " + (d.callsign || "GHOST") + " · " + d.rank +
+      " · HEAT " + d.heat + "% · " + d.loadout.toUpperCase() + ghostLine +
+      " · beat seed " + d.seed + " · " + url;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function () {
+        if (els.challengeLink) {
+          els.challengeLink.textContent = "DUEL LINK COPIED!";
+          setTimeout(function () { els.challengeLink.textContent = "CHALLENGE LINK"; }, 1600);
+        }
+      }).catch(function () {});
+    }
+    beep(720, 0.06, "triangle", 0.06);
+  };
+
+  var _parseUrlWar = parseUrlParams;
+  parseUrlParams = function () {
+    _parseUrlWar();
+    tryLoadDuel();
+  };
+
+  var _updateGhostWar = updateGhostRace;
+  updateGhostRace = function () {
+    if (duelMode && duelGhostMs > 0 && playing && els.ghostRace) {
+      els.ghostRace.hidden = false;
+      const elapsed = Date.now() - sectorStartedAt;
+      const pct = Math.min(100, Math.round(elapsed / duelGhostMs * 100));
+      if (els.ghostFill) els.ghostFill.style.width = pct + "%";
+      if (els.ghostLabel) {
+        const delta = elapsed - duelGhostMs;
+        els.ghostLabel.textContent = delta > 0
+          ? ("RIVAL +" + Math.ceil(delta / 1000) + "s ahead · DUEL")
+          : ("YOU +" + Math.ceil(-delta / 1000) + "s ahead · DUEL");
+      }
+      return;
+    }
+    _updateGhostWar();
+  };
+
+  var _onWinWar = onWin;
+  onWin = function () {
+    if (duelMode) {
+      if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+      won = true;
+      playing = false;
+      sectorGain = calcSectorScore();
+      score += sectorGain;
+      updateHUD();
+      renderGrid(false);
+      const elapsed = Date.now() - sectorStartedAt;
+      const beat = !duelGhostMs || elapsed <= duelGhostMs;
+      resolveDuel({ won: beat, cr: beat ? 350 : 0 });
+      return;
+    }
+    _onWinWar();
+  };
+
+  var _failOutWar = failOut;
+  failOut = function () {
+    if (duelMode) resolveDuel({ won: false, cr: 0 });
+    _failOutWar();
+  };
+
+  var _drawCardWar = drawVictoryCard;
+  drawVictoryCard = function () {
+    const cv = _drawCardWar();
+    const c = cv.getContext("2d");
+    const syn = typeof computeSyndicateRank === "function" ? computeSyndicateRank() : computeRank();
+    c.fillStyle = "#39ff14";
+    c.font = "700 12px Courier New, monospace";
+    c.fillText("[" + syn + "]", 480, 48);
+    c.fillStyle = "#a78bfa";
+    c.fillText((records.credits || 0) + " CR", 480, 68);
+    if (duelMode || pendingDuel) {
+      c.fillStyle = "#ff6b81";
+      c.font = "10px Courier New, monospace";
+      c.fillText("CHALLENGE WAR", 24, 210);
+    }
+    return cv;
+  };
+
+  var _showMenuWar = showMenu;
+  showMenu = function () {
+    if (!duelMode) updateDuelUI();
+    _showMenuWar();
+  };
+
+  if (els.duelAccept) els.duelAccept.addEventListener("click", acceptDuel);
+  if (els.duelResult) {
+    els.duelResult.addEventListener("click", function () { els.duelResult.classList.remove("show"); });
+  }
+  tryLoadDuel();
+  updateDuelUI();
+
+// === NEXCORP ARCHIVES SPRINT — memos, world events, archivist ===
+  const ARCHIVE_MEMOS = {
+    boss: { title: "MEMO · FINAL GATE", text: "NexCorp apex nodes bleed red telemetry. Operators who linger get logged twice." },
+    extract: { title: "MEMO · EXFIL ROUTE", text: "Three-node extraction paths exist. Hunters converge on heat max — move fast." },
+    contract: { title: "MEMO · BLACK CONTRACT", text: "Weekly contracts are bait. The payout is real. So is the trace." },
+    pursuit: { title: "MEMO · HUNTER DIVISION", text: "70% heat triggers pursuit sweeps. Counter-intel buys one breath." },
+    prestige: { title: "MEMO · PRESTIGE LINK", text: "Ascended operators keep syndicate rank but burn their heat signature." },
+    root: { title: "MEMO · ROOT PROTOCOL", text: "Classified 8×8 core exists below OMEGA. One strike. No mercy." },
+    daily: { title: "MEMO · DAILY NODE", text: "Global daily grids sync at midnight UTC. Fair loadout locked worldwide." },
+    syndicate: { title: "MEMO · SYNDICATE", text: "Ghost bets and relay boards are how underground operators rank each other." }
+  };
+
+  const WORLD_EVENTS = [
+    "NexCorp redeployed hunter division to sector 7 — pursuit timers tightened.",
+    "Black market contracts rotating · phantom ledger active this week.",
+    "Relay traffic up 22% · syndicate ghost bets flagged by compliance.",
+    "Deep Net side doors opening above 70% heat · kernel probes detected.",
+    "OMEGA chain runners breaching triple 8×8 nodes — root access logs spiking.",
+    "Daily empire streak insurance sales up · operators playing long game.",
+    "Challenge war duels spreading · beat-my-ghost links on every relay.",
+    "Archivist clearance rumored · collect every leaked file to earn it."
+  ];
+
+  const BOOK_LINK = "https://www.8bitcrypto44.xyz";
+
+  if (!records.archiveMemos) records.archiveMemos = [];
+  if (!records.loreSeen) records.loreSeen = [];
+
+  Object.assign(els, {
+    archivesPanel: ROOT.querySelector("#bm-archives"),
+    worldEvent: ROOT.querySelector("#bm-world-event"),
+    declassifiedLink: ROOT.querySelector("#bm-declassified")
+  });
+
+  function unlockArchive(key) {
+    if (!ARCHIVE_MEMOS[key]) return;
+    if (records.archiveMemos.indexOf(key) >= 0) return;
+    records.archiveMemos.push(key);
+    saveRecords();
+    renderArchives();
+    checkArchivist();
+  }
+
+  function markLoreSeen(idx) {
+    records.loreSeen = records.loreSeen || [];
+    if (records.loreSeen.indexOf(idx) < 0) {
+      records.loreSeen.push(idx);
+      saveRecords();
+      checkArchivist();
+      renderArchives();
+    }
+  }
+
+  function isArchivist() {
+    return (records.loreSeen || []).length >= LORE_QUOTES.length &&
+      (records.archiveMemos || []).length >= 6;
+  }
+
+  function checkArchivist() {
+    if (isArchivist() && !records.archivist) {
+      records.archivist = true;
+      saveRecords();
+      if (typeof appendArchive === "function") appendArchive("ARCHIVIST CLEARANCE GRANTED");
+      setStatus("ARCHIVIST badge unlocked · all files declassified", "ok");
+    }
+  }
+
+  function renderArchives() {
+    if (!els.archivesPanel) return;
+    const keys = records.archiveMemos || [];
+    if (!keys.length) {
+      els.archivesPanel.innerHTML = "<span class=\"bm-archive-empty\">NEXCORP ARCHIVES · breach nodes to leak memos</span>";
+      return;
+    }
+    let html = keys.map(function (k) {
+      const m = ARCHIVE_MEMOS[k];
+      return m ? ("<div class=\"bm-archive-memo\"><b>" + m.title + "</b> · " + m.text + "</div>") : "";
+    }).join("");
+    html += "<div class=\"bm-archive-meta\">LORE " + (records.loreSeen || []).length + "/" +
+      LORE_QUOTES.length + " · FILES " + keys.length + "/" + Object.keys(ARCHIVE_MEMOS).length;
+    if (isArchivist()) html += " · ARCHIVIST";
+    html += "</div>";
+    els.archivesPanel.innerHTML = html;
+  }
+
+  function updateWorldEvent() {
+    const ev = WORLD_EVENTS[dateSeed() % WORLD_EVENTS.length];
+    if (els.worldEvent) els.worldEvent.textContent = "WORLD EVENT · " + ev;
+    if (els.bulletin && !pendingDuel) {
+      const cur = els.bulletin.textContent || "";
+      if (cur.indexOf("CHALLENGE WAR") < 0) {
+        els.bulletin.textContent = ev;
+      }
+    }
+  }
+
+  var _showSectorArch = showSectorCard;
+  showSectorCard = function (clearedLabel, code, nextLabel, cb, loreQuote) {
+    const idx = gridLevel % LORE_QUOTES.length;
+    markLoreSeen(idx);
+    if (typeof isBossSector === "function" && isBossSector()) unlockArchive("boss");
+    _showSectorArch(clearedLabel, code, nextLabel, cb, loreQuote);
+  };
+
+  var _completeExtractArch = completeExtraction;
+  completeExtraction = function () {
+    unlockArchive("extract");
+    _completeExtractArch();
+  };
+
+  var _completeContractArch = completeContract;
+  completeContract = function () {
+    unlockArchive("contract");
+    _completeContractArch();
+  };
+
+  var _acceptPrestigeArch = acceptPrestige;
+  acceptPrestige = function () {
+    unlockArchive("prestige");
+    _acceptPrestigeArch();
+  };
+
+  var _completeRootArch = completeRootProtocol;
+  completeRootProtocol = function () {
+    unlockArchive("root");
+    _completeRootArch();
+  };
+
+  var _onWinArch = onWin;
+  onWin = function () {
+    _onWinArch();
+    if (!won) return;
+    if (dailyMode) unlockArchive("daily");
+    if (typeof isPursuitActive === "function" && isPursuitActive()) unlockArchive("pursuit");
+    if (typeof computeSyndicateRank === "function" && computeSyndicateRank() !== "RECRUIT") {
+      unlockArchive("syndicate");
+    }
+  };
+
+  var _computeBadgesArch = computeBadges;
+  computeBadges = function (opts) {
+    const b = _computeBadgesArch(opts);
+    if (isArchivist()) b.push("ARCHIVIST");
+    if (duelMode) b.push("DUEL");
+    return b;
+  };
+
+  var _showMenuArch = showMenu;
+  showMenu = function () {
+    _showMenuArch();
+    updateWorldEvent();
+    renderArchives();
+  };
+
+  if (els.declassifiedLink) {
+    els.declassifiedLink.href = BOOK_LINK;
+    els.declassifiedLink.target = "_blank";
+  }
+
+  updateWorldEvent();
+  renderArchives();
+  checkArchivist();
+
   // --- Wire UI ---
   ROOT.querySelectorAll(".bm-diff").forEach(function (btn) {
     btn.addEventListener("click", function () {
