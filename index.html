@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="description" content="The Binary Matrix — jack in, crack NexCorp grids and CPU gates.">
 <title>The Binary Matrix by 8bitcrypto_44</title>
-<link rel="stylesheet" href="binary_matrix.css?v=6">
+<link rel="stylesheet" href="binary_matrix.css?v=7">
 <style>html,body{margin:0;min-height:100%;background:#020603;}html.bm-embed,html.bm-embed body{padding:0;background:#020603;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;}</style>
 </head>
 <body>
@@ -15,7 +15,7 @@
   <div class="bm-scanlines" aria-hidden="true"></div>
   <div class="bm-shell">
     <div class="bm-top">
-      <div class="bm-brand">THE BINARY MATRIX <span>by 8bitcrypto_44 · NexCorp link</span></div>
+      <div class="bm-brand">THE BINARY MATRIX <span id="bm-brand-sub">by 8bitcrypto_44 · NexCorp link</span></div>
       <div class="bm-hud">
         <div>SCORE <b id="bm-score">000000</b></div>
         <div>TIME <b id="bm-time">0:00</b></div>
@@ -42,6 +42,9 @@
     <div class="bm-stage">
       <div id="bm-menu" class="bm-panel bm-hidden">
         <p class="bm-rank" id="bm-rank">RANK · RECRUIT</p>
+        <p class="bm-callsign" id="bm-callsign-label">OPERATOR · —</p>
+        <p class="bm-bulletin" id="bm-bulletin"></p>
+        <p class="bm-streak" id="bm-streak"></p>
         <p class="bm-rules">
           Fill each matrix with 0s and 1s — campaigns mix <b>4×4</b> and <b>6×6</b> NexCorp nodes.<br>
           Equal bits per row/col · no three identical in a line · unique rows &amp; columns.<br>
@@ -57,6 +60,9 @@
           <button type="button" id="bm-omega" class="bm-ghost bm-hidden">OMEGA ROOT · 8×8</button>
           <button type="button" id="bm-continue" class="bm-primary bm-hidden">CONTINUE LINK</button>
           <button type="button" id="bm-daily" class="bm-warn">DAILY NODE</button>
+          <button type="button" id="bm-arcade" class="bm-ghost">ARCADE ∞</button>
+          <button type="button" id="bm-relay-in" class="bm-ghost bm-hidden">JOIN RELAY</button>
+          <button type="button" id="bm-root-access" class="bm-danger bm-hidden">ROOT ACCESS</button>
           <button type="button" id="bm-tutorial" class="bm-ghost">TUTORIAL</button>
           <button type="button" id="bm-start" class="bm-primary">JACK IN</button>
         </div>
@@ -74,6 +80,8 @@
         <div id="bm-status" class="bm-status"></div>
         <div class="bm-bar">
           <button type="button" id="bm-pause-btn" class="bm-ghost">PAUSE</button>
+          <button type="button" id="bm-ping" class="bm-ghost">PING</button>
+          <button type="button" id="bm-relay-out" class="bm-ghost">RELAY</button>
           <button type="button" id="bm-check" class="bm-warn">CHECK</button>
           <button type="button" id="bm-restart">RESTART</button>
           <button type="button" id="bm-solve" class="bm-danger">SOLVE</button>
@@ -92,6 +100,24 @@
           <div class="bm-progress-track bm-vm-track"><div class="bm-progress-fill" id="bm-vm-progress-fill"></div></div>
         </div>
         <p id="bm-vm-brief" class="bm-brief">Black-box CPU gate. Probe I/O, reverse the checker, submit the key.</p>
+        <div class="bm-cpu-viz" id="bm-cpu-viz" aria-hidden="true">
+          <svg viewBox="0 0 320 72" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="12" width="72" height="48" rx="6" fill="#041208" stroke="#166534" stroke-width="2"/>
+            <text x="44" y="42" text-anchor="middle" fill="#86efac" font-family="Courier New,monospace" font-size="11">NX-8</text>
+            <line id="bm-cpu-w-a" x1="80" y1="24" x2="118" y2="24" stroke="#39ff14" stroke-width="2" opacity=".35"/>
+            <line id="bm-cpu-w-b" x1="80" y1="48" x2="118" y2="48" stroke="#39ff14" stroke-width="2" opacity=".35"/>
+            <rect x="118" y="16" width="44" height="20" rx="4" fill="#041208" stroke="#422006" stroke-width="1"/>
+            <text x="140" y="30" text-anchor="middle" fill="#fbbf24" font-family="Courier New,monospace" font-size="10">REG A</text>
+            <rect x="118" y="40" width="44" height="20" rx="4" fill="#041208" stroke="#422006" stroke-width="1"/>
+            <text x="140" y="54" text-anchor="middle" fill="#fbbf24" font-family="Courier New,monospace" font-size="10">REG B</text>
+            <line x1="162" y1="36" x2="200" y2="36" stroke="#39ff14" stroke-width="2" opacity=".35"/>
+            <rect x="200" y="22" width="52" height="28" rx="4" fill="#041208" stroke="#166534" stroke-width="1"/>
+            <text x="226" y="40" text-anchor="middle" fill="#86efac" font-family="Courier New,monospace" font-size="10">ALU</text>
+            <line x1="252" y1="36" x2="290" y2="36" stroke="#39ff14" stroke-width="2" opacity=".35"/>
+            <circle id="bm-cpu-pulse" cx="304" cy="36" r="8" fill="#39ff14" opacity=".2"/>
+          </svg>
+        </div>
+        <div class="bm-kernel-lore-panel bm-hidden" id="bm-kernel-lore-panel"></div>
         <div class="bm-vm-regs" id="bm-vm-regs" aria-live="polite">
           <span>A <b id="bm-reg-a">--</b></span>
           <span>B <b id="bm-reg-b">--</b></span>
@@ -153,9 +179,11 @@
             <div>TIME <b id="bm-victory-time">0:00</b></div>
             <div>BEST <b id="bm-victory-best">—</b></div>
           </div>
+          <div class="bm-badges" id="bm-badges"></div>
           <div class="bm-actions">
+            <button type="button" id="bm-victory-card" class="bm-primary">DOWNLOAD CARD</button>
             <button type="button" id="bm-share-x" class="bm-warn">SHARE ON X</button>
-            <button type="button" id="bm-copy-score" class="bm-primary">COPY SCORE</button>
+            <button type="button" id="bm-copy-score" class="bm-ghost">COPY SCORE</button>
             <button type="button" id="bm-victory-menu" class="bm-ghost">MAIN MENU</button>
           </div>
           <p class="bm-victory-book">Continue the story — <a href="https://www.8bitcrypto44.xyz" target="_blank" rel="noopener">Binary Matrix books</a></p>
@@ -200,6 +228,35 @@
         </div>
       </div>
 
+      <div id="bm-callsign-ov" class="bm-overlay" role="dialog" aria-label="Operator callsign">
+        <div class="bm-modal" style="text-align:center">
+          <h2>OPERATOR CALLSIGN</h2>
+          <p>NexCorp logs every jack-in. Choose your handle.</p>
+          <input id="bm-callsign-input" type="text" maxlength="16" spellcheck="false" placeholder="GHOST_07" aria-label="Callsign">
+          <div class="bm-actions">
+            <button type="button" id="bm-callsign-save" class="bm-primary">CONFIRM</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="bm-ftue" class="bm-overlay bm-ftue" role="dialog" aria-label="Quick tutorial">
+        <div class="bm-modal">
+          <h2 id="bm-ftue-title">Tutorial · Step 1</h2>
+          <p id="bm-ftue-body">Tap cells to cycle empty → 0 → 1. Green cells are locked clues.</p>
+          <div class="bm-actions">
+            <button type="button" id="bm-ftue-next" class="bm-primary">NEXT</button>
+            <button type="button" id="bm-ftue-skip" class="bm-ghost">SKIP</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="bm-access" class="bm-overlay bm-access" role="dialog" aria-label="Access granted">
+        <div class="bm-access-inner">
+          <div class="bm-access-title">ACCESS GRANTED</div>
+          <div class="bm-access-code" id="bm-access-code">KEY · --</div>
+        </div>
+      </div>
+
       <div id="bm-genius-help" class="bm-overlay" role="dialog" aria-label="Genius briefing">
         <div class="bm-modal">
           <button type="button" id="bm-genius-help-close" class="bm-close bm-ghost">CLOSE</button>
@@ -223,6 +280,6 @@
     </div>
   </div>
 </div>
-<script src="binary_matrix.js?v=6"></script>
+<script src="binary_matrix.js?v=7"></script>
 </body>
 </html>

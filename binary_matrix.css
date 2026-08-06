@@ -233,6 +233,34 @@ html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
 #binmat-root .bm-victory-stats b{color:var(--lime);font-size:15px}
 #binmat-root .bm-victory-book{font-size:11px;color:#6b7280;margin:14px 0 0}
 #binmat-root .bm-victory-book a{color:var(--lime)}
+#binmat-root .bm-callsign,#binmat-root .bm-bulletin,#binmat-root .bm-streak{font-size:11px;margin:0 0 6px;letter-spacing:.6px}
+#binmat-root .bm-callsign{color:#67e8f9}
+#binmat-root .bm-bulletin{color:#86efac;font-style:italic;min-height:1.2em}
+#binmat-root .bm-streak{color:#fbbf24}
+#binmat-root .bm-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:0 0 12px}
+#binmat-root .bm-badge{font-size:9px;padding:4px 8px;border:1px solid #422006;border-radius:999px;color:#fde68a;background:rgba(66,32,6,.35)}
+#binmat-root.bm-final-strike{animation:bmFinalStrike 1.2s ease 1;border-color:#ff3355!important}
+@keyframes bmFinalStrike{0%,100%{box-shadow:0 0 24px rgba(255,51,85,.35)}50%{box-shadow:0 0 40px rgba(255,51,85,.65)}}
+#binmat-root table.bm-grid td.bm-fog{color:transparent;text-shadow:none}
+#binmat-root table.bm-grid td.bm-fog::after{content:"?";color:#4b5563;font-weight:700}
+#binmat-root table.bm-grid td.bm-ping-flash{animation:bmPing .6s ease 1}
+@keyframes bmPing{0%,100%{box-shadow:none}50%{box-shadow:0 0 16px rgba(57,255,20,.8),inset 0 0 12px rgba(57,255,20,.4)}}
+#binmat-root table.bm-grid.bm-mirror{transform:scaleX(-1)}
+#binmat-root .bm-cpu-viz{margin:0 0 8px;opacity:.85}
+#binmat-root .bm-cpu-viz.bm-cpu-live #bm-cpu-pulse{animation:bmCpuPulse .45s ease 1}
+#binmat-root .bm-cpu-viz.bm-cpu-live #bm-cpu-w-a,#binmat-root .bm-cpu-viz.bm-cpu-live #bm-cpu-w-b{opacity:1!important;stroke:#39ff14}
+@keyframes bmCpuPulse{0%,100%{opacity:.2;r:8}50%{opacity:1;r:11}}
+#binmat-root .bm-kernel-lore-panel{font-size:11px;text-align:left;color:#bbf7d0;background:rgba(0,0,0,.45);border:1px solid #422006;border-radius:8px;padding:8px 10px;margin:0 0 8px;line-height:1.4}
+#binmat-root .bm-kernel-lore-panel b{color:#fbbf24}
+#binmat-root .bm-access{background:rgba(0,8,2,.94);z-index:20}
+#binmat-root .bm-access-inner{text-align:center;padding:24px}
+#binmat-root .bm-access-title{font-size:clamp(28px,6vw,48px);font-weight:700;color:#39ff14;letter-spacing:4px;text-shadow:0 0 24px rgba(57,255,20,.6);animation:bmAccessPop .5s ease 1}
+#binmat-root .bm-access-code{margin-top:12px;font-size:14px;color:#86efac;letter-spacing:2px}
+@keyframes bmAccessPop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+#binmat-root .bm-ftue .bm-modal{max-width:440px}
+#binmat-root #bm-callsign-input{width:100%;max-width:240px;margin:12px auto;padding:10px 12px;background:#041208;border:2px solid #166534;border-radius:8px;color:var(--lime);font:700 14px "Courier New",monospace;text-align:center}
+#binmat-root.bm-corrupt .bm-brand{animation:bmGlitch .4s steps(2) 3}
+#binmat-root #bm-root-access{box-shadow:0 0 16px rgba(255,51,85,.4);border-color:#ff3355;color:#fecaca}
 @media (max-width:700px){
   #binmat-root .bm-shell{padding:10px;min-height:0}
   #binmat-root .bm-stage{min-height:360px;padding:10px 6px}
