@@ -61,7 +61,7 @@
       const r = el.getBoundingClientRect();
       if (r.bottom > maxBottom) maxBottom = r.bottom;
     });
-    ROOT.querySelectorAll("#bm-play .bm-bar, #bm-genius .bm-bar, #bm-grid, .bm-actions").forEach(function (el) {
+    ROOT.querySelectorAll("#bm-play .bm-bar, #bm-genius .bm-bar, #bm-grid, .bm-actions, .bm-hub-tabs, .bm-hub-panel.selected, .bm-play-home, .bm-play-sub:not([hidden])").forEach(function (el) {
       if (!el || el.closest(".bm-hidden")) return;
       const r = el.getBoundingClientRect();
       if (r.bottom > maxBottom) maxBottom = r.bottom;

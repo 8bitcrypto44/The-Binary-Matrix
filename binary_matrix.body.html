@@ -58,86 +58,144 @@
     <div class="bm-stage">
       <div id="bm-burst" class="bm-burst" aria-hidden="true"></div>
       <div id="bm-menu" class="bm-panel bm-hidden">
-        <p class="bm-rank" id="bm-rank">RANK · RECRUIT</p>
-        <p class="bm-syndicate-rank" id="bm-syndicate-rank">SYNDICATE · RECRUIT · 0 REP</p>
-        <div class="bm-syndicate-crew" id="bm-syndicate-crew" aria-label="Syndicate crew oath">
-          <div class="bm-crew-label">CREW OATH · pick one</div>
-          <div class="bm-crew-btns">
-            <button type="button" class="bm-crew-btn" data-crew="hunters">HUNTERS</button>
-            <button type="button" class="bm-crew-btn selected" data-crew="ghosts">GHOSTS</button>
-            <button type="button" class="bm-crew-btn" data-crew="mercs">MERCS</button>
+        <div class="bm-hub-head">
+          <div class="bm-hub-title">THE BINARY MATRIX</div>
+          <div class="bm-hub-status" aria-label="Operator status">
+            <p class="bm-rank" id="bm-rank">RANK · RECRUIT</p>
+            <p class="bm-syndicate-rank" id="bm-syndicate-rank">SYNDICATE · RECRUIT · 0 REP</p>
+            <p class="bm-callsign" id="bm-callsign-label">OPERATOR · —</p>
           </div>
         </div>
-        <p class="bm-callsign" id="bm-callsign-label">OPERATOR · —</p>
-        <p class="bm-bulletin" id="bm-bulletin"></p>
-        <p class="bm-world-event" id="bm-world-event"></p>
-        <p class="bm-bounty" id="bm-bounty-board"></p>
-        <div class="bm-relay-board" id="bm-relay-board" aria-label="Squad relay leaderboard"></div>
-        <div class="bm-archive-log" id="bm-archive-log" aria-label="NexCorp archive"></div>
-        <div class="bm-archives-panel" id="bm-archives" aria-label="Declassified memos"></div>
-        <a class="bm-declassified" id="bm-declassified" href="https://www.8bitcrypto44.xyz" target="_blank" rel="noopener">◈ DECCLASSIFIED FILES · Binary Matrix books</a>
-        <p class="bm-streak" id="bm-streak"></p>
-        <p class="bm-daily-loadout" id="bm-daily-loadout-line"></p>
-        <div class="bm-heat-calendar-wrap">
-          <div class="bm-cal-label">WEEKLY CALENDAR · 7 = +500 CR</div>
-          <div class="bm-heat-calendar" id="bm-heat-calendar" aria-label="Weekly heat calendar"></div>
-        </div>
-        <div class="bm-daily-ghost-board" id="bm-daily-ghost-board" aria-label="Daily ghost leaderboard"></div>
-        <button type="button" id="bm-streak-insure" class="bm-ghost bm-streak-insure">STREAK INSURANCE · 150 CR</button>
-        <label class="bm-fast-boot-wrap" id="bm-fast-boot-wrap">
-          <input type="checkbox" id="bm-fast-boot"> Fast boot (veterans)
-        </label>
-        <div class="bm-loadout" id="bm-loadout" aria-label="Operator loadout">
-          <div class="bm-loadout-label">LOADOUT · pick one perk</div>
-          <div class="bm-loadout-btns">
-            <button type="button" class="bm-loadout-btn selected" data-loadout="chain">CHAIN +15%</button>
-            <button type="button" class="bm-loadout-btn" data-loadout="ping">+1 PING</button>
-            <button type="button" class="bm-loadout-btn" data-loadout="strike">+1 STRIKE</button>
-            <button type="button" class="bm-loadout-btn" data-loadout="heat">HEAT +35%</button>
+        <nav class="bm-hub-tabs" id="bm-hub-tabs" role="tablist" aria-label="Operator terminal">
+          <button type="button" class="bm-hub-tab selected" data-hub-tab="play" role="tab" aria-selected="true" aria-controls="bm-hub-play">PLAY</button>
+          <button type="button" class="bm-hub-tab" data-hub-tab="ops" role="tab" aria-selected="false" aria-controls="bm-hub-ops">OPS</button>
+          <button type="button" class="bm-hub-tab" data-hub-tab="intel" role="tab" aria-selected="false" aria-controls="bm-hub-intel">INTEL</button>
+          <button type="button" class="bm-hub-tab" data-hub-tab="market" role="tab" aria-selected="false" aria-controls="bm-hub-market">MARKET</button>
+          <button type="button" class="bm-hub-tab" data-hub-tab="more" role="tab" aria-selected="false" aria-controls="bm-hub-more">MORE</button>
+        </nav>
+        <div class="bm-hub-panels">
+          <div class="bm-hub-panel selected" id="bm-hub-play" data-hub-panel="play" role="tabpanel">
+            <div class="bm-play-home" id="bm-play-home">
+              <button type="button" id="bm-continue" class="bm-primary bm-play-continue bm-hidden">CONTINUE LINK</button>
+              <div class="bm-mode-grid">
+                <button type="button" class="bm-mode-card" id="bm-mode-campaign">
+                  <span class="bm-mode-kicker">STORY LINK</span>
+                  <span class="bm-mode-title">CAMPAIGN</span>
+                  <span class="bm-mode-desc">Sector runs · pick difficulty next</span>
+                </button>
+                <button type="button" class="bm-mode-card bm-mode-warn" id="bm-daily">
+                  <span class="bm-mode-kicker">TODAY</span>
+                  <span class="bm-mode-title">DAILY NODE</span>
+                  <span class="bm-mode-desc">One shared puzzle · bonus CR</span>
+                </button>
+                <button type="button" class="bm-mode-card" id="bm-arcade">
+                  <span class="bm-mode-kicker">ENDLESS</span>
+                  <span class="bm-mode-title">ARCADE ∞</span>
+                  <span class="bm-mode-desc">Quick runs · chase high score</span>
+                </button>
+                <button type="button" class="bm-mode-card bm-mode-alt" id="bm-mode-special">
+                  <span class="bm-mode-kicker">EVENTS</span>
+                  <span class="bm-mode-title">SPECIAL OPS</span>
+                  <span class="bm-mode-desc">Omega · Deep Net · duels</span>
+                </button>
+              </div>
+              <p class="bm-guide-hint">New? Tap <b>MORE</b> for rules and full guide.</p>
+              <p class="bm-daily-hint" id="bm-daily-hint"></p>
+            </div>
+            <div class="bm-play-sub" id="bm-play-campaign" hidden>
+              <button type="button" class="bm-play-back" data-play-back aria-label="Back to modes">‹ MODES</button>
+              <p class="bm-play-sub-label">CAMPAIGN · pick difficulty</p>
+              <div class="bm-diffs">
+                <button type="button" class="bm-diff" data-diff="easy">EASY</button>
+                <button type="button" class="bm-diff selected" data-diff="medium">MEDIUM</button>
+                <button type="button" class="bm-diff" data-diff="hard">HARD</button>
+                <button type="button" class="bm-diff" data-diff="genius">GENIUS</button>
+              </div>
+              <button type="button" id="bm-start" class="bm-primary bm-launch-btn">JACK IN</button>
+            </div>
+            <div class="bm-play-sub" id="bm-play-special" hidden>
+              <button type="button" class="bm-play-back" data-play-back aria-label="Back to modes">‹ MODES</button>
+              <p class="bm-play-sub-label">SPECIAL OPS · unlocked events</p>
+              <div class="bm-actions bm-special-actions">
+                <button type="button" id="bm-omega" class="bm-ghost bm-hidden">OMEGA ROOT · 8×8</button>
+                <button type="button" id="bm-omega-chain" class="bm-danger bm-hidden">OMEGA CHAIN · 3×8×8</button>
+                <button type="button" id="bm-bonus-node" class="bm-danger bm-hidden">BONUS NODE · 2×</button>
+                <button type="button" id="bm-extract" class="bm-warn bm-hidden">EXTRACT · 3 NODES</button>
+                <button type="button" id="bm-deep-net" class="bm-danger bm-hidden">DEEP NET · SIDE DOOR</button>
+                <button type="button" id="bm-relay-in" class="bm-ghost bm-hidden">JOIN RELAY</button>
+                <button type="button" id="bm-duel-accept" class="bm-danger bm-hidden">DUEL ACCEPT</button>
+                <button type="button" id="bm-root-access" class="bm-danger bm-hidden">ROOT ACCESS</button>
+              </div>
+              <p class="bm-play-empty" id="bm-play-special-empty" hidden>No special ops unlocked yet — clear campaign sectors to open new doors.</p>
+            </div>
+          </div>
+          <div class="bm-hub-panel" id="bm-hub-ops" data-hub-panel="ops" role="tabpanel" hidden>
+            <div class="bm-syndicate-crew" id="bm-syndicate-crew" aria-label="Syndicate crew oath">
+              <div class="bm-crew-label">CREW OATH · pick one</div>
+              <div class="bm-crew-btns">
+                <button type="button" class="bm-crew-btn" data-crew="hunters">HUNTERS</button>
+                <button type="button" class="bm-crew-btn selected" data-crew="ghosts">GHOSTS</button>
+                <button type="button" class="bm-crew-btn" data-crew="mercs">MERCS</button>
+              </div>
+            </div>
+            <div class="bm-loadout" id="bm-loadout" aria-label="Operator loadout">
+              <div class="bm-loadout-label">LOADOUT · pick one perk</div>
+              <div class="bm-loadout-btns">
+                <button type="button" class="bm-loadout-btn selected" data-loadout="chain">CHAIN +15%</button>
+                <button type="button" class="bm-loadout-btn" data-loadout="ping">+1 PING</button>
+                <button type="button" class="bm-loadout-btn" data-loadout="strike">+1 STRIKE</button>
+                <button type="button" class="bm-loadout-btn" data-loadout="heat">HEAT +35%</button>
+              </div>
+            </div>
+            <p class="bm-streak" id="bm-streak"></p>
+            <p class="bm-daily-loadout" id="bm-daily-loadout-line"></p>
+            <div class="bm-heat-calendar-wrap">
+              <div class="bm-cal-label">WEEKLY CALENDAR · 7 = +500 CR</div>
+              <div class="bm-heat-calendar" id="bm-heat-calendar" aria-label="Weekly heat calendar"></div>
+            </div>
+            <div class="bm-daily-ghost-board" id="bm-daily-ghost-board" aria-label="Daily ghost leaderboard"></div>
+            <button type="button" id="bm-streak-insure" class="bm-ghost bm-streak-insure">STREAK INSURANCE · 150 CR</button>
+            <label class="bm-fast-boot-wrap" id="bm-fast-boot-wrap">
+              <input type="checkbox" id="bm-fast-boot"> Fast boot (veterans)
+            </label>
+          </div>
+          <div class="bm-hub-panel" id="bm-hub-intel" data-hub-panel="intel" role="tabpanel" hidden>
+            <p class="bm-bulletin" id="bm-bulletin"></p>
+            <p class="bm-world-event" id="bm-world-event"></p>
+            <p class="bm-bounty" id="bm-bounty-board"></p>
+            <div class="bm-relay-board" id="bm-relay-board" aria-label="Squad relay leaderboard"></div>
+          </div>
+          <div class="bm-hub-panel" id="bm-hub-market" data-hub-panel="market" role="tabpanel" hidden>
+            <div class="bm-blackmarket" id="bm-blackmarket" aria-label="Black market">
+              <div class="bm-bm-head">◈ BLACK MARKET ◈ · <span id="bm-credits-menu">0 CR</span></div>
+              <p class="bm-bm-flavor" id="bm-contract-flavor"></p>
+              <div class="bm-bm-btns">
+                <button type="button" id="bm-buy-intel" class="bm-ghost">INTEL CACHE · 300 CR</button>
+                <button type="button" id="bm-heat-intel" class="bm-ghost">HEAT→INTEL · −25% HEAT</button>
+                <button type="button" id="bm-contract" class="bm-warn">WEEKLY CONTRACT</button>
+              </div>
+            </div>
+          </div>
+          <div class="bm-hub-panel" id="bm-hub-more" data-hub-panel="more" role="tabpanel" hidden>
+            <div class="bm-hub-audio" id="bm-hub-audio" aria-label="Audio settings"></div>
+            <div class="bm-actions bm-hub-more-actions">
+              <button type="button" id="bm-tutorial" class="bm-ghost">FULL GUIDE</button>
+              <button type="button" id="bm-legacy-card" class="bm-ghost">LEGACY CARD</button>
+            </div>
+            <p class="bm-rules">
+              Fill each matrix with 0s and 1s — campaigns mix <b>4×4</b> and <b>6×6</b> NexCorp nodes.<br>
+              Equal bits per row/col · no three identical in a line · unique rows &amp; columns.<br>
+              Clear every sector in the link. Locked clues stay locked. Fresh unique dig each sector.
+            </p>
+            <div class="bm-archive-log" id="bm-archive-log" aria-label="NexCorp archive"></div>
+            <div class="bm-archives-panel" id="bm-archives" aria-label="Declassified memos"></div>
+            <a class="bm-declassified" id="bm-declassified" href="https://www.8bitcrypto44.xyz" target="_blank" rel="noopener">◈ DECCLASSIFIED FILES · Binary Matrix books</a>
+            <a class="bm-site-brand" href="https://www.8bitcrypto44.xyz" target="_blank" rel="noopener noreferrer" aria-label="8bitcrypto_44 website">
+              <img src="__BRAND_LOGO_SRC__" alt="" width="100" height="13" decoding="async">
+              <span>www.8bitcrypto44.xyz</span>
+            </a>
           </div>
         </div>
-        <div class="bm-blackmarket" id="bm-blackmarket" aria-label="Black market">
-          <div class="bm-bm-head">◈ BLACK MARKET ◈ · <span id="bm-credits-menu">0 CR</span></div>
-          <p class="bm-bm-flavor" id="bm-contract-flavor"></p>
-          <div class="bm-bm-btns">
-            <button type="button" id="bm-buy-intel" class="bm-ghost">INTEL CACHE · 300 CR</button>
-            <button type="button" id="bm-heat-intel" class="bm-ghost">HEAT→INTEL · −25% HEAT</button>
-            <button type="button" id="bm-contract" class="bm-warn">WEEKLY CONTRACT</button>
-          </div>
-        </div>
-        <p class="bm-rules">
-          Fill each matrix with 0s and 1s — campaigns mix <b>4×4</b> and <b>6×6</b> NexCorp nodes.<br>
-          Equal bits per row/col · no three identical in a line · unique rows &amp; columns.<br>
-          Clear every sector in the link. Locked clues stay locked. Fresh unique dig each sector.
-        </p>
-        <div class="bm-diffs">
-          <button type="button" class="bm-diff" data-diff="easy">EASY</button>
-          <button type="button" class="bm-diff selected" data-diff="medium">MEDIUM</button>
-          <button type="button" class="bm-diff" data-diff="hard">HARD</button>
-          <button type="button" class="bm-diff" data-diff="genius">GENIUS</button>
-        </div>
-        <p class="bm-guide-hint">New here? Tap <b>FULL GUIDE</b> — it explains every button, bar, and mode.</p>
-        <div class="bm-actions">
-          <button type="button" id="bm-omega" class="bm-ghost bm-hidden">OMEGA ROOT · 8×8</button>
-          <button type="button" id="bm-omega-chain" class="bm-danger bm-hidden">OMEGA CHAIN · 3×8×8</button>
-          <button type="button" id="bm-legacy-card" class="bm-ghost">LEGACY CARD</button>
-          <button type="button" id="bm-continue" class="bm-primary bm-hidden">CONTINUE LINK</button>
-          <button type="button" id="bm-daily" class="bm-warn">DAILY NODE</button>
-          <button type="button" id="bm-arcade" class="bm-ghost">ARCADE ∞</button>
-          <button type="button" id="bm-bonus-node" class="bm-danger bm-hidden">BONUS NODE · 2×</button>
-          <button type="button" id="bm-extract" class="bm-warn bm-hidden">EXTRACT · 3 NODES</button>
-          <button type="button" id="bm-deep-net" class="bm-danger bm-hidden">DEEP NET · SIDE DOOR</button>
-          <button type="button" id="bm-relay-in" class="bm-ghost bm-hidden">JOIN RELAY</button>
-          <button type="button" id="bm-duel-accept" class="bm-danger bm-hidden">DUEL ACCEPT</button>
-          <button type="button" id="bm-root-access" class="bm-danger bm-hidden">ROOT ACCESS</button>
-          <button type="button" id="bm-tutorial" class="bm-ghost">FULL GUIDE</button>
-          <button type="button" id="bm-start" class="bm-primary">JACK IN</button>
-        </div>
-        <p class="bm-daily-hint" id="bm-daily-hint"></p>
-        <a class="bm-site-brand" href="https://www.8bitcrypto44.xyz" target="_blank" rel="noopener noreferrer" aria-label="8bitcrypto_44 website">
-          <img src="__BRAND_LOGO_SRC__" alt="" width="100" height="13" decoding="async">
-          <span>www.8bitcrypto44.xyz</span>
-        </a>
       </div>
 
       <div id="bm-play" class="bm-panel bm-hidden">
