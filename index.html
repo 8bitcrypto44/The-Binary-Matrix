@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="description" content="The Binary Matrix — jack in, crack NexCorp grids and CPU gates.">
 <title>The Binary Matrix by 8bitcrypto_44</title>
-<link rel="stylesheet" href="binary_matrix.css?v=11">
+<link rel="stylesheet" href="binary_matrix.css?v=12">
 <style>html,body{margin:0;min-height:100%;background:#020603;}html.bm-embed,html.bm-embed body{padding:0;background:#020603;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;}</style>
 </head>
 <body>
@@ -38,6 +38,10 @@
       <div class="bm-progress-label" id="bm-progress-label">SECTOR 1/6</div>
       <div class="bm-progress-track"><div class="bm-progress-fill" id="bm-progress-fill"></div></div>
     </div>
+    <div class="bm-wanted-wrap" id="bm-wanted-wrap" aria-label="NexCorp heat meter">
+      <div class="bm-wanted-label" id="bm-wanted-label">NEXCORP HEAT · 0%</div>
+      <div class="bm-wanted-track"><div class="bm-wanted-fill" id="bm-wanted-fill"></div></div>
+    </div>
     <div class="bm-cmap" id="bm-cmap" aria-label="Campaign node map"></div>
     <p class="bm-mult" id="bm-mult"></p>
 
@@ -48,6 +52,15 @@
         <p class="bm-callsign" id="bm-callsign-label">OPERATOR · —</p>
         <p class="bm-bulletin" id="bm-bulletin"></p>
         <p class="bm-streak" id="bm-streak"></p>
+        <div class="bm-loadout" id="bm-loadout" aria-label="Operator loadout">
+          <div class="bm-loadout-label">LOADOUT · pick one perk</div>
+          <div class="bm-loadout-btns">
+            <button type="button" class="bm-loadout-btn selected" data-loadout="chain">CHAIN +15%</button>
+            <button type="button" class="bm-loadout-btn" data-loadout="ping">+1 PING</button>
+            <button type="button" class="bm-loadout-btn" data-loadout="strike">+1 STRIKE</button>
+            <button type="button" class="bm-loadout-btn" data-loadout="heat">HEAT +35%</button>
+          </div>
+        </div>
         <p class="bm-rules">
           Fill each matrix with 0s and 1s — campaigns mix <b>4×4</b> and <b>6×6</b> NexCorp nodes.<br>
           Equal bits per row/col · no three identical in a line · unique rows &amp; columns.<br>
@@ -64,6 +77,7 @@
           <button type="button" id="bm-continue" class="bm-primary bm-hidden">CONTINUE LINK</button>
           <button type="button" id="bm-daily" class="bm-warn">DAILY NODE</button>
           <button type="button" id="bm-arcade" class="bm-ghost">ARCADE ∞</button>
+          <button type="button" id="bm-bonus-node" class="bm-danger bm-hidden">BONUS NODE · 2×</button>
           <button type="button" id="bm-relay-in" class="bm-ghost bm-hidden">JOIN RELAY</button>
           <button type="button" id="bm-root-access" class="bm-danger bm-hidden">ROOT ACCESS</button>
           <button type="button" id="bm-tutorial" class="bm-ghost">TUTORIAL</button>
@@ -77,6 +91,7 @@
       </div>
 
       <div id="bm-play" class="bm-panel bm-hidden">
+        <p class="bm-sector-pb" id="bm-sector-pb"></p>
         <div class="bm-grid-wrap" id="bm-grid-wrap">
           <table id="bm-grid" class="bm-grid sz6" aria-label="Binary Matrix puzzle grid"></table>
         </div>
@@ -241,6 +256,14 @@
         </div>
       </div>
 
+      <div id="bm-boss-intro" class="bm-overlay bm-boss-intro" role="dialog" aria-label="Boss gate">
+        <div class="bm-boss-intro-inner">
+          <div class="bm-boss-kicker">NEXCORP ALERT</div>
+          <div class="bm-boss-title" id="bm-boss-title">FINAL GATE</div>
+          <div class="bm-boss-sub" id="bm-boss-sub">Firewall apex · no margin</div>
+        </div>
+      </div>
+
       <div id="bm-callsign-ov" class="bm-overlay bm-callsign-ov" role="dialog" aria-label="Operator callsign">
         <div class="bm-modal" style="text-align:center">
           <h2>OPERATOR CALLSIGN</h2>
@@ -295,6 +318,6 @@
     </div>
   </div>
 </div>
-<script src="binary_matrix.js?v=11"></script>
+<script src="binary_matrix.js?v=12"></script>
 </body>
 </html>

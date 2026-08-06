@@ -303,6 +303,37 @@ html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
 @keyframes bmCellPop{0%{transform:scale(1)}40%{transform:scale(1.14);box-shadow:0 0 14px rgba(57,255,20,.55)}100%{transform:scale(1)}}
 #binmat-root .bm-victory-preview{display:block;margin:0 auto 12px;border:2px solid #166534;border-radius:8px;max-width:100%;height:auto}
 #binmat-root .bm-daily-pct{font-size:12px;color:#fde68a;margin:-8px 0 12px;text-shadow:0 0 8px rgba(253,224,71,.35)}
+#binmat-root.bm-mood-boss{--rain:#ff3355;--lime:#ff6b81;border-color:#ff3355;box-shadow:0 0 36px rgba(255,51,85,.35),inset 0 0 40px rgba(0,0,0,.5)}
+#binmat-root.bm-mood-boss .bm-scanlines{opacity:.18;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,51,85,.06) 2px,rgba(255,51,85,.06) 4px)}
+#binmat-root.bm-heat-high .bm-wanted-fill{background:linear-gradient(90deg,#fbbf24,#ff3355)}
+#binmat-root.bm-heat-max .bm-wanted-fill{animation:bmHeatPulse 1.2s ease infinite}
+@keyframes bmHeatPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
+#binmat-root .bm-wanted-wrap{margin:0 0 8px;padding:0 4px}
+#binmat-root .bm-wanted-label{font-size:10px;letter-spacing:.8px;color:#86efac;margin:0 0 4px;text-align:center}
+#binmat-root.bm-heat-high .bm-wanted-label{color:#fde68a}
+#binmat-root.bm-heat-max .bm-wanted-label{color:#ff6b81;text-shadow:0 0 8px rgba(255,51,85,.45)}
+#binmat-root .bm-wanted-track{height:6px;border-radius:4px;background:#041208;border:1px solid #166534;overflow:hidden}
+#binmat-root .bm-wanted-fill{height:100%;width:0;background:linear-gradient(90deg,#166534,var(--lime));transition:width .45s ease}
+#binmat-root .bm-loadout{margin:8px 0 10px;padding:8px 10px;border:1px solid #14532d;border-radius:8px;background:rgba(0,0,0,.35)}
+#binmat-root .bm-loadout-label{font-size:10px;letter-spacing:.8px;color:#86efac;margin:0 0 6px;text-align:center}
+#binmat-root .bm-loadout-btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+#binmat-root .bm-loadout-btn{
+  appearance:none;border:2px solid #166534;border-radius:6px;padding:6px 8px;font:700 10px "Courier New",monospace;
+  color:#86efac;background:#041208;cursor:pointer;letter-spacing:.3px
+}
+#binmat-root .bm-loadout-btn.selected{border-color:var(--lime);color:var(--lime);box-shadow:0 0 10px rgba(57,255,20,.35)}
+#binmat-root .bm-sector-pb{font-size:10px;letter-spacing:.6px;color:#64748b;margin:0 0 6px;text-align:center;min-height:1.2em}
+#binmat-root .bm-boss-intro{z-index:27;background:rgba(20,0,4,.94)}
+#binmat-root .bm-boss-intro-inner{text-align:center;padding:24px 16px}
+#binmat-root .bm-boss-kicker{font-size:11px;letter-spacing:3px;color:#ff6b81;margin-bottom:10px;animation:bmBossKicker 1.4s ease infinite}
+@keyframes bmBossKicker{0%,100%{opacity:1}50%{opacity:.55}}
+#binmat-root .bm-boss-title{font-size:clamp(28px,7vw,48px);font-weight:700;color:#ff3355;text-shadow:0 0 28px rgba(255,51,85,.65);letter-spacing:3px;margin-bottom:8px}
+#binmat-root .bm-boss-sub{font-size:12px;color:#fda4af;letter-spacing:.5px;max-width:28em;margin:0 auto}
+#binmat-root table.bm-grid td.bm-ghost-hint{position:relative}
+#binmat-root table.bm-grid td.bm-ghost-hint::after{
+  content:attr(data-ghost);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.55em;color:rgba(134,239,172,.22);pointer-events:none;font-weight:700
+}
 @media (max-width:700px){
   #binmat-root .bm-shell{padding:10px;min-height:0}
   #binmat-root .bm-stage{min-height:360px;padding:10px 6px}
