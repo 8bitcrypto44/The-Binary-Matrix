@@ -117,6 +117,13 @@
       beep(620, 0.04, "square", 0.03);
     });
   });
+  ROOT.querySelectorAll("[data-hub-back]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      setPlayView("home");
+      setHubTab("play");
+      beep(620, 0.04, "square", 0.03);
+    });
+  });
 
   var _setHubTabCore = setHubTab;
   setHubTab = function (id, opts) {

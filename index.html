@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="description" content="The Binary Matrix — jack in, crack NexCorp grids and CPU gates.">
 <title>The Binary Matrix by 8bitcrypto_44</title>
-<link rel="stylesheet" href="binary_matrix.css?v=40">
+<link rel="stylesheet" href="binary_matrix.css?v=41">
 <script>(function(){var t=("ontouchstart"in window)||navigator.maxTouchPoints>0;var n=false,c=false;try{n=matchMedia("(max-width:700px)").matches;c=matchMedia("(pointer:coarse)").matches;}catch(e){}if((t&&c)||n)document.documentElement.classList.add("bm-mobile");})();</script>
 <style>html,body{margin:0;background:#020603;}html.bm-embed:not(.bm-mobile),html.bm-embed:not(.bm-mobile) body{padding:0;margin:0;background:#020603;overflow:hidden;overscroll-behavior:none;}</style>
 </head>
@@ -115,7 +115,9 @@
               <p class="bm-daily-hint" id="bm-daily-hint"></p>
             </div>
             <div class="bm-play-sub" id="bm-play-campaign" hidden>
-              <button type="button" class="bm-play-back" data-play-back aria-label="Back to modes">‹ MODES</button>
+              <button type="button" class="bm-hub-back" data-play-back aria-label="Back to modes">
+                <span class="bm-hub-back-arrow" aria-hidden="true">←</span> MODES
+              </button>
               <p class="bm-play-sub-label">CAMPAIGN · pick difficulty</p>
               <div class="bm-diffs">
                 <button type="button" class="bm-diff" data-diff="easy">EASY</button>
@@ -126,7 +128,9 @@
               <button type="button" id="bm-start" class="bm-primary bm-launch-btn">JACK IN</button>
             </div>
             <div class="bm-play-sub" id="bm-play-special" hidden>
-              <button type="button" class="bm-play-back" data-play-back aria-label="Back to modes">‹ MODES</button>
+              <button type="button" class="bm-hub-back" data-play-back aria-label="Back to modes">
+                <span class="bm-hub-back-arrow" aria-hidden="true">←</span> MODES
+              </button>
               <p class="bm-play-sub-label">SPECIAL OPS · unlocked events</p>
               <div class="bm-actions bm-special-actions">
                 <button type="button" id="bm-omega" class="bm-ghost bm-hidden">OMEGA ROOT · 8×8</button>
@@ -142,6 +146,9 @@
             </div>
           </div>
           <div class="bm-hub-panel" id="bm-hub-ops" data-hub-panel="ops" role="tabpanel" hidden>
+            <button type="button" class="bm-hub-back" data-hub-back aria-label="Back to Play menu">
+              <span class="bm-hub-back-arrow" aria-hidden="true">←</span> PLAY
+            </button>
             <div class="bm-syndicate-crew" id="bm-syndicate-crew" aria-label="Syndicate crew oath">
               <div class="bm-crew-label">CREW OATH · pick one</div>
               <div class="bm-crew-btns">
@@ -172,12 +179,18 @@
             </label>
           </div>
           <div class="bm-hub-panel" id="bm-hub-intel" data-hub-panel="intel" role="tabpanel" hidden>
+            <button type="button" class="bm-hub-back" data-hub-back aria-label="Back to Play menu">
+              <span class="bm-hub-back-arrow" aria-hidden="true">←</span> PLAY
+            </button>
             <p class="bm-bulletin" id="bm-bulletin"></p>
             <p class="bm-world-event" id="bm-world-event"></p>
             <p class="bm-bounty" id="bm-bounty-board"></p>
             <div class="bm-relay-board" id="bm-relay-board" aria-label="Squad relay leaderboard"></div>
           </div>
           <div class="bm-hub-panel" id="bm-hub-market" data-hub-panel="market" role="tabpanel" hidden>
+            <button type="button" class="bm-hub-back" data-hub-back aria-label="Back to Play menu">
+              <span class="bm-hub-back-arrow" aria-hidden="true">←</span> PLAY
+            </button>
             <div class="bm-blackmarket" id="bm-blackmarket" aria-label="Black market">
               <div class="bm-bm-head">◈ BLACK MARKET ◈ · <span id="bm-credits-menu">0 CR</span></div>
               <p class="bm-bm-flavor" id="bm-contract-flavor"></p>
@@ -189,6 +202,9 @@
             </div>
           </div>
           <div class="bm-hub-panel" id="bm-hub-more" data-hub-panel="more" role="tabpanel" hidden>
+            <button type="button" class="bm-hub-back" data-hub-back aria-label="Back to Play menu">
+              <span class="bm-hub-back-arrow" aria-hidden="true">←</span> PLAY
+            </button>
             <div class="bm-hub-audio" id="bm-hub-audio" aria-label="Audio settings"></div>
             <div class="bm-actions bm-hub-more-actions">
               <button type="button" id="bm-tutorial" class="bm-ghost">FULL GUIDE</button>
@@ -619,6 +635,6 @@
     </div>
   </div>
 </div>
-<script src="binary_matrix.js?v=40"></script>
+<script src="binary_matrix.js?v=41"></script>
 </body>
 </html>
