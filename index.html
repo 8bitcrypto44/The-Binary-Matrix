@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="description" content="The Binary Matrix — jack in, crack NexCorp grids and CPU gates.">
 <title>The Binary Matrix by 8bitcrypto_44</title>
-<link rel="stylesheet" href="binary_matrix.css?v=10">
+<link rel="stylesheet" href="binary_matrix.css?v=11">
 <style>html,body{margin:0;min-height:100%;background:#020603;}html.bm-embed,html.bm-embed body{padding:0;background:#020603;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;}</style>
 </head>
 <body>
@@ -38,8 +38,11 @@
       <div class="bm-progress-label" id="bm-progress-label">SECTOR 1/6</div>
       <div class="bm-progress-track"><div class="bm-progress-fill" id="bm-progress-fill"></div></div>
     </div>
+    <div class="bm-cmap" id="bm-cmap" aria-label="Campaign node map"></div>
+    <p class="bm-mult" id="bm-mult"></p>
 
     <div class="bm-stage">
+      <div id="bm-burst" class="bm-burst" aria-hidden="true"></div>
       <div id="bm-menu" class="bm-panel bm-hidden">
         <p class="bm-rank" id="bm-rank">RANK · RECRUIT</p>
         <p class="bm-callsign" id="bm-callsign-label">OPERATOR · —</p>
@@ -173,6 +176,8 @@
         <div class="bm-modal bm-victory-modal">
           <h2 id="bm-victory-title">LINK COMPLETE</h2>
           <p class="bm-victory-sub" id="bm-victory-sub">NexCorp firewall breached.</p>
+          <p class="bm-daily-pct bm-hidden" id="bm-daily-pct"></p>
+          <img class="bm-victory-preview bm-hidden" id="bm-victory-preview" alt="Victory score card preview" width="300" height="170">
           <div class="bm-keychain" id="bm-keychain"></div>
           <div class="bm-victory-stats">
             <div>SCORE <b id="bm-victory-score">0</b></div>
@@ -182,7 +187,8 @@
           <div class="bm-badges" id="bm-badges"></div>
           <div class="bm-actions">
             <button type="button" id="bm-victory-card" class="bm-primary">DOWNLOAD CARD</button>
-            <button type="button" id="bm-share-x" class="bm-warn">SHARE ON X</button>
+            <button type="button" id="bm-challenge-link" class="bm-warn">CHALLENGE LINK</button>
+            <button type="button" id="bm-share-x" class="bm-ghost">SHARE ON X</button>
             <button type="button" id="bm-copy-score" class="bm-ghost">COPY SCORE</button>
             <button type="button" id="bm-victory-menu" class="bm-ghost">MAIN MENU</button>
           </div>
@@ -225,6 +231,13 @@
             <li><b>Hard</b> — 7 sectors, razor clues, 1–2 strikes, no Solve.</li>
             <li><b>Genius</b> — NexCorp Kernel Crack (8 CPU gates — see Genius briefing).</li>
           </ul>
+        </div>
+      </div>
+
+      <div id="bm-rank-up" class="bm-overlay bm-rank-up" role="dialog" aria-label="Rank increased">
+        <div class="bm-rank-up-inner">
+          <div class="bm-rank-up-kicker" id="bm-rank-up-title">CLEARANCE UPGRADED</div>
+          <div class="bm-rank-up-rank" id="bm-rank-up-rank">GHOST</div>
         </div>
       </div>
 
@@ -282,6 +295,6 @@
     </div>
   </div>
 </div>
-<script src="binary_matrix.js?v=10"></script>
+<script src="binary_matrix.js?v=11"></script>
 </body>
 </html>

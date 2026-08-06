@@ -1,6 +1,6 @@
   // === SPRINT 4+ FEATURE PACK ===
   const MUSIC_LOCAL = "assets/music/nexcorp_loop.mp3";
-  const BULLETIN_URL = "https://8bitcrypto44.github.io/The-Binary-Matrix/bulletin.json?v=7";
+  const BULLETIN_URL = "https://8bitcrypto44.github.io/The-Binary-Matrix/bulletin.json?v=11";
   const PING_COST = 200;
   const MAX_PINGS = 2;
   const INTERCEPT_HEADERS = [
