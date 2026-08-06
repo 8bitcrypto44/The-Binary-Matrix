@@ -264,16 +264,7 @@
 
   function notifyResize() {
     if (!EMBED || !window.parent) return;
-    requestAnimationFrame(function () {
-      try {
-        var h = Math.max(
-          ROOT.offsetHeight || 0,
-          ROOT.scrollHeight || 0,
-          document.documentElement.scrollHeight || 0
-        );
-        window.parent.postMessage({ type: "bm-resize", height: h }, "*");
-      } catch (e) {}
-    });
+    // Mobile/desktop embed resize is handled by viewport sprint (flushEmbedResize).
   }
 
   function loadRecords() {
@@ -6003,10 +5994,17 @@
   let embedBurstGen = 0;
   let embedMutObs = null;
 
+  let embedMobileReportH = 0;
+
   function flushEmbedResize() {
     if (!EMBED || !window.parent) return;
     try {
-      const h = applyEmbedFrameHeight(measureEmbedHeight());
+      let h = applyEmbedFrameHeight(measureEmbedHeight());
+      if (isMobileEmbed()) {
+        const frameH = window.frameElement ? window.frameElement.clientHeight : 0;
+        h = Math.max(h, frameH, embedMobileReportH, EMBED_MIN_H);
+        embedMobileReportH = h;
+      }
       window.parent.postMessage({
         type: "bm-resize",
         height: h,
