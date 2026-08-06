@@ -45,6 +45,8 @@
     <div class="bm-extract-bar" id="bm-extract-bar" hidden>
       <div class="bm-extract-label" id="bm-extract-label">EXTRACTION · 0 / 3</div>
     </div>
+    <div class="bm-side-door-bar" id="bm-side-door-bar" hidden>DEEP NET · SIDE DOOR ACTIVE · 1 STRIKE</div>
+    <div class="bm-hunter-status" id="bm-hunter-status" hidden>HUNTER AI</div>
     <div class="bm-cmap" id="bm-cmap" aria-label="Campaign node map"></div>
     <p class="bm-mult" id="bm-mult"></p>
 
@@ -52,10 +54,20 @@
       <div id="bm-burst" class="bm-burst" aria-hidden="true"></div>
       <div id="bm-menu" class="bm-panel bm-hidden">
         <p class="bm-rank" id="bm-rank">RANK · RECRUIT</p>
+        <p class="bm-syndicate-rank" id="bm-syndicate-rank">SYNDICATE · RECRUIT · 0 REP</p>
+        <div class="bm-syndicate-crew" id="bm-syndicate-crew" aria-label="Syndicate crew oath">
+          <div class="bm-crew-label">CREW OATH · pick one</div>
+          <div class="bm-crew-btns">
+            <button type="button" class="bm-crew-btn" data-crew="hunters">HUNTERS</button>
+            <button type="button" class="bm-crew-btn selected" data-crew="ghosts">GHOSTS</button>
+            <button type="button" class="bm-crew-btn" data-crew="mercs">MERCS</button>
+          </div>
+        </div>
         <p class="bm-callsign" id="bm-callsign-label">OPERATOR · —</p>
         <p class="bm-bulletin" id="bm-bulletin"></p>
         <p class="bm-bounty" id="bm-bounty-board"></p>
         <div class="bm-relay-board" id="bm-relay-board" aria-label="Squad relay leaderboard"></div>
+        <div class="bm-archive-log" id="bm-archive-log" aria-label="NexCorp archive"></div>
         <p class="bm-streak" id="bm-streak"></p>
         <div class="bm-loadout" id="bm-loadout" aria-label="Operator loadout">
           <div class="bm-loadout-label">LOADOUT · pick one perk</div>
@@ -93,6 +105,7 @@
           <button type="button" id="bm-arcade" class="bm-ghost">ARCADE ∞</button>
           <button type="button" id="bm-bonus-node" class="bm-danger bm-hidden">BONUS NODE · 2×</button>
           <button type="button" id="bm-extract" class="bm-warn bm-hidden">EXTRACT · 3 NODES</button>
+          <button type="button" id="bm-deep-net" class="bm-danger bm-hidden">DEEP NET · SIDE DOOR</button>
           <button type="button" id="bm-relay-in" class="bm-ghost bm-hidden">JOIN RELAY</button>
           <button type="button" id="bm-root-access" class="bm-danger bm-hidden">ROOT ACCESS</button>
           <button type="button" id="bm-tutorial" class="bm-ghost">TUTORIAL</button>
@@ -115,6 +128,7 @@
           <button type="button" id="bm-pause-btn" class="bm-ghost">PAUSE</button>
           <button type="button" id="bm-ping" class="bm-ghost">PING</button>
           <button type="button" id="bm-market" class="bm-ghost">MARKET</button>
+          <button type="button" id="bm-ghost-bet" class="bm-warn">GHOST BET · 200 CR</button>
           <button type="button" id="bm-relay-out" class="bm-ghost">RELAY</button>
           <button type="button" id="bm-check" class="bm-warn">CHECK</button>
           <button type="button" id="bm-restart">RESTART</button>
@@ -320,6 +334,7 @@
           </div>
           <div class="bm-actions">
             <button type="button" id="bm-market-intel" class="bm-warn">INTEL CACHE · 300 CR</button>
+            <button type="button" id="bm-market-freeze" class="bm-ghost">COUNTER-INTEL · 250 CR</button>
           </div>
         </div>
       </div>
