@@ -4576,6 +4576,655 @@
   bindMarketOverlay();
   updateHunterStatus();
 
+// === SIGNAL WAR SPRINT — audio layers, rain, stingers, fast boot ===
+  let signalOsc = null;
+  let signalGain = null;
+  let signalMood = "calm";
+  let lastRainMul = 1;
+  let rankStingerPlaying = false;
+
+  if (records.fastBoot == null) records.fastBoot = false;
+
+  Object.assign(els, {
+    fastBootToggle: ROOT.querySelector("#bm-fast-boot")
+  });
+
+  function getSignalMood() {
+    if (typeof contractMode !== "undefined" && contractMode) return "contract";
+    if (ROOT.classList.contains("bm-mood-contract")) return "contract";
+    if (ROOT.classList.contains("bm-mood-boss") || ROOT.classList.contains("bm-extract-active")) return "boss";
+    if (typeof isPursuitActive === "function" && isPursuitActive()) return "pursuit";
+    if (ROOT.classList.contains("bm-mood-deepnet")) return "pursuit";
+    return "calm";
+  }
+
+  function stopSignalLayer() {
+    if (!signalOsc) return;
+    try { signalOsc.stop(); } catch (e) {}
+    signalOsc.disconnect();
+    signalGain.disconnect();
+    signalOsc = null;
+    signalGain = null;
+  }
+
+  function syncSignalWar() {
+    if (muted || !musicVol || REDUCED_MOTION || !playing) {
+      stopSignalLayer();
+      return;
+    }
+    const mood = getSignalMood();
+    if (mood === signalMood && signalOsc) return;
+    signalMood = mood;
+    stopSignalLayer();
+    if (mood === "calm") return;
+    ensureAudio();
+    const freqs = { pursuit: 108, boss: 72, contract: 138 };
+    const vols = { pursuit: 0.04, boss: 0.055, contract: 0.045 };
+    signalOsc = audioCtx.createOscillator();
+    signalGain = audioCtx.createGain();
+    signalOsc.type = mood === "boss" ? "sawtooth" : "triangle";
+    signalOsc.frequency.value = freqs[mood] || 100;
+    signalGain.gain.value = musicVol * (vols[mood] || 0.04);
+    signalOsc.connect(signalGain);
+    signalGain.connect(audioCtx.destination);
+    signalOsc.start();
+    ROOT.classList.toggle("bm-signal-pursuit", mood === "pursuit");
+    ROOT.classList.toggle("bm-signal-boss", mood === "boss");
+    ROOT.classList.toggle("bm-signal-contract", mood === "contract");
+  }
+
+  function playRankStinger(rankName) {
+    if (rankStingerPlaying || muted) return;
+    rankStingerPlaying = true;
+    const r = (rankName || "").toUpperCase();
+    let seq = [523, 659, 784];
+    if (r.indexOf("GHOST") >= 0 || r.indexOf("PHANTOM") >= 0) seq = [440, 554, 659, 880];
+    if (r.indexOf("OMEGA") >= 0 || r.indexOf("KINGPIN") >= 0) seq = [330, 415, 523, 659, 880, 1046];
+    if (r.indexOf("OPERATOR") >= 0 || r.indexOf("FIXER") >= 0) seq = [494, 587, 698];
+    seq.forEach(function (f, i) {
+      setTimeout(function () { beep(f, 0.16, "triangle", 0.11); }, i * 100);
+    });
+    setTimeout(function () { rankStingerPlaying = false; }, seq.length * 100 + 200);
+  }
+
+  var _drawRainSignal = drawRain;
+  drawRain = function () {
+    if (REDUCED_MOTION) return;
+    const left = playing && !won ? Math.max(0, maxMistakes - mistakes) : maxMistakes;
+    const mul = playing && !won ? 1 + (maxMistakes - left) * 0.2 : 1;
+    for (let i = 0; i < speeds.length; i++) {
+      speeds[i] /= lastRainMul;
+      speeds[i] *= mul;
+    }
+    lastRainMul = mul;
+    if (left <= 1 && playing) {
+      rainHue = "#ff6b81";
+      rainBright = "#ff3355";
+    } else if (typeof applyMood === "function" && !ROOT.classList.contains("bm-mood-boss")) {
+      applyMood();
+    }
+    _drawRainSignal();
+  };
+
+  var _showRankUpSignal = showRankUp;
+  showRankUp = function (newRank) {
+    _showRankUpSignal(newRank);
+    playRankStinger(newRank);
+    if (typeof computeSyndicateRank === "function") {
+      setTimeout(function () { playRankStinger(computeSyndicateRank()); }, 450);
+    }
+  };
+
+  var _runBootSignal = runBoot;
+  runBoot = function (cb) {
+    records.bootVisits = (records.bootVisits || 0) + 1;
+    const veteran = records.fastBoot || records.bootVisits > 2 ||
+      (records.clears && (records.clears.medium || records.clears.hard)) ||
+      (typeof computeSyndicateRank === "function" && computeSyndicateRank() !== "RECRUIT");
+    if (veteran && els.boot && els.bootLog) {
+      els.menu.classList.add("bm-hidden");
+      els.boot.classList.add("show");
+      els.bootLog.textContent = "";
+      const lines = [
+        "NEXCORP UPLINK · VETERAN CHANNEL",
+        "Operator " + (records.callsign || "GHOST") + " authenticated.",
+        "> JACK IN READY_"
+      ];
+      lines.forEach(function (t) {
+        const span = document.createElement("span");
+        span.className = "hi";
+        span.textContent = t + "\n";
+        els.bootLog.appendChild(span);
+      });
+      beep(880, 0.06, "square", 0.06);
+      setTimeout(function () {
+        bootDone = true;
+        els.boot.classList.remove("show");
+        if (els.menu) els.menu.classList.remove("bm-hidden");
+        cb();
+      }, 700);
+      return;
+    }
+    _runBootSignal(cb);
+  };
+
+  var _tickSignal = tick;
+  tick = function () {
+    _tickSignal();
+    syncSignalWar();
+  };
+
+  var _stopMusicSignal = stopMusic;
+  stopMusic = function () {
+    stopSignalLayer();
+    ROOT.classList.remove("bm-signal-pursuit", "bm-signal-boss", "bm-signal-contract");
+    _stopMusicSignal();
+  };
+
+  var _showMenuSignal = showMenu;
+  showMenu = function () {
+    stopSignalLayer();
+    _showMenuSignal();
+    if (els.fastBootToggle) els.fastBootToggle.checked = !!records.fastBoot;
+  };
+
+  if (els.fastBootToggle) {
+    els.fastBootToggle.addEventListener("change", function () {
+      records.fastBoot = !!els.fastBootToggle.checked;
+      saveRecords();
+    });
+  }
+
+// === DAILY EMPIRE SPRINT — calendar, ghost board, loadout lock, insurance ===
+  const DAILY_LOADOUTS = ["chain", "ping", "strike", "heat"];
+
+  if (!records.heatCalendar) records.heatCalendar = [];
+  if (!records.dailyGhostBoard) records.dailyGhostBoard = [];
+
+  Object.assign(els, {
+    heatCalendar: ROOT.querySelector("#bm-heat-calendar"),
+    dailyGhostBoard: ROOT.querySelector("#bm-daily-ghost-board"),
+    dailyLoadoutLine: ROOT.querySelector("#bm-daily-loadout-line"),
+    streakInsureBtn: ROOT.querySelector("#bm-streak-insure")
+  });
+
+  function dailyLockedLoadout() {
+    return DAILY_LOADOUTS[dateSeed() % DAILY_LOADOUTS.length];
+  }
+
+  function daysAgo(n) {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  }
+
+  function weekStampCount() {
+    const set = {};
+    (records.heatCalendar || []).forEach(function (d) { set[d] = true; });
+    let n = 0;
+    for (let i = 0; i < 7; i++) if (set[daysAgo(i)]) n++;
+    return n;
+  }
+
+  function stampHeatCalendar() {
+    const today = dateSeed();
+    records.heatCalendar = records.heatCalendar || [];
+    if (records.heatCalendar.indexOf(today) < 0) {
+      records.heatCalendar.push(today);
+      records.heatCalendar = records.heatCalendar.slice(-14);
+    }
+    if (weekStampCount() >= 7) {
+      records.heatCalendar = records.heatCalendar.filter(function (d) { return d !== today; });
+      records.heatCalendar.push(today);
+      if (typeof addCredits === "function") addCredits(500);
+      setStatus("Weekly heat calendar complete · +500 CR syndicate bonus", "ok");
+    }
+    saveRecords();
+    renderHeatCalendar();
+  }
+
+  function renderHeatCalendar() {
+    if (!els.heatCalendar) return;
+    const set = {};
+    (records.heatCalendar || []).forEach(function (d) { set[d] = true; });
+    if (records.dailyLastClear === dateSeed()) set[dateSeed()] = true;
+    let html = "";
+    for (let i = 6; i >= 0; i--) {
+      const d = daysAgo(i);
+      const on = !!set[d];
+      html += "<span class=\"bm-cal-day" + (on ? " done" : "") + "\">" + (on ? "◈" : "·") + "</span>";
+    }
+    els.heatCalendar.innerHTML = html;
+    els.heatCalendar.title = "Weekly calendar · 7 stamps = +500 CR · " + weekStampCount() + "/7";
+  }
+
+  function pushDailyGhost(entry) {
+    records.dailyGhostBoard = records.dailyGhostBoard || [];
+    records.dailyGhostBoard.unshift(entry);
+    records.dailyGhostBoard = records.dailyGhostBoard.slice(0, 5);
+    saveRecords();
+    renderDailyGhostBoard();
+  }
+
+  function renderDailyGhostBoard() {
+    if (!els.dailyGhostBoard) return;
+    const rows = records.dailyGhostBoard || [];
+    if (!rows.length) {
+      els.dailyGhostBoard.innerHTML = "<span class=\"bm-dg-empty\">DAILY GHOST BOARD · clear daily to rank</span>";
+      return;
+    }
+    els.dailyGhostBoard.innerHTML = rows.map(function (e, i) {
+      return "<div class=\"bm-dg-row" + (i === 0 ? " top" : "") + "\"><b>" +
+        (e.callsign || "GHOST") + "</b> · " + e.score + " pts · " + fmtTime(e.t) +
+        (e.pct ? " · top " + e.pct + "%" : "") + "</div>";
+    }).join("");
+  }
+
+  function updateDailyEmpireUI() {
+    renderHeatCalendar();
+    renderDailyGhostBoard();
+    if (els.dailyLoadoutLine) {
+      els.dailyLoadoutLine.textContent = "TODAY'S FAIR LOADOUT · " + dailyLockedLoadout().toUpperCase() +
+        " · all operators locked same perk";
+    }
+    if (els.streakInsureBtn) {
+      els.streakInsureBtn.disabled = !!records.streakInsured || (records.credits || 0) < 150;
+      els.streakInsureBtn.textContent = records.streakInsured
+        ? "STREAK INSURED · active"
+        : "STREAK INSURANCE · 150 CR";
+    }
+  }
+
+  function buyStreakInsurance() {
+    if (records.streakInsured) return;
+    if (typeof spendCredits !== "function" || !spendCredits(150)) {
+      setStatus("Streak insurance costs 150 CR.", "err");
+      return;
+    }
+    records.streakInsured = true;
+    saveRecords();
+    updateDailyEmpireUI();
+    setStatus("Streak insured · next missed day won't break chain", "ok");
+    beep(660, 0.08, "triangle", 0.07);
+  }
+
+  var _startDailyEmpire = startDaily;
+  startDaily = function () {
+    loadoutPerk = dailyLockedLoadout();
+    records.loadout = loadoutPerk;
+    saveRecords();
+    if (els.loadoutRoot) {
+      els.loadoutRoot.querySelectorAll(".bm-loadout-btn").forEach(function (b) {
+        b.classList.toggle("selected", b.dataset.loadout === loadoutPerk);
+      });
+    }
+    _startDailyEmpire();
+    setStatus("Daily node · fair loadout " + loadoutPerk.toUpperCase() + " · 6×6", "ok");
+  };
+
+  var _bumpDailyEmpire = bumpDailyStreak;
+  bumpDailyStreak = function () {
+    const today = dateSeed();
+    const last = records.dailyLastClear || 0;
+    if (last === today) return;
+    const yesterday = today - 1;
+    const contiguous = last === yesterday || last === today - 1;
+    if (!contiguous && last && records.streakInsured) {
+      records.streakInsured = false;
+      records.dailyStreak = (records.dailyStreak || 0) + 1;
+      records.dailyLastClear = today;
+      saveRecords();
+      updateStreakDisplay();
+      setStatus("Streak insurance used · chain preserved", "ok");
+      return;
+    }
+    _bumpDailyEmpire();
+  };
+
+  var _onWinDailyEmpire = onWin;
+  onWin = function () {
+    const wasDaily = dailyMode;
+    const t0 = sectorStartedAt || sectorClock;
+    _onWinDailyEmpire();
+    if (!won || !wasDaily) return;
+    stampHeatCalendar();
+    const pct = typeof dailyPercentile === "function" ? dailyPercentile(score) : 50;
+    pushDailyGhost({
+      callsign: records.callsign || "GHOST",
+      score: score,
+      t: Date.now() - t0,
+      pct: pct,
+      day: dateSeed()
+    });
+    updateDailyEmpireUI();
+  };
+
+  var _showMenuDaily = showMenu;
+  showMenu = function () {
+    _showMenuDaily();
+    updateDailyEmpireUI();
+  };
+
+  if (els.streakInsureBtn) els.streakInsureBtn.addEventListener("click", buyStreakInsurance);
+  updateDailyEmpireUI();
+
+// === OMEGA PROTOCOL SPRINT — prestige, omega chain, legacy card, root access ===
+  let omegaChainMode = false;
+  let omegaChainStep = 0;
+  let rootAccessMode = false;
+  const OMEGA_CHAIN_LEN = 3;
+
+  if (!records.prestigeLevel) records.prestigeLevel = 0;
+  if (!records.prestigeRain) records.prestigeRain = "";
+  if (!records.omegaChainBest) records.omegaChainBest = 0;
+  if (!records.rootProtocolDone) records.rootProtocolDone = false;
+
+  Object.assign(els, {
+    prestigeOv: ROOT.querySelector("#bm-prestige-ov"),
+    prestigeAccept: ROOT.querySelector("#bm-prestige-accept"),
+    omegaChainBtn: ROOT.querySelector("#bm-omega-chain"),
+    legacyBtn: ROOT.querySelector("#bm-legacy-card")
+  });
+
+  const PRESTIGE_RAIN = {
+    gold: { hue: "#eab308", bright: "#fde047" },
+    cyan: { hue: "#22d3ee", bright: "#67e8f9" },
+    crimson: { hue: "#ff3355", bright: "#ff6b81" }
+  };
+
+  function applyPrestigeRain() {
+    if (!records.prestigeRain || !PRESTIGE_RAIN[records.prestigeRain]) return;
+    rainHue = PRESTIGE_RAIN[records.prestigeRain].hue;
+    rainBright = PRESTIGE_RAIN[records.prestigeRain].bright;
+    ROOT.classList.add("bm-prestige-rain");
+  }
+
+  function bestGhostDelta() {
+    let best = null;
+    const pbs = records.sectorPB || {};
+    Object.keys(pbs).forEach(function (k) {
+      const pb = pbs[k];
+      if (pb && pb.t > 0) best = best == null ? pb.t : Math.min(best, pb.t);
+    });
+    return best;
+  }
+
+  function updateOmegaProtocolUI() {
+    if (els.omegaChainBtn) {
+      const show = records.clears && records.clears.hard;
+      els.omegaChainBtn.classList.toggle("bm-hidden", !show);
+      els.omegaChainBtn.textContent = omegaChainMode
+        ? ("OMEGA CHAIN · " + omegaChainStep + "/" + OMEGA_CHAIN_LEN)
+        : "OMEGA CHAIN · 3×8×8";
+    }
+    if (records.prestigeLevel > 0) applyPrestigeRain();
+    if (els.rootAccessBtn && records.rootProtocolDone) {
+      els.rootAccessBtn.textContent = "ROOT ACCESS · PROTOCOL CLEARED";
+    } else if (els.rootAccessBtn && records.prestigeLevel > 0 && records.clears && records.clears.omega) {
+      els.rootAccessBtn.textContent = "ROOT ACCESS · PROTOCOL";
+    }
+  }
+
+  function offerPrestige() {
+    if (records.prestigeLevel > 0 || difficulty !== "hard") return;
+    if ((records.maxHeat || 0) < 100 && (records.wanted || 0) < 100) return;
+    if (!els.prestigeOv) return;
+    els.prestigeOv.classList.add("show");
+    beep(440, 0.15, "triangle", 0.1);
+  }
+
+  function acceptPrestige() {
+    records.prestigeLevel = 1;
+    records.wanted = 0;
+    records.bonusUnlocked = false;
+    const keys = Object.keys(PRESTIGE_RAIN);
+    records.prestigeRain = keys[dateSeed() % keys.length];
+    saveRecords();
+    if (typeof updateWantedUI === "function") updateWantedUI();
+    if (els.prestigeOv) els.prestigeOv.classList.remove("show");
+    applyPrestigeRain();
+    setStatus("PRESTIGE LINK · heat zeroed · syndicate rank kept · rain recolored", "ok");
+    if (typeof appendArchive === "function") appendArchive("PRESTIGE · operator ascended · " + records.prestigeRain);
+    updateOmegaProtocolUI();
+    [523, 659, 880, 1046].forEach(function (f, i) {
+      setTimeout(function () { beep(f, 0.14, "triangle", 0.1); }, i * 90);
+    });
+  }
+
+  function loadOmegaChainSector() {
+    omegaMode = true;
+    gridLevel = omegaChainStep;
+    const spec = [8, 14 - omegaChainStep * 2, 1, 1, "OMEGA CHAIN · NODE " + (omegaChainStep + 1)];
+    setGridSize(8);
+    const pack = newPuzzleFromSpec(spec);
+    solution = pack.solution;
+    puzzle = pack.puzzle;
+    given = pack.given;
+    grid = clone(puzzle);
+    N = 8;
+    HALF = 4;
+    playing = true;
+    paused = false;
+    won = false;
+    mistakes = 0;
+    maxMistakes = 1;
+    sectorClock = Date.now();
+    sectorStartedAt = Date.now();
+    if (els.gridWrap) els.gridWrap.classList.add("bm-omega-grid");
+    els.grid.className = "bm-grid sz8";
+    els.solveBtn.classList.add("bm-hidden");
+    renderGrid(false);
+    updateHUD();
+    startTimer();
+    setStatus("OMEGA CHAIN " + (omegaChainStep + 1) + "/" + OMEGA_CHAIN_LEN + " · 8×8 · 1 strike · no solve", "ok");
+  }
+
+  function startOmegaChain() {
+    if (!(records.clears && records.clears.hard)) return;
+    ensureAudio();
+    hideVictory();
+    omegaChainMode = true;
+    omegaChainStep = 0;
+    dailyMode = false;
+    geniusMode = false;
+    arcadeMode = false;
+    extractionMode = false;
+    contractMode = false;
+    score = score || 0;
+    elapsedMs = elapsedMs || 0;
+    startedAt = Date.now() - elapsedMs;
+    applyMood();
+    ROOT.classList.add("bm-mood-omega", "bm-omega-chain");
+    els.menu.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    notifyParent(true);
+    loadOmegaChainSector();
+    playMusic();
+  }
+
+  function completeOmegaChain() {
+    omegaChainMode = false;
+    omegaChainStep = 0;
+    omegaMode = false;
+    records.omegaChainBest = Math.max(records.omegaChainBest || 0, score);
+    if (typeof addCredits === "function") addCredits(1000);
+    score += 2000;
+    saveRecords();
+    playing = false;
+    ROOT.classList.remove("bm-omega-chain");
+    setStatus("OMEGA CHAIN CLEARED · +2000 score · +1000 CR", "ok");
+    updateOmegaProtocolUI();
+    showMenu();
+  }
+
+  function omegaChainWin() {
+    won = true;
+    playing = false;
+    sectorGain = calcSectorScore();
+    score += sectorGain;
+    updateHUD();
+    omegaChainStep++;
+    if (omegaChainStep >= OMEGA_CHAIN_LEN) {
+      setTimeout(completeOmegaChain, 450);
+      return;
+    }
+    setTimeout(function () {
+      won = false;
+      loadOmegaChainSector();
+    }, 500);
+  }
+
+  function startRootProtocol() {
+    if (!(records.prestigeLevel > 0 && records.clears && records.clears.omega)) {
+      startOmega();
+      return;
+    }
+    ensureAudio();
+    hideVictory();
+    rootAccessMode = true;
+    omegaMode = true;
+    omegaChainMode = false;
+    dailyMode = false;
+    geniusMode = false;
+    gridLevel = 0;
+    score = score || 0;
+    mistakes = 0;
+    maxMistakes = 1;
+    elapsedMs = 0;
+    startedAt = Date.now();
+    applyMood();
+    ROOT.classList.add("bm-mood-omega", "bm-root-protocol");
+    els.menu.classList.add("bm-hidden");
+    els.play.classList.remove("bm-hidden");
+    notifyParent(true);
+    const spec = [8, 10, 1, 1, "ROOT ACCESS PROTOCOL · NEXCORP CORE"];
+    setGridSize(8);
+    const pack = newPuzzleFromSpec(spec);
+    solution = pack.solution;
+    puzzle = pack.puzzle;
+    given = pack.given;
+    grid = clone(puzzle);
+    N = 8;
+    HALF = 4;
+    playing = true;
+    won = false;
+    sectorClock = Date.now();
+    sectorStartedAt = Date.now();
+    els.solveBtn.classList.add("bm-hidden");
+    renderGrid(false);
+    updateHUD();
+    startTimer();
+    playMusic();
+    setStatus("ROOT ACCESS PROTOCOL · 8×8 · 1 strike · classified", "ok");
+    beep(80, 0.2, "sawtooth", 0.12);
+  }
+
+  function completeRootProtocol() {
+    rootAccessMode = false;
+    omegaMode = false;
+    records.rootProtocolDone = true;
+    score += 5000;
+    if (typeof addCredits === "function") addCredits(1500);
+    saveRecords();
+    playing = false;
+    ROOT.classList.remove("bm-root-protocol");
+    markCampaignClear("root");
+    showVictory({
+      title: "ROOT ACCESS GRANTED",
+      sub: "NexCorp core protocol breached · classified clearance logged",
+      codes: [matrixCode()]
+    });
+    updateOmegaProtocolUI();
+  }
+
+  var _drawVictoryLegacy = drawVictoryCard;
+  drawVictoryCard = function () {
+    const cv = _drawVictoryLegacy();
+    const c = cv.getContext("2d");
+    c.fillStyle = "#c4b5fd";
+    c.font = "11px Courier New, monospace";
+    const syn = typeof computeSyndicateRank === "function" ? computeSyndicateRank() : "—";
+    c.fillText("SYNDICATE " + syn + " · EXFIL " + (records.extractions || 0) +
+      " · CONTRACTS " + (records.contractsTotal || 0), 24, 168);
+    c.fillStyle = "#fde68a";
+    const ghost = bestGhostDelta();
+    c.fillText("LEGACY · prestige L" + (records.prestigeLevel || 0) +
+      (ghost ? " · best ghost " + fmtTime(ghost) : ""), 24, 188);
+    return cv;
+  };
+
+  var _onWinOmega = onWin;
+  onWin = function () {
+    if (omegaChainMode) {
+      omegaChainWin();
+      return;
+    }
+    if (rootAccessMode) {
+      won = true;
+      playing = false;
+      sectorGain = calcSectorScore();
+      score += sectorGain;
+      updateHUD();
+      completeRootProtocol();
+      return;
+    }
+    _onWinOmega();
+  };
+
+  var _showVictoryOmega = showVictory;
+  showVictory = function (opts) {
+    if (!omegaChainMode && !rootAccessMode && difficulty === "hard" && !(opts && opts.daily)) {
+      offerPrestige();
+    }
+    _showVictoryOmega(opts);
+  };
+
+  var _startRootAccessOmega = startRootAccess;
+  startRootAccess = function () {
+    if (records.prestigeLevel > 0 && records.clears && records.clears.omega && !records.rootProtocolDone) {
+      startRootProtocol();
+      return;
+    }
+    _startRootAccessOmega();
+  };
+
+  var _failOutOmega = failOut;
+  failOut = function () {
+    if (omegaChainMode) {
+      omegaChainMode = false;
+      omegaChainStep = 0;
+      omegaMode = false;
+      ROOT.classList.remove("bm-omega-chain");
+      setStatus("OMEGA CHAIN broken · NexCorp sealed the root.", "err");
+    }
+    if (rootAccessMode) {
+      rootAccessMode = false;
+      omegaMode = false;
+      ROOT.classList.remove("bm-root-protocol");
+    }
+    _failOutOmega();
+  };
+
+  var _showMenuOmega = showMenu;
+  showMenu = function () {
+    omegaChainMode = false;
+    rootAccessMode = false;
+    ROOT.classList.remove("bm-omega-chain", "bm-root-protocol");
+    _showMenuOmega();
+    updateOmegaProtocolUI();
+  };
+
+  if (els.prestigeAccept) els.prestigeAccept.addEventListener("click", acceptPrestige);
+  if (els.prestigeOv) {
+    els.prestigeOv.addEventListener("click", function (e) {
+      if (e.target === els.prestigeOv) els.prestigeOv.classList.remove("show");
+    });
+  }
+  if (els.omegaChainBtn) els.omegaChainBtn.addEventListener("click", startOmegaChain);
+  if (els.legacyBtn) els.legacyBtn.addEventListener("click", downloadVictoryCard);
+
+  updateOmegaProtocolUI();
+
   // --- Wire UI ---
   ROOT.querySelectorAll(".bm-diff").forEach(function (btn) {
     btn.addEventListener("click", function () {

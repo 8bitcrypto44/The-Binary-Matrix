@@ -69,6 +69,16 @@
         <div class="bm-relay-board" id="bm-relay-board" aria-label="Squad relay leaderboard"></div>
         <div class="bm-archive-log" id="bm-archive-log" aria-label="NexCorp archive"></div>
         <p class="bm-streak" id="bm-streak"></p>
+        <p class="bm-daily-loadout" id="bm-daily-loadout-line"></p>
+        <div class="bm-heat-calendar-wrap">
+          <div class="bm-cal-label">WEEKLY CALENDAR · 7 = +500 CR</div>
+          <div class="bm-heat-calendar" id="bm-heat-calendar" aria-label="Weekly heat calendar"></div>
+        </div>
+        <div class="bm-daily-ghost-board" id="bm-daily-ghost-board" aria-label="Daily ghost leaderboard"></div>
+        <button type="button" id="bm-streak-insure" class="bm-ghost bm-streak-insure">STREAK INSURANCE · 150 CR</button>
+        <label class="bm-fast-boot-wrap" id="bm-fast-boot-wrap">
+          <input type="checkbox" id="bm-fast-boot"> Fast boot (veterans)
+        </label>
         <div class="bm-loadout" id="bm-loadout" aria-label="Operator loadout">
           <div class="bm-loadout-label">LOADOUT · pick one perk</div>
           <div class="bm-loadout-btns">
@@ -100,6 +110,8 @@
         </div>
         <div class="bm-actions">
           <button type="button" id="bm-omega" class="bm-ghost bm-hidden">OMEGA ROOT · 8×8</button>
+          <button type="button" id="bm-omega-chain" class="bm-danger bm-hidden">OMEGA CHAIN · 3×8×8</button>
+          <button type="button" id="bm-legacy-card" class="bm-ghost">LEGACY CARD</button>
           <button type="button" id="bm-continue" class="bm-primary bm-hidden">CONTINUE LINK</button>
           <button type="button" id="bm-daily" class="bm-warn">DAILY NODE</button>
           <button type="button" id="bm-arcade" class="bm-ghost">ARCADE ∞</button>
@@ -335,6 +347,16 @@
           <div class="bm-actions">
             <button type="button" id="bm-market-intel" class="bm-warn">INTEL CACHE · 300 CR</button>
             <button type="button" id="bm-market-freeze" class="bm-ghost">COUNTER-INTEL · 250 CR</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="bm-prestige-ov" class="bm-overlay bm-prestige-ov" role="dialog" aria-label="Prestige link">
+        <div class="bm-modal" style="text-align:center">
+          <h2>PRESTIGE LINK</h2>
+          <p>Hard cleared at max heat. Zero your trace — keep syndicate rank — unlock legacy rain.</p>
+          <div class="bm-actions">
+            <button type="button" id="bm-prestige-accept" class="bm-primary">ASCEND · PRESTIGE</button>
           </div>
         </div>
       </div>
