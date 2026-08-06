@@ -258,7 +258,10 @@ html.bm-embed #binmat-root .bm-site-brand-mini{display:none}
 #binmat-root .bm-access-code{margin-top:12px;font-size:14px;color:#86efac;letter-spacing:2px}
 @keyframes bmAccessPop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
 #binmat-root .bm-ftue .bm-modal{max-width:440px}
-#binmat-root #bm-callsign-input{width:100%;max-width:240px;margin:12px auto;padding:10px 12px;background:#041208;border:2px solid #166534;border-radius:8px;color:var(--lime);font:700 14px "Courier New",monospace;text-align:center}
+#binmat-root .bm-callsign-err{font-size:11px;color:#fda4af;min-height:1.2em;margin:6px 0 0}
+#binmat-root.bm-callsign-ov,#binmat-root #bm-callsign-ov.bm-callsign-ov{z-index:25}
+#binmat-root #bm-callsign-ov{z-index:25}
+#binmat-root #bm-callsign-input{width:100%;max-width:240px;margin:12px auto;padding:10px 12px;background:#041208;border:2px solid #166534;border-radius:8px;color:var(--lime);font:700 14px "Courier New",monospace;text-align:center;display:block}
 #binmat-root.bm-corrupt .bm-brand{animation:bmGlitch .4s steps(2) 3}
 #binmat-root #bm-root-access{box-shadow:0 0 16px rgba(255,51,85,.4);border-color:#ff3355;color:#fecaca}
 @media (max-width:700px){

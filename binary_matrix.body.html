@@ -217,13 +217,15 @@
         </div>
       </div>
 
-      <div id="bm-callsign-ov" class="bm-overlay" role="dialog" aria-label="Operator callsign">
+      <div id="bm-callsign-ov" class="bm-overlay bm-callsign-ov" role="dialog" aria-label="Operator callsign">
         <div class="bm-modal" style="text-align:center">
           <h2>OPERATOR CALLSIGN</h2>
-          <p>NexCorp logs every jack-in. Choose your handle.</p>
-          <input id="bm-callsign-input" type="text" maxlength="16" spellcheck="false" placeholder="GHOST_07" aria-label="Callsign">
+          <p>NexCorp logs every jack-in. Pick a handle — or skip to play now.</p>
+          <input id="bm-callsign-input" type="text" maxlength="16" spellcheck="false" placeholder="GHOST_07" aria-label="Callsign" autocomplete="nickname">
+          <p class="bm-callsign-err" id="bm-callsign-err"></p>
           <div class="bm-actions">
             <button type="button" id="bm-callsign-save" class="bm-primary">CONFIRM</button>
+            <button type="button" id="bm-callsign-skip" class="bm-ghost">SKIP · PLAY NOW</button>
           </div>
         </div>
       </div>

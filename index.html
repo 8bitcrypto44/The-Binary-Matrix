@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="description" content="The Binary Matrix — jack in, crack NexCorp grids and CPU gates.">
 <title>The Binary Matrix by 8bitcrypto_44</title>
-<link rel="stylesheet" href="binary_matrix.css?v=7">
+<link rel="stylesheet" href="binary_matrix.css?v=8">
 <style>html,body{margin:0;min-height:100%;background:#020603;}html.bm-embed,html.bm-embed body{padding:0;background:#020603;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;}</style>
 </head>
 <body>
@@ -228,13 +228,15 @@
         </div>
       </div>
 
-      <div id="bm-callsign-ov" class="bm-overlay" role="dialog" aria-label="Operator callsign">
+      <div id="bm-callsign-ov" class="bm-overlay bm-callsign-ov" role="dialog" aria-label="Operator callsign">
         <div class="bm-modal" style="text-align:center">
           <h2>OPERATOR CALLSIGN</h2>
-          <p>NexCorp logs every jack-in. Choose your handle.</p>
-          <input id="bm-callsign-input" type="text" maxlength="16" spellcheck="false" placeholder="GHOST_07" aria-label="Callsign">
+          <p>NexCorp logs every jack-in. Pick a handle — or skip to play now.</p>
+          <input id="bm-callsign-input" type="text" maxlength="16" spellcheck="false" placeholder="GHOST_07" aria-label="Callsign" autocomplete="nickname">
+          <p class="bm-callsign-err" id="bm-callsign-err"></p>
           <div class="bm-actions">
             <button type="button" id="bm-callsign-save" class="bm-primary">CONFIRM</button>
+            <button type="button" id="bm-callsign-skip" class="bm-ghost">SKIP · PLAY NOW</button>
           </div>
         </div>
       </div>
@@ -280,6 +282,6 @@
     </div>
   </div>
 </div>
-<script src="binary_matrix.js?v=7"></script>
+<script src="binary_matrix.js?v=8"></script>
 </body>
 </html>

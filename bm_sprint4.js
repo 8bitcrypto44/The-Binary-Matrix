@@ -45,6 +45,8 @@
     callsignOv: ROOT.querySelector("#bm-callsign-ov"),
     callsignInput: ROOT.querySelector("#bm-callsign-input"),
     callsignSave: ROOT.querySelector("#bm-callsign-save"),
+    callsignSkip: ROOT.querySelector("#bm-callsign-skip"),
+    callsignErr: ROOT.querySelector("#bm-callsign-err"),
     ftue: ROOT.querySelector("#bm-ftue"),
     ftueTitle: ROOT.querySelector("#bm-ftue-title"),
     ftueBody: ROOT.querySelector("#bm-ftue-body"),
@@ -70,22 +72,53 @@
     }
   }
 
-  function ensureCallsign(cb) {
+  function ensureCallsign(cb, opts) {
+    opts = opts || {};
     if (records.callsign) { if (cb) cb(); return; }
     if (!els.callsignOv) { if (cb) cb(); return; }
+    if (opts.defer) { if (cb) cb(); return; }
+
+    function finishCallsign(v) {
+      records.callsign = String(v || "GHOST").toUpperCase().slice(0, 16);
+      saveRecords();
+      updateCallsignDisplay();
+      els.callsignOv.classList.remove("show");
+      if (els.callsignErr) els.callsignErr.textContent = "";
+      beep(880, 0.08, "triangle", 0.07);
+      if (cb) cb();
+    }
+
+    function trySave(skip) {
+      if (skip) {
+        finishCallsign("GHOST_" + Math.floor(1000 + Math.random() * 9000));
+        return;
+      }
+      const raw = (els.callsignInput && els.callsignInput.value || "").trim();
+      const v = raw.replace(/[^A-Za-z0-9_\-.]/g, "").slice(0, 16);
+      if (v.length < 2) {
+        if (els.callsignErr) {
+          els.callsignErr.textContent = raw.length
+            ? "Use at least 2 letters/numbers (A–Z, 0–9, _ . -)"
+            : "Type a callsign or tap SKIP · PLAY NOW";
+        }
+        beep(200, 0.1, "sawtooth", 0.06);
+        if (els.callsignInput) els.callsignInput.focus();
+        return;
+      }
+      finishCallsign(v);
+    }
+
     els.callsignOv.classList.add("show");
-    if (els.callsignSave) {
-      els.callsignSave.onclick = function () {
-        const v = (els.callsignInput && els.callsignInput.value || "").trim().replace(/[^\w\-_.]/g, "").slice(0, 16);
-        if (v.length < 2) return;
-        records.callsign = v.toUpperCase();
-        saveRecords();
-        updateCallsignDisplay();
-        els.callsignOv.classList.remove("show");
-        beep(880, 0.08, "triangle", 0.07);
-        if (cb) cb();
+    if (els.callsignInput) {
+      setTimeout(function () {
+        try { els.callsignInput.focus(); } catch (e) {}
+      }, 120);
+      els.callsignInput.onkeydown = function (e) {
+        if (e.key === "Enter") { e.preventDefault(); trySave(false); }
       };
     }
+    if (els.callsignSave) els.callsignSave.onclick = function () { trySave(false); };
+    if (els.callsignSkip) els.callsignSkip.onclick = function () { trySave(true); };
   }
 
   function fetchBulletin() {
@@ -694,7 +727,11 @@
     haptic(15);
   };
 
-  var _showMenu = showMenu;
+  var _startGame0 = startGame;
+  startGame = function () {
+    ensureCallsign(function () { _startGame0(); });
+  };
+
   showMenu = function () {
     arcadeMode = false;
     _showMenu();
