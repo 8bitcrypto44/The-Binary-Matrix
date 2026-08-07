@@ -92,7 +92,7 @@ def merge_js():
             merged = js_path.read_text(encoding="utf-8")
             merged = merged.replace(wire, block + wire, 1)
             js_path.write_text(merged, encoding="utf-8")
-    for sname in ("bm_sprint19_story.js", "bm_sprint20_viewport.js", "bm_sprint21_hub.js"):
+    for sname in ("bm_sprint19_story.js", "bm_sprint20_viewport.js", "bm_sprint21_hub.js", "bm_sprint22_qa.js"):
         sp = root.joinpath(sname)
         if sp.exists() and wire in merged:
             block = sp.read_text(encoding="utf-8").strip() + "\n\n"
